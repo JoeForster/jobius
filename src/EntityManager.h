@@ -4,14 +4,16 @@
 #include <bitset>
 #include <queue>
 
-enum ComponentType
+enum class ComponentType
 {
-	Transform,
-	MAX_COMPONENTS
+	CT_TRANSFORM,
+	CT_MAX
 };
 
+constexpr size_t NUM_COMPONENT_TYPES = (size_t)ComponentType::CT_MAX;
+
 using EntityID = std::uint32_t;
-using EntitySignature = std::bitset<MAX_COMPONENTS>;
+using EntitySignature = std::bitset<NUM_COMPONENT_TYPES>;
 
 constexpr size_t MAX_ENTITIES = 10;
 constexpr EntityID INVALID_ENTITY_ID = MAX_ENTITIES;
@@ -43,5 +45,4 @@ private:
 	EntityID m_TailID = 0;
 	EntitySignature m_Signatures[MAX_ENTITIES];
 
-	
 };

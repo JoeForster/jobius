@@ -15,10 +15,17 @@ public:
 };
 
 
-template<typename T>
+template<class T>
 class ComponentArray : public IComponentArray
 {
 public:
+	ComponentArray()
+	{
+		static_assert(T::GetComponentType() < ComponentType::CT_MAX);
+	}
+
+	//static ComponentType GetComponentType() const override final { return T::GetComponentType(); }
+
 	void InsertData(EntityID entity, T component)
 	{
 		// TODO_VALIDATION

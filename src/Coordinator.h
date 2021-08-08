@@ -4,7 +4,7 @@
 
 #include "EntityManager.h"
 #include "ComponentManager.h"
-#include "ComponentManager.h"
+#include "SystemManager.h"
 
 class Coordinator
 {
@@ -19,12 +19,12 @@ public:
 
 
 	// Entity methods
-	Entity CreateEntity()
+	EntityID CreateEntity()
 	{
 		return mEntityManager->CreateEntity();
 	}
 
-	void DestroyEntity(Entity entity)
+	void DestroyEntity(EntityID entity)
 	{
 		mEntityManager->DestroyEntity(entity);
 
@@ -42,19 +42,19 @@ public:
 	}
 
 	template<typename T>
-	void AddComponent(Entity entity, T component)
+	void AddComponent(EntityID entity, T component)
 	{
 		mComponentManager->AddComponent<T>(entity, component);
 
 		auto signature = mEntityManager->GetSignature(entity);
-		signature.set(mComponentManager->GetComponentType<T>(), true);
+		signature.set(mComponentManager->GetComponentIndex<T>(), true);
 		mEntityManager->SetSignature(entity, signature);
 
 		mSystemManager->EntitySignatureChanged(entity, signature);
 	}
 
 	template<typename T>
-	void RemoveComponent(Entity entity)
+	void RemoveComponent(EntityID entity)
 	{
 		mComponentManager->RemoveComponent<T>(entity);
 
@@ -66,7 +66,7 @@ public:
 	}
 
 	template<typename T>
-	T& GetComponent(Entity entity)
+	T& GetComponent(EntityID entity)
 	{
 		return mComponentManager->GetComponent<T>(entity);
 	}
@@ -86,12 +86,13 @@ public:
 	}
 
 	template<typename T>
-	void SetSystemSignature(Signature signature)
+	void SetSystemSignature(EntitySignature signature)
 	{
 		mSystemManager->SetSignature<T>(signature);
 	}
 
 private:
+	// TODO remove unnecessary use of pointers
 	std::unique_ptr<ComponentManager> mComponentManager;
 	std::unique_ptr<EntityManager> mEntityManager;
 	std::unique_ptr<SystemManager> mSystemManager;

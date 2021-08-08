@@ -7,7 +7,7 @@
 class RenderSystem : public System
 {
 public:
-
+/*
 	void Init() final override
 	{
 	
@@ -27,9 +27,9 @@ public:
 	{
 
 	}
-
+*/
 private:
 
-	std::vector<SpriteRenderer> m_Renderers;
+	//std::vector<SpriteRenderer> m_Renderers;
 };
 
