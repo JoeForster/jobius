@@ -9,35 +9,30 @@
 class SystemManager
 {
 public:
-	template<typename T>
+	template<class T>
 	std::shared_ptr<T> RegisterSystem()
 	{
-		const char* typeName = typeid(T).name();
-
-		assert(mSystems.find(typeName) == mSystems.end() && "Registering system more than once.");
-
-		// Create a pointer to the system and return it so it can be used externally
 		auto system = std::make_shared<T>();
-		mSystems.insert({ typeName, system });
+		SystemType type = system->GetSystemType();
+		assert(type < SystemType::ST_MAX);
+		assert(m_Systems.find(type) == m_Systems.end() && "Registering system more than once.");
+		m_Systems.insert({ type, system });
 		return system;
 	}
 
-	template<typename T>
-	void SetSignature(EntitySignature signature)
+	template<class T>
+	void SetSignature(SystemType type, EntitySignature signature)
 	{
-		const char* typeName = typeid(T).name();
+		assert(m_Systems.find(type) != m_Systems.end() && "System used before registered.");
 
-		assert(mSystems.find(typeName) != mSystems.end() && "System used before registered.");
-
-		// Set the signature for this system
-		mSignatures.insert({ typeName, signature });
+		m_Signatures.insert({ type, signature });
 	}
 
 	void EntityDestroyed(EntityID entity)
 	{
 		// Erase a destroyed entity from all system lists
 		// mEntities is a set so no check needed
-		for (auto const& pair : mSystems)
+		for (auto const& pair : m_Systems)
 		{
 			auto const& system = pair.second;
 
@@ -48,11 +43,11 @@ public:
 	void EntitySignatureChanged(EntityID entity, EntitySignature entitySignature)
 	{
 		// Notify each system that an entity's signature changed
-		for (auto const& pair : mSystems)
+		for (auto const& pair : m_Systems)
 		{
 			auto const& type = pair.first;
 			auto const& system = pair.second;
-			auto const& systemSignature = mSignatures[type];
+			auto const& systemSignature = m_Signatures[type];
 
 			// Entity signature matches system signature - insert into set
 			if ((entitySignature & systemSignature) == systemSignature)
@@ -69,8 +64,8 @@ public:
 
 private:
 	// Map from system type string pointer to a signature
-	std::unordered_map<const char*, EntitySignature> mSignatures{};
+	std::unordered_map<SystemType, EntitySignature> m_Signatures{};
 
 	// Map from system type string pointer to a system pointer
-	std::unordered_map<const char*, std::shared_ptr<System>> mSystems{};
+	std::unordered_map<SystemType, std::shared_ptr<System>> m_Systems{};
 };

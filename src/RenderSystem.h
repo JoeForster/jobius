@@ -7,6 +7,10 @@
 class RenderSystem : public System
 {
 public:
+
+	virtual SystemType GetSystemType() const final override { return SystemType::ST_RENDER; }
+
+
 /*
 	void Init() final override
 	{

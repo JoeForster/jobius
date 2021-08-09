@@ -55,9 +55,9 @@ int main(int argc, char* argv[])
 {
 	cout << "Ahoy" << endl;
 
-	TestCoordinator();
+	//TestCoordinator();
 	//TestEntities();
-	return 0;
+	//return 0;
 
 
 	/* initialize SDL */
