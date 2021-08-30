@@ -2,50 +2,38 @@
 #include <assert.h>
 
 #include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 
 #include "EntityManager.h"
 #include "ComponentManager.h"
-#include "Coordinator.h"
+#include "World.h"
 #include "RenderSystem.h"
+#include "SDLRenderManager.h"
+#include "PhysicsSystem.h"
+#include "Transform.h"
 
 
 using namespace std;
 
-struct Vector3f
-{
-	float x = 0;
-	float y = 0;
-	float z = 0;
-};
-
-struct Transform
-{
-	static constexpr ComponentType GetComponentType() { return ComponentType::CT_TRANSFORM; }
-
-	Transform()
-	: m_Pos{0, 0, 0}, m_Rot{0, 0, 0}, m_Scale{0, 0, 0} {}
-
-	Transform(Vector3f inPos, Vector3f inRot, Vector3f inScale)
-	: m_Pos(inPos), m_Rot(inRot), m_Scale(inScale) {}
-
-	Vector3f m_Pos;
-	Vector3f m_Rot;
-	Vector3f m_Scale;
-};
-
 // TODO unit tests go somewhere
-void TestCoordinator()
+void TestWorld()
 {
-	Coordinator c;
-	c.Init();
+	World w;
+	w.Init();
 
-	c.RegisterComponent<Transform>();
+	w.RegisterComponent<Transform>();
 
-	auto rs = c.RegisterSystem<RenderSystem>();
 
-	EntityID e = c.CreateEntity();
+	auto rs = w.RegisterSystem<RenderSystem>();
+
+	EntitySignature renderSignature;
+	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
+	w.SetSystemSignature<RenderSystem>(renderSignature);
+
+	EntityID e = w.CreateEntity();
 	Transform t( {1, 2, 3}, {4, 5, 6}, {7, 8, 9} );
-	c.AddComponent<Transform>(e, t);
+	w.AddComponent<Transform>(e, t);
 
 	rs->mEntities.insert(e);
 
@@ -79,33 +67,77 @@ int main(int argc, char* argv[])
 		exit(-1);
 	}
 
-	//IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
-	//
-	//if (TTF_Init() == -1)
-	//{
-	//	assert(0 && "Failed to create ttf!");
-	//	exit(-1);
-	//}
-	//
+	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
+	
+	if (TTF_Init() == -1)
+	{
+		assert(0 && "Failed to create ttf!");
+		exit(-1);
+	}
+
+	// TODO init game systems, managers
+
+	SDLRenderManager* renderMan = SDLRenderManager::Create(window, renderer);
+	ResourceID spriteID = renderMan->LoadImage("TestSprite.png");
+
+	shared_ptr<World> world = std::make_shared<World>();
+	world->Init();
+
+	world->RegisterComponent<Transform>();
+
+	auto rs = world->RegisterSystem<RenderSystem>();
+
+	EntitySignature renderSignature;
+	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
+	world->SetSystemSignature<RenderSystem>(renderSignature);
+
+	EntityID e = world->CreateEntity();
+	Transform t({ 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 9 });
+	world->AddComponent<Transform>(e, t);
+
+	rs->mEntities.insert(e);
 
 	// TODO init game objects
 
 
-	float lastFrameTimeMs = (float)SDL_GetTicks() * 0.001f;
+	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;
 	while (SDL_PollEvent(&event) >= 0)
 	{
-		float curFrameTimeMs = (float)SDL_GetTicks() * 0.001f;
-		float elapsedMs = curFrameTimeMs - lastFrameTimeMs;
+		float curFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
+		float elapsedSecs = curFrameTimeSecs - lastFrameTimeSecs;
 
-		// TODO update game objects
+		// START update game
+
+		//rs->
+		rs->Update(curFrameTimeSecs);
+		
+
+		// END update game
 
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
-		// TODO draw game
+		// START draw game
 
-		lastFrameTimeMs = curFrameTimeMs;
+		static int x = 0;
+		static int y = 0;
+
+		x = (x + 1) % 100;
+		y = (y + 1) % 100;
+
+		//renderMan->Draw(spriteID, x, y);
+
+		// TODO update in the system
+		// TODO render in the system
+		Transform& t = world->GetComponent<Transform>(e);
+		t.m_Pos.x = (float)(((int)t.m_Pos.x + 1) % 100);
+		t.m_Pos.y = (float)(((int)t.m_Pos.y + 1) % 100);
+		renderMan->Draw(spriteID, (int)t.m_Pos.x, (int)t.m_Pos.y);
+
+		// END draw game
+
+		lastFrameTimeSecs = curFrameTimeSecs;
 
 		SDL_RenderPresent(renderer);
 		SDL_Delay(1);

@@ -1,53 +1,59 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
 
 #include "System.h"
 #include "EntityManager.h"
+
+class World;
 
 class SystemManager
 {
 public:
 	template<class T>
-	std::shared_ptr<T> RegisterSystem()
+	std::shared_ptr<T> RegisterSystem(std::shared_ptr<World> parentWorld)
 	{
-		auto system = std::make_shared<T>();
-		SystemType type = system->GetSystemType();
+		SystemType type = T::GetSystemType();
+		size_t typeIndex = (size_t)type;
 		assert(type < SystemType::ST_MAX);
-		assert(m_Systems.find(type) == m_Systems.end() && "Registering system more than once.");
-		m_Systems.insert({ type, system });
+		assert(m_Systems[typeIndex] == nullptr && "Registering system more than once.");
+		auto system = std::make_shared<T>(parentWorld);
+		m_Systems[typeIndex] = system;
 		return system;
 	}
 
 	template<class T>
-	void SetSignature(SystemType type, EntitySignature signature)
+	void SetSignature(EntitySignature signature)
 	{
-		assert(m_Systems.find(type) != m_Systems.end() && "System used before registered.");
+		SystemType type = T::GetSystemType();
+		size_t typeIndex = (size_t)type;
+		assert(m_Systems[typeIndex] != nullptr && "System used before registered.");
 
-		m_Signatures.insert({ type, signature });
+		m_Signatures[typeIndex] = signature;
 	}
 
 	void EntityDestroyed(EntityID entity)
 	{
 		// Erase a destroyed entity from all system lists
-		// mEntities is a set so no check needed
-		for (auto const& pair : m_Systems)
+		for (std::shared_ptr<System> system : m_Systems)
 		{
-			auto const& system = pair.second;
-
-			system->mEntities.erase(entity);
+			// TODO if we decide to guarantee all systems are initialised we could assert here
+			if (system != nullptr)
+			{
+				// mEntities is a set so no check needed
+				system->mEntities.erase(entity);
+			}
 		}
 	}
 
 	void EntitySignatureChanged(EntityID entity, EntitySignature entitySignature)
 	{
 		// Notify each system that an entity's signature changed
-		for (auto const& pair : m_Systems)
+		for (size_t systemIndex = 0; systemIndex < NUM_SYSTEM_TYPES; ++systemIndex)
 		{
-			auto const& type = pair.first;
-			auto const& system = pair.second;
-			auto const& systemSignature = m_Signatures[type];
+			//SystemType type = (SystemType)systemIndex;
+			std::shared_ptr<System> system = m_Systems[systemIndex];
+			const EntitySignature& systemSignature = m_Signatures[systemIndex];
 
 			// Entity signature matches system signature - insert into set
 			if ((entitySignature & systemSignature) == systemSignature)
@@ -63,9 +69,9 @@ public:
 	}
 
 private:
-	// Map from system type string pointer to a signature
-	std::unordered_map<SystemType, EntitySignature> m_Signatures{};
+	// Map from SystemType to a signature
+	EntitySignature m_Signatures[NUM_SYSTEM_TYPES];
 
-	// Map from system type string pointer to a system pointer
-	std::unordered_map<SystemType, std::shared_ptr<System>> m_Systems{};
+	// Map from SystemType to a system pointer
+	std::shared_ptr<System> m_Systems[NUM_SYSTEM_TYPES];
 };

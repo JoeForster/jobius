@@ -6,7 +6,7 @@
 #include "ComponentManager.h"
 #include "SystemManager.h"
 
-class Coordinator
+class World : public std::enable_shared_from_this<World>
 {
 public:
 	void Init()
@@ -82,7 +82,7 @@ public:
 	template<typename T>
 	std::shared_ptr<T> RegisterSystem()
 	{
-		return mSystemManager->RegisterSystem<T>();
+		return mSystemManager->RegisterSystem<T>(shared_from_this());
 	}
 
 	template<typename T>
