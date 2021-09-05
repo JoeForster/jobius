@@ -9,7 +9,6 @@ class RenderSystem : public System
 {
 public:
 	static constexpr SystemType GetSystemType() { return SystemType::ST_RENDER; }
-	//virtual SystemType GetSystemType() const final override { return SystemType::ST_RENDER; }
 
 	RenderSystem(std::shared_ptr<World> parentWorld)
 		: System(parentWorld)

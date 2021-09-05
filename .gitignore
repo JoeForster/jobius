@@ -1,3 +1,4 @@
 .vs
-*_build
-lib/*_build
+build
+/CMakeCache.txt
+CMakeFiles

@@ -7,7 +7,7 @@
 class PhysicsSystem : public System
 {
 public:
-	constexpr SystemType GetSystemType() { return SystemType::ST_PHYSICS; }
+	static constexpr SystemType GetSystemType() { return SystemType::ST_PHYSICS; }
 
 	PhysicsSystem(std::shared_ptr<World> parentWorld)
 		: System(parentWorld)

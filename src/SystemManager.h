@@ -53,6 +53,7 @@ public:
 		{
 			//SystemType type = (SystemType)systemIndex;
 			std::shared_ptr<System> system = m_Systems[systemIndex];
+			assert(system != nullptr);
 			const EntitySignature& systemSignature = m_Signatures[systemIndex];
 
 			// Entity signature matches system signature - insert into set

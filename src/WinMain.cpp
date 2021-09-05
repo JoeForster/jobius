@@ -11,6 +11,7 @@
 #include "RenderSystem.h"
 #include "SDLRenderManager.h"
 #include "PhysicsSystem.h"
+#include "RenderSystem.h"
 #include "Transform.h"
 
 
@@ -78,7 +79,8 @@ int main(int argc, char* argv[])
 	// TODO init game systems, managers
 
 	SDLRenderManager* renderMan = SDLRenderManager::Create(window, renderer);
-	ResourceID spriteID = renderMan->LoadImage("TestSprite.png");
+	ResourceID spriteID = renderMan->LoadImage("assets/sprites/TestSprite.png");
+	assert(spriteID != SDLRenderManager::ResourceID_Invalid);
 
 	shared_ptr<World> world = std::make_shared<World>();
 	world->Init();
@@ -86,6 +88,7 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<Transform>();
 
 	auto rs = world->RegisterSystem<RenderSystem>();
+	auto ps = world->RegisterSystem<PhysicsSystem>();
 
 	EntitySignature renderSignature;
 	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
