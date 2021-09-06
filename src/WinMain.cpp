@@ -112,8 +112,9 @@ int main(int argc, char* argv[])
 
 		// START update game
 
-		//rs->
+		// TODO world responsible for updating "all systems"
 		rs->Update(curFrameTimeSecs);
+		ps->Update(curFrameTimeSecs);
 		
 
 		// END update game
@@ -134,8 +135,8 @@ int main(int argc, char* argv[])
 		// TODO update in the system
 		// TODO render in the system
 		Transform& t = world->GetComponent<Transform>(e);
-		t.m_Pos.x = (float)(((int)t.m_Pos.x + 1) % 100);
-		t.m_Pos.y = (float)(((int)t.m_Pos.y + 1) % 100);
+		//t.m_Pos.x = (float)(((int)t.m_Pos.x + 1) % 100);
+		//t.m_Pos.y = (float)(((int)t.m_Pos.y + 1) % 100);
 		renderMan->Draw(spriteID, (int)t.m_Pos.x, (int)t.m_Pos.y);
 
 		// END draw game
