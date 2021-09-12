@@ -7,7 +7,6 @@ set(SOURCES
 	"PhysicsSystem.cpp"
 	"RenderSystem.cpp"
 	"SDLRenderManager.cpp"
-	"SpriteRenderer.cpp"
 )
 
 set(HEADERS
@@ -19,9 +18,10 @@ set(HEADERS
 	"RenderSystem.h"
 	"PhysicsSystem.h"
 	"System.h"
-	"SpriteRenderer.h"
+	"SDLRenderManager.h"
 	"SystemManager.h"
-	"Transform.h"
+	"TransformComponent.h"
+	"SpriteComponent.h"
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})

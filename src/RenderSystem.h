@@ -3,7 +3,8 @@
 #include <vector>
 
 #include "System.h"
-#include "SpriteRenderer.h"
+
+class SDLRenderManager;
 
 class RenderSystem : public System
 {
@@ -11,13 +12,13 @@ public:
 	static constexpr SystemType GetSystemType() { return SystemType::ST_RENDER; }
 
 	RenderSystem(std::shared_ptr<World> parentWorld)
-		: System(parentWorld)
+	: System(parentWorld)
+	, m_RenderMan(nullptr)
 	{
 	}
 
-	void Init() final override
-	{
-	}
+	void SetRenderManager(SDLRenderManager& renderMan);
+	void Init();
 
 	void Update(float deltaSecs) final override
 	{
@@ -31,6 +32,6 @@ public:
 
 private:
 
-	std::vector<SpriteRenderer> m_Renderers;
+	SDLRenderManager* m_RenderMan;
 };
 

@@ -42,6 +42,9 @@ public:
 	// Optionally take an existing text ID to update rather than create.
 	ResourceID PrepareText(const char* aText, ResourceID aFontID, ResourceID aUpdateTextID = ResourceID_Invalid);
 
+	// Render clear, generally at frame start
+	void RenderClear();
+
 	// Draw image based on its ID returned by LoadImage
 	void Draw(ResourceID anImageID, int aCellX = 0, int aCellY = 0);
 	void DrawText(ResourceID aTextID, int aX, int aY);

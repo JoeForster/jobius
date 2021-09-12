@@ -7,6 +7,7 @@
 enum class ComponentType
 {
 	CT_TRANSFORM,
+	CT_SPRITE,
 	CT_MAX
 };
 

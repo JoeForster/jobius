@@ -108,6 +108,12 @@ ResourceID SDLRenderManager::LoadFont(const char* fontFile)
 	return nextID;
 }
 
+void SDLRenderManager::RenderClear()
+{
+	SDL_SetRenderDrawColor(myRenderer, 0, 0, 0, 255);
+	SDL_RenderClear(myRenderer);
+}
+
 void SDLRenderManager::Draw(ResourceID imageID, int aCellX, int aCellY)
 {
 	// Basic checks (but assume vectors are same size, which is verified on load)

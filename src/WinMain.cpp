@@ -13,6 +13,7 @@
 #include "PhysicsSystem.h"
 #include "RenderSystem.h"
 #include "Transform.h"
+#include "SpriteComponent.h"
 
 
 using namespace std;
@@ -76,31 +77,60 @@ int main(int argc, char* argv[])
 		exit(-1);
 	}
 
-	// TODO init game systems, managers
+	// Init game systems, managers
 
 	SDLRenderManager* renderMan = SDLRenderManager::Create(window, renderer);
-	ResourceID spriteID = renderMan->LoadImage("assets/sprites/TestSprite.png");
-	assert(spriteID != SDLRenderManager::ResourceID_Invalid);
+	ResourceID resID_asteroid = renderMan->LoadImage("assets/sprites/asteroid.png");
+	assert(resID_asteroid != SDLRenderManager::ResourceID_Invalid);
+	ResourceID resID_fighter = renderMan->LoadImage("assets/sprites/fighter_lr.png");
+	assert(resID_fighter != SDLRenderManager::ResourceID_Invalid);
 
 	shared_ptr<World> world = std::make_shared<World>();
 	world->Init();
 
 	world->RegisterComponent<Transform>();
+	world->RegisterComponent<SpriteComponent>();
 
+	// RenderSystem Init
 	auto rs = world->RegisterSystem<RenderSystem>();
-	auto ps = world->RegisterSystem<PhysicsSystem>();
+	rs->SetRenderManager(*renderMan);
 
 	EntitySignature renderSignature;
 	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
+	renderSignature &= (size_t)ComponentType::CT_SPRITE;
 	world->SetSystemSignature<RenderSystem>(renderSignature);
 
-	EntityID e = world->CreateEntity();
-	Transform t({ 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 9 });
-	world->AddComponent<Transform>(e, t);
 
-	rs->mEntities.insert(e);
 
-	// TODO init game objects
+	auto ps = world->RegisterSystem<PhysicsSystem>();
+
+
+	{
+		EntityID e = world->CreateEntity();
+		Transform t({ 50, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
+		world->AddComponent<Transform>(e, t);
+		world->AddComponent<SpriteComponent>(e, resID_asteroid);
+
+		rs->mEntities.insert(e);
+	}
+
+	{
+		EntityID e = world->CreateEntity();
+		Transform t({ 150, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
+		world->AddComponent<Transform>(e, t);
+		world->AddComponent<SpriteComponent>(e, resID_asteroid);
+	
+		rs->mEntities.insert(e);
+	}
+
+	{
+		EntityID e = world->CreateEntity();
+		Transform t({ 250, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
+		world->AddComponent<Transform>(e, t);
+		world->AddComponent<SpriteComponent>(e, resID_fighter);
+	
+		rs->mEntities.insert(e);
+	}
 
 
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
@@ -115,29 +145,10 @@ int main(int argc, char* argv[])
 		// TODO world responsible for updating "all systems"
 		rs->Update(curFrameTimeSecs);
 		ps->Update(curFrameTimeSecs);
-		
 
 		// END update game
 
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
-
-		// START draw game
-
-		static int x = 0;
-		static int y = 0;
-
-		x = (x + 1) % 100;
-		y = (y + 1) % 100;
-
-		//renderMan->Draw(spriteID, x, y);
-
-		// TODO update in the system
-		// TODO render in the system
-		Transform& t = world->GetComponent<Transform>(e);
-		//t.m_Pos.x = (float)(((int)t.m_Pos.x + 1) % 100);
-		//t.m_Pos.y = (float)(((int)t.m_Pos.y + 1) % 100);
-		renderMan->Draw(spriteID, (int)t.m_Pos.x, (int)t.m_Pos.y);
+		rs->Render();
 
 		// END draw game
 
