@@ -13,11 +13,10 @@ public:
 
 	RenderSystem(std::shared_ptr<World> parentWorld)
 	: System(parentWorld)
-	, m_RenderMan(nullptr)
 	{
 	}
 
-	void SetRenderManager(SDLRenderManager& renderMan);
+	void SetRenderManager(std::shared_ptr<SDLRenderManager> renderMan);
 	void Init();
 
 	void Update(float deltaSecs) final override
@@ -32,6 +31,6 @@ public:
 
 private:
 
-	SDLRenderManager* m_RenderMan;
+	std::shared_ptr<SDLRenderManager> m_RenderMan;
 };
 

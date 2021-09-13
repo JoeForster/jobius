@@ -5,9 +5,10 @@
 #include "World.h"
 
 
-void RenderSystem::SetRenderManager(SDLRenderManager& renderMan)
+void RenderSystem::SetRenderManager(std::shared_ptr<SDLRenderManager> renderMan)
 {
-	m_RenderMan = &renderMan;
+	assert(renderMan != nullptr);
+	m_RenderMan = renderMan;
 }
 
 void RenderSystem::Init()

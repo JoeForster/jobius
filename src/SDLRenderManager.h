@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <memory>
 
 //#include "Types.h"
 typedef size_t ResourceID;
@@ -23,7 +24,12 @@ class SDLRenderManager
 public:
 	static const ResourceID ResourceID_Invalid = ~0u;
 
-	static SDLRenderManager* Create(SDL_Window* aWindow, SDL_Renderer* aRenderer);
+	static std::shared_ptr<SDLRenderManager> Create(SDL_Window* window, SDL_Renderer* renderer);
+
+	// TODO want to make this protected/private but it's awkward - could do with derived type
+	// but need a nice way to pass in needed type-specific resources like the window and renderer.
+	// See: https://stackoverflow.com/questions/8147027/how-do-i-call-stdmake-shared-on-a-class-with-only-protected-or-private-const
+	SDLRenderManager(SDL_Window* aWindow, SDL_Renderer* aRenderer);
 	~SDLRenderManager(void);
 
 	// N.B. In a real project you might have a "locking" mechanism that
@@ -50,24 +56,22 @@ public:
 	void DrawText(ResourceID aTextID, int aX, int aY);
 
 private:
-	SDLRenderManager(SDL_Window* aWindow, SDL_Renderer* aRenderer);
 	bool Init();
 
-	SDL_Window* myWindow;
-	SDL_Renderer* myRenderer;
-	SDL_Surface* world;
+	SDL_Window* m_Window;
+	SDL_Renderer* m_Renderer;
 
 	// Cached graphical/font resources
 	// TODO refactor - could be structs that manage their own creation/freeing
 
 	// Keyed by image ID returned by LoadImage, passed to Draw
-	std::vector<SDL_Texture*> myImageTextures;
-	std::vector<SDL_Rect*> myImageSizeRects;
+	std::vector<SDL_Texture*> m_ImageTextures;
+	std::vector<SDL_Rect*> m_ImageSizeRects;
 	// Keyed by font ID returned by LoadFont, passed to DrawText
-	std::vector<TTF_Font*> myFonts;
+	std::vector<TTF_Font*> m_Fonts;
 	// Keyed by text ID returned by PrepareText, passed to DrawText
-	std::vector<SDL_Texture*> myTextTextures;
-	std::vector<SDL_Rect*> myTextSizeRects;
-	std::vector<std::string> myTextValues;
+	std::vector<SDL_Texture*> m_TextTextures;
+	std::vector<SDL_Rect*> m_TextSizeRects;
+	std::vector<std::string> m_TextValues;
 
 };

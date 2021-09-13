@@ -12,7 +12,7 @@
 #include "SDLRenderManager.h"
 #include "PhysicsSystem.h"
 #include "RenderSystem.h"
-#include "Transform.h"
+#include "TransformComponent.h"
 #include "SpriteComponent.h"
 
 
@@ -24,7 +24,7 @@ void TestWorld()
 	World w;
 	w.Init();
 
-	w.RegisterComponent<Transform>();
+	w.RegisterComponent<TransformComponent>();
 
 
 	auto rs = w.RegisterSystem<RenderSystem>();
@@ -34,8 +34,8 @@ void TestWorld()
 	w.SetSystemSignature<RenderSystem>(renderSignature);
 
 	EntityID e = w.CreateEntity();
-	Transform t( {1, 2, 3}, {4, 5, 6}, {7, 8, 9} );
-	w.AddComponent<Transform>(e, t);
+	TransformComponent t( {1, 2, 3}, {4, 5, 6}, {7, 8, 9} );
+	w.AddComponent<TransformComponent>(e, t);
 
 	rs->mEntities.insert(e);
 
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
 	// Init game systems, managers
 
-	SDLRenderManager* renderMan = SDLRenderManager::Create(window, renderer);
+	std::shared_ptr<SDLRenderManager> renderMan = SDLRenderManager::Create(window, renderer);
 	ResourceID resID_asteroid = renderMan->LoadImage("assets/sprites/asteroid.png");
 	assert(resID_asteroid != SDLRenderManager::ResourceID_Invalid);
 	ResourceID resID_fighter = renderMan->LoadImage("assets/sprites/fighter_lr.png");
@@ -88,12 +88,12 @@ int main(int argc, char* argv[])
 	shared_ptr<World> world = std::make_shared<World>();
 	world->Init();
 
-	world->RegisterComponent<Transform>();
+	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
 
 	// RenderSystem Init
 	auto rs = world->RegisterSystem<RenderSystem>();
-	rs->SetRenderManager(*renderMan);
+	rs->SetRenderManager(renderMan);
 
 	EntitySignature renderSignature;
 	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
@@ -107,8 +107,8 @@ int main(int argc, char* argv[])
 
 	{
 		EntityID e = world->CreateEntity();
-		Transform t({ 50, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
-		world->AddComponent<Transform>(e, t);
+		TransformComponent t({ 50, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
+		world->AddComponent<TransformComponent>(e, t);
 		world->AddComponent<SpriteComponent>(e, resID_asteroid);
 
 		rs->mEntities.insert(e);
@@ -116,8 +116,8 @@ int main(int argc, char* argv[])
 
 	{
 		EntityID e = world->CreateEntity();
-		Transform t({ 150, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
-		world->AddComponent<Transform>(e, t);
+		TransformComponent t({ 150, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
+		world->AddComponent<TransformComponent>(e, t);
 		world->AddComponent<SpriteComponent>(e, resID_asteroid);
 	
 		rs->mEntities.insert(e);
@@ -125,8 +125,8 @@ int main(int argc, char* argv[])
 
 	{
 		EntityID e = world->CreateEntity();
-		Transform t({ 250, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
-		world->AddComponent<Transform>(e, t);
+		TransformComponent t({ 250, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
+		world->AddComponent<TransformComponent>(e, t);
 		world->AddComponent<SpriteComponent>(e, resID_fighter);
 	
 		rs->mEntities.insert(e);
