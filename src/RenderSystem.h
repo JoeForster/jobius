@@ -33,4 +33,3 @@ private:
 
 	std::shared_ptr<SDLRenderManager> m_RenderMan;
 };
-

@@ -11,7 +11,7 @@ class IComponentArray
 {
 public:
 	virtual ~IComponentArray() = default;
-	virtual void EntityDestroyed(EntityID entity) = 0;
+	virtual void OnEntityDestroyed(EntityID entity) = 0;
 };
 
 
@@ -70,7 +70,7 @@ public:
 		return m_ComponentArray[m_EntityToIndexMap[entity]];
 	}
 
-	void EntityDestroyed(EntityID entity) override
+	void OnEntityDestroyed(EntityID entity) override
 	{
 		// TODO_VALIDATION
 		//if (m_EntityToIndexMap.find(entity) != m_EntityToIndexMap.end())

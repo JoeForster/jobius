@@ -16,40 +16,8 @@
 #include "SpriteComponent.h"
 
 
-using namespace std;
-
-// TODO unit tests go somewhere
-void TestWorld()
-{
-	World w;
-	w.Init();
-
-	w.RegisterComponent<TransformComponent>();
-
-
-	auto rs = w.RegisterSystem<RenderSystem>();
-
-	EntitySignature renderSignature;
-	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
-	w.SetSystemSignature<RenderSystem>(renderSignature);
-
-	EntityID e = w.CreateEntity();
-	TransformComponent t( {1, 2, 3}, {4, 5, 6}, {7, 8, 9} );
-	w.AddComponent<TransformComponent>(e, t);
-
-	rs->mEntities.insert(e);
-
-}
-
 int main(int argc, char* argv[])
 {
-	cout << "Ahoy" << endl;
-
-	//TestCoordinator();
-	//TestEntities();
-	//return 0;
-
-
 	/* initialize SDL */
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
@@ -85,7 +53,7 @@ int main(int argc, char* argv[])
 	ResourceID resID_fighter = renderMan->LoadImage("assets/sprites/fighter_lr.png");
 	assert(resID_fighter != SDLRenderManager::ResourceID_Invalid);
 
-	shared_ptr<World> world = std::make_shared<World>();
+	std::shared_ptr<World> world = std::make_shared<World>();
 	world->Init();
 
 	world->RegisterComponent<TransformComponent>();
@@ -100,10 +68,7 @@ int main(int argc, char* argv[])
 	renderSignature &= (size_t)ComponentType::CT_SPRITE;
 	world->SetSystemSignature<RenderSystem>(renderSignature);
 
-
-
 	auto ps = world->RegisterSystem<PhysicsSystem>();
-
 
 	{
 		EntityID e = world->CreateEntity();
@@ -131,7 +96,6 @@ int main(int argc, char* argv[])
 	
 		rs->mEntities.insert(e);
 	}
-
 
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;

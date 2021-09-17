@@ -32,10 +32,10 @@ public:
 		m_Signatures[typeIndex] = signature;
 	}
 
-	void EntityDestroyed(EntityID entity)
+	void OnEntityDestroyed(EntityID entity)
 	{
 		// Erase a destroyed entity from all system lists
-		for (std::shared_ptr<System> system : m_Systems)
+		for (std::shared_ptr<System>& system : m_Systems)
 		{
 			// TODO if we decide to guarantee all systems are initialised we could assert here
 			if (system != nullptr)
