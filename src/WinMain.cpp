@@ -54,7 +54,6 @@ int main(int argc, char* argv[])
 	assert(resID_fighter != SDLRenderManager::ResourceID_Invalid);
 
 	std::shared_ptr<World> world = std::make_shared<World>();
-	world->Init();
 
 	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
@@ -96,6 +95,9 @@ int main(int argc, char* argv[])
 	
 		rs->mEntities.insert(e);
 	}
+
+	rs->Init();
+	ps->Init();
 
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;

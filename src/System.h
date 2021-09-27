@@ -22,18 +22,32 @@ class System
 public:
 	System(std::shared_ptr<World> parentWorld)
 	: m_ParentWorld(parentWorld)
+	, m_IsInited(false)
 	{
 		assert(m_ParentWorld != nullptr);
 	}
 
 	std::set<EntityID> mEntities;
 
-	virtual void Init() = 0;
-	virtual void Update(float deltaSecs) = 0;
-	virtual void Render() = 0;
-	virtual void Destroy() = 0;
+	// Init to "finalise" the World, ready to render/update.
+	virtual void Init()
+	{
+		m_IsInited = true;
+	}
+	virtual void Update(float deltaSecs)
+	{
+		assert(IsInited() && "System updated before initialised");
+	}
+	virtual void Render()
+	{
+		assert(IsInited() && "System Render call before initialised");
+	}
 
 protected:
 	std::shared_ptr<World> m_ParentWorld;
 
+private:
+	inline bool IsInited() const { return m_IsInited; }
+
+	bool m_IsInited;
 };

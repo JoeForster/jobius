@@ -9,10 +9,6 @@
 class World : public std::enable_shared_from_this<World>
 {
 public:
-	void Init()
-	{
-	}
-
 	// Entity methods
 	EntityID CreateEntity()
 	{

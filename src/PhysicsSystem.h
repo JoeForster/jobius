@@ -14,19 +14,7 @@ public:
 	{
 	}
 
-	void Init() final override
-	{
-	}
-
 	void Update(float deltaSecs) final override;
-
-	void Render() final override
-	{
-	}
-
-	void Destroy() final override
-	{
-	}
 
 private:
 

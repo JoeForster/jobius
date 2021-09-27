@@ -5,6 +5,8 @@
 
 void PhysicsSystem::Update(float deltaSecs)
 {
+	System::Update(deltaSecs);
+
 	// Hack test motion
 	for (EntityID e : mEntities)
 	{

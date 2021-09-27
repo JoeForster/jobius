@@ -13,11 +13,15 @@ void RenderSystem::SetRenderManager(std::shared_ptr<SDLRenderManager> renderMan)
 
 void RenderSystem::Init()
 {
+	System::Init();
+
 	assert(m_RenderMan != nullptr && "RenderSystem Init MISSING render manager!");
 }
 
 void RenderSystem::Render()
 {
+	System::Render();
+
 	m_RenderMan->RenderClear();
 
 	for (EntityID e : mEntities)

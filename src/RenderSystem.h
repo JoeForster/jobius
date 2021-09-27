@@ -17,17 +17,8 @@ public:
 	}
 
 	void SetRenderManager(std::shared_ptr<SDLRenderManager> renderMan);
-	void Init();
-
-	void Update(float deltaSecs) final override
-	{
-	}
-
+	void Init() override;
 	void Render() final override;
-
-	void Destroy() final override
-	{
-	}
 
 private:
 
