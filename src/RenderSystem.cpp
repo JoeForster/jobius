@@ -4,16 +4,13 @@
 #include "SpriteComponent.h"
 #include "World.h"
 
-
-void RenderSystem::SetRenderManager(std::shared_ptr<SDLRenderManager> renderMan)
+void RenderSystem::Init(const SystemInitialiser* initialiser)
 {
-	assert(renderMan != nullptr);
-	m_RenderMan = renderMan;
-}
+	System::Init(initialiser);
 
-void RenderSystem::Init()
-{
-	System::Init();
+	assert(initialiser != nullptr);
+	auto renderInit = static_cast<const RenderSystemInitialiser*>(initialiser);
+	m_RenderMan = renderInit->m_RenderMan;
 
 	assert(m_RenderMan != nullptr && "RenderSystem Init MISSING render manager!");
 }

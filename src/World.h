@@ -80,6 +80,16 @@ public:
 		m_SystemManager.SetSignature<T>(signature);
 	}
 
+	void Update(float deltaSecs)
+	{
+		m_SystemManager.UpdateAllSystems(deltaSecs);
+	}
+
+	void Render()
+	{
+		m_SystemManager.RenderAllSystems();
+	}
+
 private:
 	ComponentManager m_ComponentManager;
 	EntityManager m_EntityManager;

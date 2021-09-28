@@ -69,6 +69,30 @@ public:
 		}
 	}
 
+	void UpdateAllSystems(float deltaSecs)
+	{
+		for (auto& system : m_Systems)
+		{
+			if (system != nullptr)
+			{
+				system->Update(deltaSecs);
+			}
+		}
+	}
+
+	void RenderAllSystems()
+	{
+		for (auto& system : m_Systems)
+		{
+			if (system != nullptr)
+			{
+				system->Render();
+			}
+		}
+	}
+
+
+
 private:
 	// Map from SystemType to a signature
 	EntitySignature m_Signatures[NUM_SYSTEM_TYPES];

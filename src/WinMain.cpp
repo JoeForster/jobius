@@ -60,7 +60,6 @@ int main(int argc, char* argv[])
 
 	// RenderSystem Init
 	auto rs = world->RegisterSystem<RenderSystem>();
-	rs->SetRenderManager(renderMan);
 
 	EntitySignature renderSignature;
 	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
@@ -96,27 +95,21 @@ int main(int argc, char* argv[])
 		rs->mEntities.insert(e);
 	}
 
-	rs->Init();
-	ps->Init();
+	RenderSystemInitialiser renderInit;
+	renderInit.m_RenderMan = renderMan;
+	rs->Init(&renderInit);
+	ps->Init(nullptr);
 
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;
 	while (SDL_PollEvent(&event) >= 0)
 	{
 		float curFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
-		float elapsedSecs = curFrameTimeSecs - lastFrameTimeSecs;
+		float deltaSecs = curFrameTimeSecs - lastFrameTimeSecs;
 
-		// START update game
+		world->Update(deltaSecs);
 
-		// TODO world responsible for updating "all systems"
-		rs->Update(curFrameTimeSecs);
-		ps->Update(curFrameTimeSecs);
-
-		// END update game
-
-		rs->Render();
-
-		// END draw game
+		world->Render();
 
 		lastFrameTimeSecs = curFrameTimeSecs;
 

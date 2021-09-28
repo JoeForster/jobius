@@ -6,6 +6,11 @@
 
 class SDLRenderManager;
 
+struct RenderSystemInitialiser : public SystemInitialiser
+{
+	std::shared_ptr<SDLRenderManager> m_RenderMan;
+};
+
 class RenderSystem : public System
 {
 public:
@@ -16,8 +21,7 @@ public:
 	{
 	}
 
-	void SetRenderManager(std::shared_ptr<SDLRenderManager> renderMan);
-	void Init() override;
+	void Init(const SystemInitialiser* initialiser) override;
 	void Render() final override;
 
 private:

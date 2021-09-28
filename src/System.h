@@ -17,6 +17,10 @@ constexpr size_t NUM_SYSTEM_TYPES = (size_t)SystemType::ST_MAX;
 
 class World;
 
+struct SystemInitialiser
+{
+};
+
 class System
 {
 public:
@@ -30,7 +34,7 @@ public:
 	std::set<EntityID> mEntities;
 
 	// Init to "finalise" the World, ready to render/update.
-	virtual void Init()
+	virtual void Init(const SystemInitialiser* initialiser)
 	{
 		m_IsInited = true;
 	}
