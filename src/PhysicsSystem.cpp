@@ -3,6 +3,18 @@
 #include "TransformComponent.h"
 #include "World.h"
 
+
+void PhysicsSystem::Init(const SystemInitialiser& initialiser)
+{
+	System::Init(initialiser);
+	
+	// TODO: Add a rigidbody/particle component instead
+	EntitySignature sysSignature;
+	sysSignature &= (size_t)ComponentType::CT_TRANSFORM;
+	m_ParentWorld->SetSystemSignature<PhysicsSystem>(sysSignature);
+}
+
+
 void PhysicsSystem::Update(float deltaSecs)
 {
 	System::Update(deltaSecs);

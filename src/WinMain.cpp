@@ -58,16 +58,17 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
 
+	// PhysicsSystem init
+	auto ps = world->RegisterSystem<PhysicsSystem>();
+	ps->Init();
+
 	// RenderSystem Init
 	auto rs = world->RegisterSystem<RenderSystem>();
+	RenderSystemInitialiser renderInit;
+	renderInit.m_RenderMan = renderMan;
+	rs->Init(renderInit);
 
-	EntitySignature renderSignature;
-	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
-	renderSignature &= (size_t)ComponentType::CT_SPRITE;
-	world->SetSystemSignature<RenderSystem>(renderSignature);
-
-	auto ps = world->RegisterSystem<PhysicsSystem>();
-
+	// Create test world entities
 	{
 		EntityID e = world->CreateEntity();
 		TransformComponent t({ 50, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
@@ -82,7 +83,7 @@ int main(int argc, char* argv[])
 		TransformComponent t({ 150, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
 		world->AddComponent<TransformComponent>(e, t);
 		world->AddComponent<SpriteComponent>(e, resID_asteroid);
-	
+
 		rs->mEntities.insert(e);
 	}
 
@@ -91,14 +92,9 @@ int main(int argc, char* argv[])
 		TransformComponent t({ 250, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
 		world->AddComponent<TransformComponent>(e, t);
 		world->AddComponent<SpriteComponent>(e, resID_fighter);
-	
+
 		rs->mEntities.insert(e);
 	}
-
-	RenderSystemInitialiser renderInit;
-	renderInit.m_RenderMan = renderMan;
-	rs->Init(&renderInit);
-	ps->Init(nullptr);
 
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;

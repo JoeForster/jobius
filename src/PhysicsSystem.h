@@ -14,6 +14,8 @@ public:
 	{
 	}
 
+	void Init(const SystemInitialiser& = s_EmptyInitialiser) override;
+
 	void Update(float deltaSecs) final override;
 
 private:

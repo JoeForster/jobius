@@ -4,15 +4,19 @@
 #include "SpriteComponent.h"
 #include "World.h"
 
-void RenderSystem::Init(const SystemInitialiser* initialiser)
+void RenderSystem::Init(const SystemInitialiser& initialiser)
 {
 	System::Init(initialiser);
 
-	assert(initialiser != nullptr);
-	auto renderInit = static_cast<const RenderSystemInitialiser*>(initialiser);
-	m_RenderMan = renderInit->m_RenderMan;
+	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);
+	m_RenderMan = renderInit.m_RenderMan;
 
 	assert(m_RenderMan != nullptr && "RenderSystem Init MISSING render manager!");
+
+	EntitySignature renderSignature;
+	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
+	renderSignature &= (size_t)ComponentType::CT_SPRITE;
+	m_ParentWorld->SetSystemSignature<RenderSystem>(renderSignature);
 }
 
 void RenderSystem::Render()

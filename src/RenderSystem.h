@@ -21,7 +21,7 @@ public:
 	{
 	}
 
-	void Init(const SystemInitialiser* initialiser) override;
+	void Init(const SystemInitialiser&) override;
 	void Render() final override;
 
 private:
