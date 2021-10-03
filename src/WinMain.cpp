@@ -14,6 +14,7 @@
 #include "RenderSystem.h"
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
+#include "RigidBodyComponent.h"
 
 
 int main(int argc, char* argv[])
@@ -57,6 +58,7 @@ int main(int argc, char* argv[])
 
 	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
+	world->RegisterComponent<RigidBodyComponent>();
 
 	// PhysicsSystem init
 	auto ps = world->RegisterSystem<PhysicsSystem>();
@@ -69,32 +71,22 @@ int main(int argc, char* argv[])
 	rs->Init(renderInit);
 
 	// Create test world entities
+	auto createSprite = [&](ResourceID resID, Vector3f pos, bool hasPhysics)
 	{
 		EntityID e = world->CreateEntity();
-		TransformComponent t({ 50, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
+		TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
 		world->AddComponent<TransformComponent>(e, t);
-		world->AddComponent<SpriteComponent>(e, resID_asteroid);
+		world->AddComponent<SpriteComponent>(e, resID);
+		if (hasPhysics)
+		{
+			world->AddComponent<RigidBodyComponent>(e, {});
+		}
+	};
 
-		rs->mEntities.insert(e);
-	}
+	createSprite(resID_asteroid, { 50, 0, 0 }, false);
+	createSprite(resID_asteroid, { 150, 0, 0 }, true);
+	createSprite(resID_fighter, { 250, 0, 0 }, true);
 
-	{
-		EntityID e = world->CreateEntity();
-		TransformComponent t({ 150, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
-		world->AddComponent<TransformComponent>(e, t);
-		world->AddComponent<SpriteComponent>(e, resID_asteroid);
-
-		rs->mEntities.insert(e);
-	}
-
-	{
-		EntityID e = world->CreateEntity();
-		TransformComponent t({ 250, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 });
-		world->AddComponent<TransformComponent>(e, t);
-		world->AddComponent<SpriteComponent>(e, resID_fighter);
-
-		rs->mEntities.insert(e);
-	}
 
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;

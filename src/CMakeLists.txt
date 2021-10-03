@@ -22,6 +22,7 @@ set(HEADERS
 	"SystemManager.h"
 	"TransformComponent.h"
 	"SpriteComponent.h"
+	"RigidBodyComponent.h"
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})

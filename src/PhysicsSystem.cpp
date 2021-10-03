@@ -8,9 +8,9 @@ void PhysicsSystem::Init(const SystemInitialiser& initialiser)
 {
 	System::Init(initialiser);
 	
-	// TODO: Add a rigidbody/particle component instead
 	EntitySignature sysSignature;
-	sysSignature &= (size_t)ComponentType::CT_TRANSFORM;
+	sysSignature.set((size_t)ComponentType::CT_TRANSFORM);
+	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
 	m_ParentWorld->SetSystemSignature<PhysicsSystem>(sysSignature);
 }
 

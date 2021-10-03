@@ -39,7 +39,7 @@ public:
 		signature.set(m_ComponentManager.GetComponentIndex<T>(), true);
 		m_EntityManager.SetSignature(entity, signature);
 
-		m_SystemManager.EntitySignatureChanged(entity, signature);
+		m_SystemManager.OnEntitySignatureChanged(entity, signature);
 	}
 
 	template<typename T>
@@ -51,7 +51,7 @@ public:
 		signature.set(m_ComponentManager.GetComponentType<T>(), false);
 		m_EntityManager.SetSignature(entity, signature);
 
-		m_SystemManager.EntitySignatureChanged(entity, signature);
+		m_SystemManager.OnEntitySignatureChanged(entity, signature);
 	}
 
 	template<typename T>

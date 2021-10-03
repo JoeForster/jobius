@@ -46,7 +46,7 @@ public:
 		}
 	}
 
-	void EntitySignatureChanged(EntityID entity, EntitySignature entitySignature)
+	void OnEntitySignatureChanged(EntityID entity, EntitySignature entitySignature)
 	{
 		// Notify each system that an entity's signature changed
 		for (size_t systemIndex = 0; systemIndex < NUM_SYSTEM_TYPES; ++systemIndex)

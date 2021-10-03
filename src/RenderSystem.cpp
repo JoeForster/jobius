@@ -14,8 +14,8 @@ void RenderSystem::Init(const SystemInitialiser& initialiser)
 	assert(m_RenderMan != nullptr && "RenderSystem Init MISSING render manager!");
 
 	EntitySignature renderSignature;
-	renderSignature &= (size_t)ComponentType::CT_TRANSFORM;
-	renderSignature &= (size_t)ComponentType::CT_SPRITE;
+	renderSignature.set((size_t)ComponentType::CT_TRANSFORM);
+	renderSignature.set((size_t)ComponentType::CT_SPRITE);
 	m_ParentWorld->SetSystemSignature<RenderSystem>(renderSignature);
 }
 
