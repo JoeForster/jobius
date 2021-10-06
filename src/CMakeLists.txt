@@ -6,6 +6,7 @@ set(SOURCES
 	"EntityManager.cpp"
 	"PhysicsSystem.cpp"
 	"RenderSystem.cpp"
+	"InputSystem.cpp"
 	"SDLRenderManager.cpp"
 )
 
@@ -17,12 +18,14 @@ set(HEADERS
 	"PhysicsSystem.h"
 	"RenderSystem.h"
 	"PhysicsSystem.h"
+	"InputSystem.h"
 	"System.h"
 	"SDLRenderManager.h"
 	"SystemManager.h"
 	"TransformComponent.h"
 	"SpriteComponent.h"
 	"RigidBodyComponent.h"
+	"KBControlComponent.h"
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})

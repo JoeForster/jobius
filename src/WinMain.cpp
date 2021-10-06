@@ -15,6 +15,7 @@
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
 #include "RigidBodyComponent.h"
+#include "KBControlComponent.h"
 
 
 int main(int argc, char* argv[])
@@ -59,10 +60,13 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
 	world->RegisterComponent<RigidBodyComponent>();
+	world->RegisterComponent<KBControlComponent>();
+
+	// InputSYstem init
+	world->RegisterSystem<PhysicsSystem>()->Init();
 
 	// PhysicsSystem init
-	auto ps = world->RegisterSystem<PhysicsSystem>();
-	ps->Init();
+	world->RegisterSystem<PhysicsSystem>()->Init();
 
 	// RenderSystem Init
 	auto rs = world->RegisterSystem<RenderSystem>();
@@ -86,7 +90,6 @@ int main(int argc, char* argv[])
 	createSprite(resID_asteroid, { 50, 0, 0 }, false);
 	createSprite(resID_asteroid, { 150, 0, 0 }, true);
 	createSprite(resID_fighter, { 250, 0, 0 }, true);
-
 
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;

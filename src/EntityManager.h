@@ -9,6 +9,7 @@ enum class ComponentType
 	CT_TRANSFORM,
 	CT_SPRITE,
 	CT_RIGIDBODY,
+	CT_KBCONTROL,
 	CT_MAX
 };
 

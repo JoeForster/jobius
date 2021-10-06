@@ -2,12 +2,12 @@
 
 #include "System.h"
 
-class PhysicsSystem : public System
+class InputSystem : public System
 {
 public:
-	static constexpr SystemType GetSystemType() { return SystemType::ST_PHYSICS; }
+	static constexpr SystemType GetSystemType() { return SystemType::ST_INPUT; }
 
-	PhysicsSystem(std::shared_ptr<World> parentWorld)
+	InputSystem(std::shared_ptr<World> parentWorld)
 		: System(parentWorld)
 	{
 	}
@@ -19,4 +19,3 @@ public:
 private:
 
 };
-
