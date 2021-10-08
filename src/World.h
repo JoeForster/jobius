@@ -31,7 +31,7 @@ public:
 	}
 
 	template<typename T>
-	void AddComponent(EntityID entity, T component)
+	void AddComponent(EntityID entity, T component = {})
 	{
 		m_ComponentManager.AddComponent<T>(entity, component);
 

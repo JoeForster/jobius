@@ -10,6 +10,7 @@
 #include "World.h"
 #include "RenderSystem.h"
 #include "SDLRenderManager.h"
+#include "InputSystem.h"
 #include "PhysicsSystem.h"
 #include "RenderSystem.h"
 #include "TransformComponent.h"
@@ -63,7 +64,7 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<KBControlComponent>();
 
 	// InputSYstem init
-	world->RegisterSystem<PhysicsSystem>()->Init();
+	world->RegisterSystem<InputSystem>()->Init();
 
 	// PhysicsSystem init
 	world->RegisterSystem<PhysicsSystem>()->Init();
@@ -78,18 +79,20 @@ int main(int argc, char* argv[])
 	auto createSprite = [&](ResourceID resID, Vector3f pos, bool hasPhysics)
 	{
 		EntityID e = world->CreateEntity();
-		TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
+		const TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
 		world->AddComponent<TransformComponent>(e, t);
 		world->AddComponent<SpriteComponent>(e, resID);
 		if (hasPhysics)
 		{
-			world->AddComponent<RigidBodyComponent>(e, {});
+			world->AddComponent<RigidBodyComponent>(e);
 		}
+		return e;
 	};
 
 	createSprite(resID_asteroid, { 50, 0, 0 }, false);
 	createSprite(resID_asteroid, { 150, 0, 0 }, true);
-	createSprite(resID_fighter, { 250, 0, 0 }, true);
+	auto playerEntity = createSprite(resID_fighter, { 250, 0, 0 }, true);
+	world->AddComponent<KBControlComponent>(playerEntity);
 
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;
