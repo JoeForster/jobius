@@ -11,6 +11,7 @@ enum class SystemType
 	ST_RENDER,
 	ST_PHYSICS,
 	ST_INPUT,
+	ST_PLAYERCONTROL,
 	ST_MAX
 };
 

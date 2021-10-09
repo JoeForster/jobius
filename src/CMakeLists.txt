@@ -6,7 +6,8 @@ set(SOURCES
 	"EntityManager.cpp"
 	"PhysicsSystem.cpp"
 	"RenderSystem.cpp"
-	"InputSystem.cpp"
+	"SDLInputSystem.cpp"
+	"PlayerControlSystem.cpp"
 	"SDLRenderManager.cpp"
 )
 
@@ -18,7 +19,8 @@ set(HEADERS
 	"PhysicsSystem.h"
 	"RenderSystem.h"
 	"PhysicsSystem.h"
-	"InputSystem.h"
+	"SDLInputSystem.h"
+	"PlayerControlSystem.h"
 	"System.h"
 	"SDLRenderManager.h"
 	"SystemManager.h"

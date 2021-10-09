@@ -10,7 +10,8 @@
 #include "World.h"
 #include "RenderSystem.h"
 #include "SDLRenderManager.h"
-#include "InputSystem.h"
+#include "SDLInputSystem.h"
+#include "PlayerControlSystem.h"
 #include "PhysicsSystem.h"
 #include "RenderSystem.h"
 #include "TransformComponent.h"
@@ -63,13 +64,14 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<RigidBodyComponent>();
 	world->RegisterComponent<KBControlComponent>();
 
-	// InputSYstem init
-	world->RegisterSystem<InputSystem>()->Init();
+	// Init systems
+	world->RegisterSystem<SDLInputSystem>()->Init();
 
-	// PhysicsSystem init
+	world->RegisterSystem<PlayerControlSystem>()->Init();
+
 	world->RegisterSystem<PhysicsSystem>()->Init();
 
-	// RenderSystem Init
+
 	auto rs = world->RegisterSystem<RenderSystem>();
 	RenderSystemInitialiser renderInit;
 	renderInit.m_RenderMan = renderMan;

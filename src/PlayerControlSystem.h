@@ -2,12 +2,12 @@
 
 #include "System.h"
 
-class InputSystem : public System
+class PlayerControlSystem : public System
 {
 public:
-	static constexpr SystemType GetSystemType() { return SystemType::ST_INPUT; }
+	static constexpr SystemType GetSystemType() { return SystemType::ST_PLAYERCONTROL; }
 
-	InputSystem(std::shared_ptr<World> parentWorld)
+	PlayerControlSystem(std::shared_ptr<World> parentWorld)
 		: System(parentWorld)
 	{
 	}
