@@ -26,9 +26,10 @@ void SDLInputSystem::Update(float deltaSecs)
 	{
 		auto& kbControl = m_ParentWorld->GetComponent<KBControlComponent>(e);
 
-		bool testButtonPressed = keystate[SDL_SCANCODE_SPACE];
-
-		kbControl.m_Jump = testButtonPressed;
+		kbControl.m_State.set((size_t)KB_KEY::KEY_UP, (bool)keystate[SDL_SCANCODE_UP]);
+		kbControl.m_State.set((size_t)KB_KEY::KEY_DOWN, (bool)keystate[SDL_SCANCODE_DOWN]);
+		kbControl.m_State.set((size_t)KB_KEY::KEY_LEFT, (bool)keystate[SDL_SCANCODE_LEFT]);
+		kbControl.m_State.set((size_t)KB_KEY::KEY_RIGHT, (bool)keystate[SDL_SCANCODE_RIGHT]);
+		kbControl.m_State.set((size_t)KB_KEY::KEY_SPACE, (bool)keystate[SDL_SCANCODE_SPACE]);
 	}
-
 }

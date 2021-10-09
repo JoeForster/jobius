@@ -25,7 +25,14 @@ void PlayerControlSystem::Update(float deltaSecs)
 		auto& rigidBody = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 
 		// HACK TEST
-		rigidBody.m_Mass = kbControl.m_Jump ? 0.0f : 1.0f;
+		rigidBody.m_Vel.x = 0.0f;
+		rigidBody.m_Vel.y = 0.0f;
+		if (kbControl.m_State[(size_t)KB_KEY::KEY_UP]) rigidBody.m_Vel.y -= 1.0f;
+		if (kbControl.m_State[(size_t)KB_KEY::KEY_DOWN]) rigidBody.m_Vel.y += 1.0f;
+		if (kbControl.m_State[(size_t)KB_KEY::KEY_LEFT]) rigidBody.m_Vel.x -= 1.0f;
+		if (kbControl.m_State[(size_t)KB_KEY::KEY_RIGHT]) rigidBody.m_Vel.x += 1.0f;
+
+		rigidBody.m_Mass = kbControl.m_State[(size_t)KB_KEY::KEY_SPACE] ? 0.0f : 1.0f;
 	}
 
 }

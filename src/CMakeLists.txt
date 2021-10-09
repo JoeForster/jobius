@@ -14,6 +14,7 @@ set(SOURCES
 set(HEADERS
 	"ComponentArray.h"
 	"ComponentManager.h"
+	"Vector.h"
 	"World.h"
 	"EntityManager.h"
 	"PhysicsSystem.h"
