@@ -96,21 +96,24 @@ int main(int argc, char* argv[])
 	auto playerEntity = createSprite(resID_fighter, { 250, 0, 0 }, true);
 	world->AddComponent<KBControlComponent>(playerEntity);
 
+	static constexpr float s_TargetFrameTime = 1.0f/60.0f; 
+
 	float lastFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 	SDL_Event event;
 	while (SDL_PollEvent(&event) >= 0)
 	{
 		float curFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 		float deltaSecs = curFrameTimeSecs - lastFrameTimeSecs;
+		float waitSecs = (deltaSecs > s_TargetFrameTime ? 0.0f : s_TargetFrameTime - deltaSecs);
 
 		world->Update(deltaSecs);
-
 		world->Render();
 
-		lastFrameTimeSecs = curFrameTimeSecs;
-
 		SDL_RenderPresent(renderer);
-		SDL_Delay(1);
+		Uint32 delayMs = (Uint32)(waitSecs * 1000.0f);
+		SDL_Delay(delayMs);
+
+		lastFrameTimeSecs = curFrameTimeSecs;
 	}
 
 	// TODO cleanup game
