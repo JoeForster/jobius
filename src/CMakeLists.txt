@@ -28,7 +28,8 @@ set(HEADERS
 	"TransformComponent.h"
 	"SpriteComponent.h"
 	"RigidBodyComponent.h"
-	"KBControlComponent.h"
+	"KBInputComponent.h"
+	"PadInputComponent.h"
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})

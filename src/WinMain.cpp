@@ -17,7 +17,8 @@
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
 #include "RigidBodyComponent.h"
-#include "KBControlComponent.h"
+#include "KBInputComponent.h"
+#include "PadInputComponent.h"
 
 
 int main(int argc, char* argv[])
@@ -62,7 +63,8 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
 	world->RegisterComponent<RigidBodyComponent>();
-	world->RegisterComponent<KBControlComponent>();
+	world->RegisterComponent<KBInputComponent>();
+	world->RegisterComponent<PadInputComponent>();
 
 	// Init systems
 	world->RegisterSystem<SDLInputSystem>()->Init();
@@ -94,7 +96,8 @@ int main(int argc, char* argv[])
 	createSprite(resID_asteroid, { 50, 0, 0 }, false);
 	createSprite(resID_asteroid, { 150, 0, 0 }, true);
 	auto playerEntity = createSprite(resID_fighter, { 250, 0, 0 }, true);
-	world->AddComponent<KBControlComponent>(playerEntity);
+	world->AddComponent<KBInputComponent>(playerEntity);
+	world->AddComponent<PadInputComponent>(playerEntity);
 
 	static constexpr float s_TargetFrameTime = 1.0f/60.0f; 
 
