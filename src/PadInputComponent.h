@@ -14,10 +14,27 @@ enum class GAMEPAD_BTN
 	BTN_FACE_CROSS,
 	BTN_FACE_SQUARE,
 
+	BTN_FACE_Y = BTN_FACE_TRIANGLE,
+	BTN_FACE_B = BTN_FACE_CIRCLE,
+	BTN_FACE_A = BTN_FACE_CROSS,
+	BTN_FACE_X = BTN_FACE_SQUARE,
+
 	BTN_MAX
 };
 
 constexpr size_t NUM_GAMEPAD_BTNS = (size_t)GAMEPAD_BTN::BTN_MAX;
+
+enum class GAMEPAD_AXIS
+{
+	AXIS_LS_X,
+	AXIS_LS_Y,
+	AXIS_RS_X,
+	AXIS_RS_Y,
+
+	AXIS_MAX
+};
+
+constexpr size_t NUM_GAMEPAD_AXES = (size_t)GAMEPAD_AXIS::AXIS_MAX;
 
 struct PadInputComponent
 {
@@ -25,7 +42,9 @@ struct PadInputComponent
 
 	PadInputComponent() {}
 
-	std::bitset<NUM_GAMEPAD_BTNS> m_State;
+	std::bitset<NUM_GAMEPAD_BTNS> m_BtnState;
+	float m_AxisState [NUM_GAMEPAD_AXES] = {};
 
-	bool IsPressed(GAMEPAD_BTN btn) const { assert(btn < GAMEPAD_BTN::BTN_MAX); return m_State[(size_t)btn]; }
+	bool IsPressed(GAMEPAD_BTN btn) const { assert(btn < GAMEPAD_BTN::BTN_MAX); return m_BtnState[(size_t)btn]; }
+	float GetAxis(GAMEPAD_AXIS axis) const { assert(axis < GAMEPAD_AXIS::AXIS_MAX); return m_AxisState[(size_t)axis]; }
 };

@@ -2,6 +2,10 @@
 
 #include "System.h"
 
+// Awkward SDL forward decl due to typedef..
+struct _SDL_GameController;
+typedef struct _SDL_GameController SDL_GameController;
+
 class SDLInputSystem : public System
 {
 public:
@@ -9,6 +13,7 @@ public:
 
 	SDLInputSystem(std::shared_ptr<World> parentWorld)
 		: System(parentWorld)
+		, m_Controller(nullptr)
 	{
 	}
 
@@ -17,5 +22,5 @@ public:
 	void Update(float deltaSecs) final override;
 
 private:
-
+	SDL_GameController* m_Controller;
 };
