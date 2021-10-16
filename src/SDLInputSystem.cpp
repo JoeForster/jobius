@@ -16,10 +16,12 @@ void SDLInputSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_PADINPUT);
 	m_ParentWorld->SetSystemSignature<SDLInputSystem>(sysSignature);
 
-	printf("[SDLInputSystem] Num joysticks: %d\n", SDL_NumJoysticks());
-	if (SDL_NumJoysticks() > 0)
+	int numJoysticks = SDL_NumJoysticks();
+	printf("[SDLInputSystem] Num joysticks: %d\n", numJoysticks);
+	m_Controllers.resize(numJoysticks);
+	for (int ixJoystick = 0; ixJoystick < SDL_NumJoysticks(); ++ixJoystick)
 	{
-		m_Controller = SDL_GameControllerOpen(0);
+		m_Controllers[ixJoystick] = SDL_GameControllerOpen(ixJoystick);
 	}
 }
 
@@ -32,7 +34,7 @@ void SDLInputSystem::Update(float deltaSecs)
 	constexpr Sint16 s_AxisLowVal = -32768;
 	auto ReadAxis = [&](SDL_GameControllerAxis axis)
 	{
-		Sint16 axisVal = SDL_GameControllerGetAxis(this->m_Controller, axis);
+		Sint16 axisVal = SDL_GameControllerGetAxis(this->m_Controllers[0], axis);
 		//printf("axis_%d = %d\n", axis, axisVal);
 		float normalisedVal;
 		if (axisVal >= s_AxisDeadZone)
@@ -54,19 +56,19 @@ void SDLInputSystem::Update(float deltaSecs)
 
 	for (EntityID e : mEntities)
 	{
-		if (m_Controller != nullptr)
+		if (m_Controllers[0] != nullptr)
 		{
 			auto& padControl = m_ParentWorld->GetComponent<PadInputComponent>(e);
 
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_UP, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_DOWN, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_LEFT, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_RIGHT, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_UP, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_DOWN, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_LEFT, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_RIGHT, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
 
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_A, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_B, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_X, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_Y, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_A, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_B, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_X, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_Y, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y));
 
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_X] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_Y] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);

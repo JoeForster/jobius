@@ -13,7 +13,6 @@ public:
 
 	SDLInputSystem(std::shared_ptr<World> parentWorld)
 		: System(parentWorld)
-		, m_Controller(nullptr)
 	{
 	}
 
@@ -22,5 +21,5 @@ public:
 	void Update(float deltaSecs) final override;
 
 private:
-	SDL_GameController* m_Controller;
+	std::vector<SDL_GameController*> m_Controllers;
 };

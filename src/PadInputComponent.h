@@ -42,6 +42,7 @@ struct PadInputComponent
 
 	PadInputComponent() {}
 
+	int m_PadIndex = 0;
 	std::bitset<NUM_GAMEPAD_BTNS> m_BtnState;
 	float m_AxisState [NUM_GAMEPAD_AXES] = {};
 
