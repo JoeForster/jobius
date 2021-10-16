@@ -25,10 +25,32 @@ void SDLInputSystem::Init(const SystemInitialiser& initialiser)
 
 void SDLInputSystem::Update(float deltaSecs)
 {
-
 	System::Update(deltaSecs);
 
-	const Uint8* keystate = SDL_GetKeyboardState(NULL);
+	constexpr Sint16 s_AxisDeadZone = 2000;
+	constexpr Sint16 s_AxisHighVal = 32767;
+	constexpr Sint16 s_AxisLowVal = -32768;
+	auto ReadAxis = [&](SDL_GameControllerAxis axis)
+	{
+		Sint16 axisVal = SDL_GameControllerGetAxis(this->m_Controller, axis);
+		//printf("axis_%d = %d\n", axis, axisVal);
+		float normalisedVal;
+		if (axisVal >= s_AxisDeadZone)
+		{
+			assert(axisVal <= s_AxisHighVal);
+			normalisedVal = (float)axisVal / (float)s_AxisHighVal;
+		}
+		else if (axisVal <= -s_AxisDeadZone)
+		{
+			assert(axisVal >= s_AxisLowVal);
+			normalisedVal = (float)axisVal / (float)-s_AxisLowVal;
+		}
+		else
+		{
+			normalisedVal = 0.0f;
+		}
+		return normalisedVal;
+	};
 
 	for (EntityID e : mEntities)
 	{
@@ -46,31 +68,6 @@ void SDLInputSystem::Update(float deltaSecs)
 			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_X, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X));
 			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_Y, SDL_GameControllerGetButton(m_Controller, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y));
 
-			constexpr Sint16 s_AxisDeadZone = 2000;
-			constexpr Sint16 s_AxisHighVal = 32767;
-			constexpr Sint16 s_AxisLowVal = -32768;
-			auto ReadAxis = [&](SDL_GameControllerAxis axis)
-			{
-				Sint16 axisVal = SDL_GameControllerGetAxis(this->m_Controller, axis);
-				//printf("axis_%d = %d\n", axis, axisVal);
-				float normalisedVal;
-				if (axisVal >= s_AxisDeadZone)
-				{
-					assert(axisVal <= s_AxisHighVal);
-					normalisedVal = (float)axisVal / (float)s_AxisHighVal;
-				}
-				else if (axisVal <= -s_AxisDeadZone)
-				{
-					assert(axisVal >= s_AxisLowVal);
-					normalisedVal = (float)axisVal / (float)-s_AxisLowVal;
-				}
-				else
-				{
-					normalisedVal = 0.0f;
-				}
-				return normalisedVal;
-			};
-
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_X] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_Y] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);
 
@@ -78,6 +75,7 @@ void SDLInputSystem::Update(float deltaSecs)
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_RS_Y] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTY);
 		}
 
+		const Uint8* keystate = SDL_GetKeyboardState(NULL);
 		auto& kbControl = m_ParentWorld->GetComponent<KBInputComponent>(e);
 
 		kbControl.m_State.set((size_t)KB_KEY::KEY_UP, (bool)keystate[SDL_SCANCODE_UP]);
