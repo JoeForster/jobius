@@ -41,6 +41,7 @@ struct PadInputComponent
 	static constexpr ComponentType GetComponentType() { return ComponentType::CT_PADINPUT; }
 
 	PadInputComponent() {}
+	PadInputComponent(int padIndex): m_PadIndex(padIndex) {}
 
 	int m_PadIndex = 0;
 	std::bitset<NUM_GAMEPAD_BTNS> m_BtnState;

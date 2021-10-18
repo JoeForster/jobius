@@ -95,9 +95,14 @@ int main(int argc, char* argv[])
 
 	createSprite(resID_asteroid, { 50, 0, 0 }, false);
 	createSprite(resID_asteroid, { 150, 0, 0 }, true);
-	auto playerEntity = createSprite(resID_fighter, { 250, 0, 0 }, true);
-	world->AddComponent<KBInputComponent>(playerEntity);
-	world->AddComponent<PadInputComponent>(playerEntity);
+
+	auto player1Entity = createSprite(resID_fighter, { 250, 0, 0 }, true);
+	world->AddComponent<KBInputComponent>(player1Entity);
+	world->AddComponent<PadInputComponent>(player1Entity, {0});
+
+	auto player2Entity = createSprite(resID_fighter, { 350, 0, 0 }, true);
+	world->AddComponent<KBInputComponent>(player2Entity);
+	world->AddComponent<PadInputComponent>(player2Entity, {1});
 
 	static constexpr float s_TargetFrameTime = 1.0f/60.0f; 
 

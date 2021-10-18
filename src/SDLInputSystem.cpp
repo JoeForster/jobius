@@ -56,19 +56,21 @@ void SDLInputSystem::Update(float deltaSecs)
 
 	for (EntityID e : mEntities)
 	{
-		if (m_Controllers[0] != nullptr)
+		auto& padControl = m_ParentWorld->GetComponent<PadInputComponent>(e);
+
+		SDL_GameController* pad = m_Controllers[padControl.m_PadIndex];
+		if (pad != nullptr)
 		{
-			auto& padControl = m_ParentWorld->GetComponent<PadInputComponent>(e);
 
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_UP, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_DOWN, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_LEFT, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_RIGHT, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_UP, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_DOWN, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_LEFT, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_RIGHT, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
 
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_A, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_B, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_X, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_Y, SDL_GameControllerGetButton(m_Controllers[0], SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_A, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_B, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_X, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X));
+			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_Y, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y));
 
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_X] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_Y] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);
