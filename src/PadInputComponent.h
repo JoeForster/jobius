@@ -43,10 +43,11 @@ struct PadInputComponent
 	PadInputComponent() {}
 	PadInputComponent(int padIndex): m_PadIndex(padIndex) {}
 
-	int m_PadIndex = 0;
+	int m_PadIndex = -1;
 	std::bitset<NUM_GAMEPAD_BTNS> m_BtnState;
 	float m_AxisState [NUM_GAMEPAD_AXES] = {};
 
+	bool IsValid() const { return (m_PadIndex >= 0); }
 	bool IsPressed(GAMEPAD_BTN btn) const { assert(btn < GAMEPAD_BTN::BTN_MAX); return m_BtnState[(size_t)btn]; }
 	float GetAxis(GAMEPAD_AXIS axis) const { assert(axis < GAMEPAD_AXIS::AXIS_MAX); return m_AxisState[(size_t)axis]; }
 };

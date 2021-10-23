@@ -28,8 +28,7 @@ void PlayerControlSystem::Update(float deltaSecs)
 		auto& rigidBody = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 
 		// HACK TEST
-		rigidBody.m_Vel.x = 0.0f;
-		rigidBody.m_Vel.y = 0.0f;
+		Vector2f desiredVel;
 
 		if (kbInput.IsPressed(KB_KEY::KEY_UP)) rigidBody.m_Vel.y -= 1.0f;
 		if (kbInput.IsPressed(KB_KEY::KEY_DOWN)) rigidBody.m_Vel.y += 1.0f;
@@ -45,5 +44,16 @@ void PlayerControlSystem::Update(float deltaSecs)
 		rigidBody.m_Vel.y += padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y);
 
 		rigidBody.m_Mass = kbInput.IsPressed(KB_KEY::KEY_SPACE) || padInput.IsPressed(GAMEPAD_BTN::BTN_FACE_CROSS) ? 0.0f : 1.0f;
+
+		if (desiredVel.IsZero())
+		{
+			rigidBody.m_Kinematic = false;
+		}
+		else
+		{
+			rigidBody.m_Kinematic = true;
+			rigidBody.m_Vel.x = padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_X);
+			rigidBody.m_Vel.y = padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y);
+		}
 	}
 }

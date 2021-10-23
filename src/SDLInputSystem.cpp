@@ -58,7 +58,11 @@ void SDLInputSystem::Update(float deltaSecs)
 	{
 		auto& padControl = m_ParentWorld->GetComponent<PadInputComponent>(e);
 
-		SDL_GameController* pad = m_Controllers[padControl.m_PadIndex];
+		SDL_GameController* pad = nullptr;
+		if (padControl.IsValid() && padControl.m_PadIndex < m_Controllers.size())
+		{
+			pad = m_Controllers[padControl.m_PadIndex];
+		}
 		if (pad != nullptr)
 		{
 

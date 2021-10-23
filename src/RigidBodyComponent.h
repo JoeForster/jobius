@@ -13,6 +13,8 @@ struct RigidBodyComponent
 	RigidBodyComponent(float mass)
 		: m_Mass(mass) {}
 
+	bool m_Kinematic = false;
 	float m_Mass = 1.0f;
-	Vector3f m_Vel = { 0.0f, 0.0f, 0.0f };
+	Vector2f m_Vel;
+	Vector2f m_LastFrameForce;
 };
