@@ -16,7 +16,4 @@ public:
 
 	void Update(float deltaSecs) final override;
 
-private:
-
 };
-

@@ -2,9 +2,8 @@
 
 struct Vector2f
 {
-	float x = 0.0f;
-	float y = 0.0f;
-
+	float x;
+	float y;
 
 	const Vector2f Vector2f::operator-(const Vector2f& other) const
 	{
@@ -103,3 +102,6 @@ struct Vector3f
 	float y = 0.0f;
 	float z = 0.0f;
 };
+
+static constexpr Vector2f VECTOR2F_ZERO { 0.0f, 0.0f };
+static constexpr Vector3f VECTOR3F_ZERO { 0.0f, 0.0f, 0.0f };

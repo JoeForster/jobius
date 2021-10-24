@@ -17,6 +17,7 @@
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
 #include "RigidBodyComponent.h"
+#include "AABBComponent.h"
 #include "KBInputComponent.h"
 #include "PadInputComponent.h"
 
@@ -63,6 +64,7 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
 	world->RegisterComponent<RigidBodyComponent>();
+	world->RegisterComponent<AABBComponent>();
 	world->RegisterComponent<KBInputComponent>();
 	world->RegisterComponent<PadInputComponent>();
 
@@ -89,6 +91,7 @@ int main(int argc, char* argv[])
 		if (hasPhysics)
 		{
 			world->AddComponent<RigidBodyComponent>(e);
+			world->AddComponent<AABBComponent>(e, { 50.0f, 50.0f });
 		}
 		return e;
 	};

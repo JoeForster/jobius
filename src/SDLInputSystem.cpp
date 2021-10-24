@@ -29,7 +29,7 @@ void SDLInputSystem::Update(float deltaSecs)
 {
 	System::Update(deltaSecs);
 
-	constexpr Sint16 s_AxisDeadZone = 2000;
+	constexpr Sint16 s_AxisDeadZone = 8000;
 	constexpr Sint16 s_AxisHighVal = 32767;
 	constexpr Sint16 s_AxisLowVal = -32768;
 	auto ReadAxis = [&](SDL_GameControllerAxis axis)
