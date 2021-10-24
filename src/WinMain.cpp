@@ -8,12 +8,11 @@
 #include "EntityManager.h"
 #include "ComponentManager.h"
 #include "World.h"
-#include "RenderSystem.h"
+#include "SpriteRenderSystem.h"
 #include "SDLRenderManager.h"
 #include "SDLInputSystem.h"
 #include "PlayerControlSystem.h"
 #include "PhysicsSystem.h"
-#include "RenderSystem.h"
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
 #include "RigidBodyComponent.h"
@@ -68,42 +67,44 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<KBInputComponent>();
 	world->RegisterComponent<PadInputComponent>();
 
-	// Init systems
-	world->RegisterSystem<SDLInputSystem>()->Init();
-
-	world->RegisterSystem<PlayerControlSystem>()->Init();
-
-	world->RegisterSystem<PhysicsSystem>()->Init();
-
-
-	auto rs = world->RegisterSystem<RenderSystem>();
+	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
 	renderInit.m_RenderMan = renderMan;
-	rs->Init(renderInit);
+
+	// Init systems
+	world->RegisterSystem<SDLInputSystem>()->Init();
+	world->RegisterSystem<PlayerControlSystem>()->Init();
+	world->RegisterSystem<PhysicsSystem>()->Init(renderInit);
+	world->RegisterSystem<SpriteRenderSystem>()->Init(renderInit);
 
 	// Create test world entities
-	auto createSprite = [&](ResourceID resID, Vector3f pos, bool hasPhysics)
+	auto createSprite = [](World& w, ResourceID resID, Vector3f pos)
 	{
-		EntityID e = world->CreateEntity();
+		EntityID e = w.CreateEntity();
 		const TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
-		world->AddComponent<TransformComponent>(e, t);
-		world->AddComponent<SpriteComponent>(e, resID);
-		if (hasPhysics)
-		{
-			world->AddComponent<RigidBodyComponent>(e);
-			world->AddComponent<AABBComponent>(e, { 50.0f, 50.0f });
-		}
+		w.AddComponent<TransformComponent>(e, t);
+		w.AddComponent<SpriteComponent>(e, resID);
+		return e;
+	};
+	auto createSpriteWithPhysics = [](World& w, ResourceID resID, Vector3f pos, Vector2f boxSize, Vector2f boxOffset)
+	{
+		EntityID e = w.CreateEntity();
+		const TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
+		w.AddComponent<TransformComponent>(e, t);
+		w.AddComponent<SpriteComponent>(e, resID);
+		w.AddComponent<RigidBodyComponent>(e);
+		w.AddComponent<AABBComponent>(e, { boxSize, boxOffset } );
 		return e;
 	};
 
-	createSprite(resID_asteroid, { 50, 0, 0 }, false);
-	createSprite(resID_asteroid, { 150, 0, 0 }, true);
+	createSprite(*world, resID_asteroid, { 50, 0, 0 });
+	createSpriteWithPhysics(*world, resID_asteroid, { 150, 0, 0 }, Vector2f{60.0f, 50.0f}, Vector2f{25.0f, 25.0f});
 
-	auto player1Entity = createSprite(resID_fighter, { 250, 0, 0 }, true);
+	auto player1Entity = createSpriteWithPhysics(*world, resID_fighter, { 250, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
 	world->AddComponent<KBInputComponent>(player1Entity);
 	world->AddComponent<PadInputComponent>(player1Entity, {0});
 
-	auto player2Entity = createSprite(resID_fighter, { 350, 0, 0 }, true);
+	auto player2Entity = createSpriteWithPhysics(*world, resID_fighter, { 350, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
 	world->AddComponent<KBInputComponent>(player2Entity);
 	world->AddComponent<PadInputComponent>(player2Entity, {1});
 

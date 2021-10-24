@@ -12,8 +12,11 @@ public:
 	{
 	}
 
-	void Init(const SystemInitialiser& = s_EmptyInitialiser) override;
+	void Init(const SystemInitialiser&) override;
 
 	void Update(float deltaSecs) final override;
+	void Render() final override;
 
+private:
+	std::shared_ptr<SDLRenderManager> m_RenderMan;
 };

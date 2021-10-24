@@ -55,6 +55,9 @@ public:
 	void Draw(ResourceID anImageID, int aCellX = 0, int aCellY = 0);
 	void DrawText(ResourceID aTextID, int aX, int aY);
 
+	// WIP Primitive drawing helpers
+	void DrawLine(int x0, int y0, int x1, int y1); 
+
 private:
 	bool Init();
 

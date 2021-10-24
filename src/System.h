@@ -23,6 +23,14 @@ struct SystemInitialiser
 {
 };
 
+// TODO remove SDL dependency hack here.
+class SDLRenderManager;
+
+struct RenderSystemInitialiser : public SystemInitialiser
+{
+	std::shared_ptr<SDLRenderManager> m_RenderMan;
+};
+
 class System
 {
 public:

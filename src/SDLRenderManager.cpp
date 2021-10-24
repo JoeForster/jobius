@@ -232,3 +232,10 @@ void SDLRenderManager::DrawText(ResourceID aTextID, int aX, int aY)
 
 	SDL_RenderCopy(m_Renderer, optimizedSurface, sizeRect, &posRect);
 }
+
+
+void SDLRenderManager::DrawLine(int x0, int y0, int x1, int y1)
+{
+	SDL_SetRenderDrawColor(m_Renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderDrawLine(m_Renderer, x0, y0, x1, y1);
+}
