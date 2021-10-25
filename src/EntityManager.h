@@ -10,6 +10,7 @@ enum class ComponentType
 	CT_SPRITE,
 	CT_RIGIDBODY,
 	CT_AABB,
+	CT_PLANE,
 	CT_KBINPUT,
 	CT_PADINPUT,
 	CT_MAX

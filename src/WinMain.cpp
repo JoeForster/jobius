@@ -13,10 +13,13 @@
 #include "SDLInputSystem.h"
 #include "PlayerControlSystem.h"
 #include "PhysicsSystem.h"
+#include "BoxCollisionSystem.h"
+#include "PlaneCollisionSystem.h"
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
 #include "RigidBodyComponent.h"
 #include "AABBComponent.h"
+#include "PlaneComponent.h"
 #include "KBInputComponent.h"
 #include "PadInputComponent.h"
 
@@ -64,6 +67,7 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<SpriteComponent>();
 	world->RegisterComponent<RigidBodyComponent>();
 	world->RegisterComponent<AABBComponent>();
+	world->RegisterComponent<PlaneComponent>();
 	world->RegisterComponent<KBInputComponent>();
 	world->RegisterComponent<PadInputComponent>();
 
@@ -75,6 +79,8 @@ int main(int argc, char* argv[])
 	world->RegisterSystem<SDLInputSystem>()->Init();
 	world->RegisterSystem<PlayerControlSystem>()->Init();
 	world->RegisterSystem<PhysicsSystem>()->Init(renderInit);
+	world->RegisterSystem<BoxCollisionSystem>()->Init(renderInit);
+	world->RegisterSystem<PlaneCollisionSystem>()->Init(renderInit);
 	world->RegisterSystem<SpriteRenderSystem>()->Init(renderInit);
 
 	// Create test world entities
@@ -100,11 +106,11 @@ int main(int argc, char* argv[])
 	createSprite(*world, resID_asteroid, { 50, 0, 0 });
 	createSpriteWithPhysics(*world, resID_asteroid, { 150, 0, 0 }, Vector2f{60.0f, 50.0f}, Vector2f{25.0f, 25.0f});
 
-	auto player1Entity = createSpriteWithPhysics(*world, resID_fighter, { 250, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
+	auto player1Entity = createSpriteWithPhysics(*world, resID_fighter, { 500, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
 	world->AddComponent<KBInputComponent>(player1Entity);
 	world->AddComponent<PadInputComponent>(player1Entity, {0});
 
-	auto player2Entity = createSpriteWithPhysics(*world, resID_fighter, { 350, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
+	auto player2Entity = createSpriteWithPhysics(*world, resID_fighter, { 700, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
 	world->AddComponent<KBInputComponent>(player2Entity);
 	world->AddComponent<PadInputComponent>(player2Entity, {1});
 

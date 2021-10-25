@@ -13,6 +13,7 @@ struct RigidBodyComponent
 	RigidBodyComponent(float mass)
 		: m_Mass(mass) {}
 
+	bool m_Colliding = false; // HACK - need proper collision resolution
 	bool m_Kinematic = false;
 	float m_Mass = 1.0f;
 	Vector2f m_Vel = VECTOR2F_ZERO;
