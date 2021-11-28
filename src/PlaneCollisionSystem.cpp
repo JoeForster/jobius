@@ -59,21 +59,21 @@ void PlaneCollisionSystem::Render()
 {
 	System::Render();
 
+	// TODO move this to World render
+
+	const Rect2D& bounds = m_ParentWorld->GetBounds();
+
+	//// TODO multi draw line
+	m_RenderMan->DrawLine((int)bounds.min.x, (int)bounds.min.y, (int)bounds.max.x, (int)bounds.min.y);
+	m_RenderMan->DrawLine((int)bounds.max.x, (int)bounds.min.y, (int)bounds.max.x, (int)bounds.max.y);
+	m_RenderMan->DrawLine((int)bounds.max.x, (int)bounds.max.y, (int)bounds.min.x, (int)bounds.max.y);
+	m_RenderMan->DrawLine((int)bounds.min.x, (int)bounds.max.y, (int)bounds.min.x, (int)bounds.min.y);
+
 	for (EntityID e : mEntities)
 	{
 		// TODO RENDER PLANE
-		//auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
-		//auto& aabb = m_ParentWorld->GetComponent<AABBComponent>(e);
-		//
-		//const int minX = (int) (t.m_Pos.x + aabb.m_Offset.x - aabb.m_Box.x/2);
-		//const int maxX = (int) (t.m_Pos.x + aabb.m_Offset.x + aabb.m_Box.x/2);
-		//const int minY = (int) (t.m_Pos.y + aabb.m_Offset.y - aabb.m_Box.y/2);
-		//const int maxY = (int) (t.m_Pos.y + aabb.m_Offset.y + aabb.m_Box.y/2);
-		//
-		//// TODO multi draw line
-		//m_RenderMan->DrawLine(minX, minY, maxX, minY);
-		//m_RenderMan->DrawLine(maxX, minY, maxX, maxY);
-		//m_RenderMan->DrawLine(maxX, maxY, minX, maxY);
-		//m_RenderMan->DrawLine(minX, maxY, minX, minY);
+		auto& transform = m_ParentWorld->GetComponent<TransformComponent>(e);
+		auto& plane = m_ParentWorld->GetComponent<PlaneComponent>(e);
+
 	}
 }

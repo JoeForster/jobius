@@ -45,7 +45,7 @@ void PhysicsSystem::Update(float deltaSecs)
 
 		if (rb.m_Colliding)
 		{
-			rb.m_Vel = VECTOR2F_ZERO;
+			rb.m_Vel = Vector2f::ZERO;
 		}
 	
 		// HACK TEST until we have a floor: wrap around.

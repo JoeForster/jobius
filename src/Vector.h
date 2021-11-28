@@ -1,9 +1,16 @@
 #pragma once
 
+#include <limits>
+
 struct Vector2f
 {
-	float x;
-	float y;
+	float x = 0.0f;
+	float y = 0.0f;
+
+	static const Vector2f ZERO;
+
+	//Vector2f(float initX, float initY)
+	//: x(initX), y(initY) {}
 
 	const Vector2f Vector2f::operator-(const Vector2f& other) const
 	{
@@ -56,6 +63,24 @@ struct Vector2f
 		return *this;
 	}
 
+	bool Vector2f::operator>(const Vector2f& rVec) const
+	{
+		return (x > rVec.x && y > rVec.y);
+	}
+	bool Vector2f::operator>=(const Vector2f& rVec) const
+	{
+		return (x >= rVec.x && y >= rVec.y);
+	}
+
+	bool Vector2f::operator<(const Vector2f& rVec) const
+	{
+		return (x < rVec.x && y < rVec.y);
+	}
+	bool Vector2f::operator<=(const Vector2f& rVec) const
+	{
+		return (x <= rVec.x && y <= rVec.y);
+	}
+
 	bool IsZero() const
 	{
 		return (fabsf(x) < std::numeric_limits<float>::epsilon() &&
@@ -101,7 +126,17 @@ struct Vector3f
 	float x = 0.0f;
 	float y = 0.0f;
 	float z = 0.0f;
+
+	static const Vector3f ZERO;
 };
 
-static constexpr Vector2f VECTOR2F_ZERO { 0.0f, 0.0f };
-static constexpr Vector3f VECTOR3F_ZERO { 0.0f, 0.0f, 0.0f };
+struct Rect2D
+{
+	Vector2f min;
+	Vector2f max;
+
+	const bool IsInside(const Vector2f& testPoint)
+	{
+		return (testPoint > min && testPoint < max);
+	}
+};

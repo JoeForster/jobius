@@ -4,6 +4,8 @@ set(SOURCES
 	"WinMain.cpp"
 	"ComponentArray.cpp"
 	"EntityManager.cpp"
+	"Vector.cpp"
+	"World.cpp"
 	"PhysicsSystem.cpp"
 	"BoxCollisionSystem.cpp"
 	"PlaneCollisionSystem.cpp"

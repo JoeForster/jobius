@@ -6,9 +6,12 @@
 #include "ComponentManager.h"
 #include "SystemManager.h"
 
+struct Rect2D;
+
 class World : public std::enable_shared_from_this<World>
 {
 public:
+
 	// Entity methods
 	EntityID CreateEntity()
 	{
@@ -89,6 +92,9 @@ public:
 	{
 		m_SystemManager.RenderAllSystems();
 	}
+
+	// World Settings
+	const Rect2D& GetBounds() const;
 
 private:
 	ComponentManager m_ComponentManager;
