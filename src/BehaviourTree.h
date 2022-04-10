@@ -150,16 +150,20 @@ public:
 	Sequence(Behaviour* parent): Composite(parent) {}
 
 protected:
-	virtual BStatus Update()
+	virtual BStatus Update() override
 	{
 
 	}
+
+private:
+
+	
 };
 
 class Parallel : public Composite
 {
 public:
-	enum Policy
+	enum class Policy
 	{
 		RequireOne,
 		RequireAll
@@ -178,7 +182,40 @@ protected:
 
 	virtual BStatus Update() override
 	{
-		// TODO
+		// TODO this doesn't deal with the case that the child list is empty!
+		// TODO what about the case that all children are in the "invalid" state?
+
+		size_t successCount = 0, failureCount = 0;
+		assert(m_Children.size() > 0);
+		for (auto child: m_Children)
+		{
+			if (!child->IsTerminated())
+			{
+				child->Tick();
+			}
+			const auto status = child->GetStatus();
+			if (status == BStatus::SUCCESS)
+			{
+				++successCount;
+				if (m_SuccessPolicy == Policy::RequireOne)
+				{
+					return BStatus::SUCCESS;
+				}
+			}
+			if (status == BStatus::FAILURE)
+			{
+				++failureCount;
+				if (m_FailurePolicy == Policy::RequireOne)
+				{
+					return BStatus::FAILURE;
+				}
+			}
+		}
+		if (m_FailurePolicy == Policy::RequireAll && failureCount == m_Children.size())
+			return BStatus::FAILURE;
+		if (m_FailurePolicy == Policy::RequireAll && failureCount == m_Children.size())
+			return BStatus::FAILURE;
+
 		return BStatus::RUNNING;
 	}
 };
@@ -186,7 +223,7 @@ protected:
 class Monitor : public Parallel
 {
 public:
-	Monitor(Behaviour* parent): Parallel(parent, RequireOne, RequireOne) {}
+	Monitor(Behaviour* parent): Parallel(parent, Policy::RequireOne, Policy::RequireOne) {}
 
 	// TODO
 };
@@ -194,7 +231,7 @@ public:
 class ActiveSelector : public Parallel
 {
 public:
-	ActiveSelector(Behaviour* parent): Parallel(parent, RequireOne, RequireOne) {}
+	ActiveSelector(Behaviour* parent): Parallel(parent, Policy::RequireOne, Policy::RequireOne) {}
 
 protected:
 	void OnInitialise() final;
