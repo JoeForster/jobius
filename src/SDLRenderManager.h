@@ -39,7 +39,7 @@ public:
 	// Load an image file given a path.
 	// Return an ID to be stored by the caller and used in Draw.
 	// returns ResourceID_Invalid if it failed to load.
-	ResourceID LoadImage(const char* szImagePath);
+	ResourceID LoadTexture(const char* szImagePath);
 	// Load a font file given a path.
 	// Return an ID to be stored by the caller and used in Draw.
 	// returns ResourceID_Invalid if it failed to load.

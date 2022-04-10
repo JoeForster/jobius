@@ -47,19 +47,19 @@ bool SDLRenderManager::Init()
 }
 
 
-ResourceID SDLRenderManager::LoadImage(const char* imageFile)
+ResourceID SDLRenderManager::LoadTexture(const char* imageFile)
 {
 	SDL_Surface* surface = IMG_Load(imageFile);
 	if (surface == nullptr)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LoadImage FAILED due to IMG_Load failure: %s\n", IMG_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LoadTexture FAILED due to IMG_Load failure: %s\n", IMG_GetError());
 		return -1;
 	}
 
 	SDL_Texture* optimizedSurface = SDL_CreateTextureFromSurface(m_Renderer, surface);
 	if (optimizedSurface == nullptr)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LoadImage FAILED due to SDL_CreateTextureFromSurface failure: %s\n", SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LoadTexture FAILED due to SDL_CreateTextureFromSurface failure: %s\n", SDL_GetError());
 		SDL_FreeSurface(surface); // IMG_Load allocated this above, so free it
 		return ResourceID_Invalid;
 	}

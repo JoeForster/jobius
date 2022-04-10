@@ -13,6 +13,7 @@ set(SOURCES
 	"SDLInputSystem.cpp"
 	"PlayerControlSystem.cpp"
 	"SDLRenderManager.cpp"
+	"BehaviourTree.cpp"
 )
 
 set(HEADERS
@@ -38,6 +39,8 @@ set(HEADERS
 	"PlaneComponent.h"
 	"KBInputComponent.h"
 	"PadInputComponent.h"
+	"BehaviourTree.h"
+	"catch.hpp"
 )
 
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCES} ${HEADERS})

@@ -5,6 +5,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+
 #include "EntityManager.h"
 #include "ComponentManager.h"
 #include "World.h"
@@ -24,7 +25,15 @@
 #include "PadInputComponent.h"
 
 
-int main(int argc, char* argv[])
+// TODO: Move unit tests into their own project/subfolder
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
+
+TEST_CASE( "1: All test cases reside in other .cpp files (empty)", "[multi-file:1]" ) {
+}
+
+int _FIXME_main(int argc, char* argv[])
 {
 	/* initialize SDL */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
@@ -53,12 +62,16 @@ int main(int argc, char* argv[])
 		exit(-1);
 	}
 
+	// Unit Tests here for now
+
+
+
 	// Init game systems, managers
 
 	std::shared_ptr<SDLRenderManager> renderMan = SDLRenderManager::Create(window, renderer);
-	ResourceID resID_asteroid = renderMan->LoadImage("assets/sprites/asteroid.png");
+	ResourceID resID_asteroid = renderMan->LoadTexture("assets/sprites/asteroid.png");
 	assert(resID_asteroid != SDLRenderManager::ResourceID_Invalid);
-	ResourceID resID_fighter = renderMan->LoadImage("assets/sprites/fighter_lr.png");
+	ResourceID resID_fighter = renderMan->LoadTexture("assets/sprites/fighter_lr.png");
 	assert(resID_fighter != SDLRenderManager::ResourceID_Invalid);
 
 	std::shared_ptr<World> world = std::make_shared<World>();
