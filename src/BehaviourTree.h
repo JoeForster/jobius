@@ -31,7 +31,7 @@ public:
 
 		if (m_Status != BStatus::RUNNING)
 		{
-			OnShutdown(m_Status);
+			OnTerminate(m_Status);
 		}
 
 		return m_Status;
@@ -60,7 +60,7 @@ public:
 protected:
 	virtual void OnInitialise() {}
 	virtual BStatus Update() = 0;
-	virtual void OnShutdown(BStatus) {}
+	virtual void OnTerminate(BStatus) {}
 
 	BStatus m_Status;
 	Behaviour* m_Parent; // TODO use smart pointers?
@@ -74,7 +74,7 @@ public:
 protected:
 	void OnInitialise() override;
 	BStatus Update() override;
-	void OnShutdown(BStatus) override;
+	void OnTerminate(BStatus) override;
 
 private:
 	int m_TestCounter = -1;
@@ -139,6 +139,8 @@ public:
 	void ClearChildren();
 
 protected:
+	// TODO would a list or deque make more sense?
+	// TODO can we avoid using raw pointers here?
 	typedef std::vector<Behaviour*> Behaviours;
 	Behaviours m_Children;
 };
@@ -150,14 +152,50 @@ public:
 	Sequence(Behaviour* parent): Composite(parent) {}
 
 protected:
+	virtual void OnInitialise() override
+	{
+		// TODO: This won't work as expected if you alter the child set during run.
+		// Does it ever make sense to restructure the tree during a run, or do we want just some flow to lock it after construction?
+		m_CurrentChild = m_Children.begin();
+	}
+
 	virtual BStatus Update() override
 	{
+		assert(m_Children.size() > 0);
 
+		// Run every child until one is running/fails/invalid or we reach the end.
+		while (true)
+		{
+			BStatus childStatus = (*m_CurrentChild)->Tick();
+			if (childStatus != BStatus::SUCCESS)
+			{
+				assert(childStatus != BStatus::INVALID);
+				return childStatus;
+			}
+			if (++m_CurrentChild == m_Children.end())
+			{
+				return BStatus::SUCCESS;
+			}
+		}
+		// TODO: handle case of no children?
+		return BStatus::INVALID;
 	}
 
 private:
+	Behaviours::iterator m_CurrentChild;
+};
 
-	
+class Filter : public Sequence
+{
+public:
+	void AddCondition(Behaviour* condition)
+	{
+		m_Children.insert(m_Children.begin(), condition);
+	}
+	void AddAction(Behaviour* action)
+	{
+		m_Children.push_back(action);
+	}
 };
 
 class Parallel : public Composite
@@ -220,6 +258,15 @@ protected:
 	}
 };
 
+// TODO
+class Selector : public Composite
+{
+public:
+	Selector(Behaviour* parent): Composite(parent) {}
+
+	// TODO
+};
+
 class Monitor : public Parallel
 {
 public:
@@ -236,7 +283,7 @@ public:
 protected:
 	void OnInitialise() final;
 	BStatus Update() final;
-	void OnShutdown(BStatus) final;
+	void OnTerminate(BStatus) final;
 };
 
 class BehaviourTree

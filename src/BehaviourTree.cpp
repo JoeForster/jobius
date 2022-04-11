@@ -25,7 +25,7 @@ BStatus MockBehaviour::Update()
 	return m_Status;
 }
 
-void MockBehaviour::OnShutdown(BStatus)
+void MockBehaviour::OnTerminate(BStatus)
 {
 	m_TestCounter = -1;
 	m_Status = BStatus::INVALID;
@@ -61,7 +61,7 @@ BStatus ActiveSelector::Update()
 	return BStatus::INVALID;
 }
 
-void ActiveSelector::OnShutdown(BStatus)
+void ActiveSelector::OnTerminate(BStatus)
 {
 
 }
