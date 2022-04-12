@@ -5,6 +5,9 @@
 
 // First attempt at a very very naive and unoptimised behaviour tree implementation.
 
+// TODO this needs splitting into multiple headers (even if just the builder is separate),
+// and relevant implementation code moved into cpps.
+
 enum class BStatus
 {
 	INVALID,
@@ -12,6 +15,7 @@ enum class BStatus
 	SUSPENDED,
 	SUCCESS,
 	FAILURE,
+	ABORTED,
 };
 
 class Behaviour
@@ -35,6 +39,12 @@ public:
 		}
 
 		return m_Status;
+	}
+
+	void Abort()
+	{
+		OnTerminate(BStatus::ABORTED);
+		m_Status = BStatus::ABORTED;
 	}
 
 	bool IsTerminated() const
@@ -258,13 +268,46 @@ protected:
 	}
 };
 
-// TODO
+// Base "passive" selector: tick children until one succeeds or runs.
 class Selector : public Composite
 {
 public:
 	Selector(Behaviour* parent): Composite(parent) {}
 
-	// TODO
+protected:
+	virtual void OnInitialise() override
+	{
+		// TODO: This won't work as expected if you alter the child set during run.
+		// Does it ever make sense to restructure the tree during a run, or do we want just some flow to lock it after construction?
+		m_CurrentChild = m_Children.begin();
+	}
+
+	virtual BStatus Update() override
+	{
+		assert(m_Children.size() > 0);
+
+		// Tick every child until one succeeds/runs - or fail if none do so.
+		while (true)
+		{
+			BStatus childStatus = (*m_CurrentChild)->Tick();
+			// Child either ran successfully or is in-progress
+			if (childStatus != BStatus::FAILURE)
+			{
+				assert(childStatus != BStatus::INVALID);
+				return childStatus;
+			}
+			// If we ran out, then the whole selector failed to select
+			if (++m_CurrentChild == m_Children.end())
+			{
+				return BStatus::FAILURE;
+			}
+		}
+		// TODO: handle case of no children?
+		return BStatus::INVALID;
+	}
+
+protected:
+	Behaviours::iterator m_CurrentChild;
 };
 
 class Monitor : public Parallel
@@ -275,15 +318,24 @@ public:
 	// TODO
 };
 
-class ActiveSelector : public Parallel
+// Active selector: like a passive selector but keeps re-checking higher-priority (leftmost) children before moving on to the next.
+class ActiveSelector : public Selector
 {
 public:
-	ActiveSelector(Behaviour* parent): Parallel(parent, Policy::RequireOne, Policy::RequireOne) {}
+	ActiveSelector(Behaviour* parent): Selector(parent) {}
 
 protected:
-	void OnInitialise() final;
-	BStatus Update() final;
-	void OnTerminate(BStatus) final;
+	BStatus Update() final
+	{
+		Behaviours::iterator prev = m_CurrentChild;
+		OnInitialise();
+		BStatus result = Selector::Update();
+		if (prev != m_Children.end() && m_CurrentChild != prev)
+		{
+			(*prev)->Abort();
+		}
+		return result;
+	}
 };
 
 class BehaviourTree
@@ -310,6 +362,10 @@ private:
 	friend class BehaviourTreeBuilder;
 };
 
+// TODO: Requires us to upgrade standard to C++20 - which needs some fixes to our codebase..
+//template <typename T>
+//concept BehaviourType = std::is_base_of<Behaviour, T>::value;
+
 class BehaviourTreeBuilder
 {
 public:
@@ -320,12 +376,14 @@ public:
 	}
 
 	// TODO: Template this (requires figuring out how to pass in construction params)
-	BehaviourTreeBuilder& AddNode_ActiveSelector()
+	template<typename T>
+	BehaviourTreeBuilder& AddNode()
 	{
-		Behaviour* node = new ActiveSelector(m_CurrentBehaviour);
+		Behaviour* node = new T(m_CurrentBehaviour);
 		return AddNode(node);
 	}
 
+	// TODO: Auto-end leaf nodes.
 	BehaviourTreeBuilder& EndNode()
 	{
 		if (m_CurrentBehaviour == m_Tree->m_Root)

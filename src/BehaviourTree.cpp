@@ -50,22 +50,6 @@ void Composite::ClearChildren()
 	m_Children.clear();
 }
 
-void ActiveSelector::OnInitialise()
-{
-
-}
-
-BStatus ActiveSelector::Update()
-{
-	// TODO
-	return BStatus::INVALID;
-}
-
-void ActiveSelector::OnTerminate(BStatus)
-{
-
-}
-
 void BehaviourTree::Tick()
 {
 
@@ -83,11 +67,25 @@ void BehaviourTree::Start()
 
 TEST_CASE("Build single-node tree", "[BehaviourTree]")
 {
-	auto& btb = BehaviourTreeBuilder();
-	btb = btb.AddNode_ActiveSelector();
-	btb = btb.EndNode();
-
-	//BehaviourTree* bt = BehaviourTreeBuilder().AddNode_ActiveSelector().End();
-	BehaviourTree* bt = btb.EndTree();
+	BehaviourTree* bt = BehaviourTreeBuilder()
+		.AddNode<ActiveSelector>()
+			.EndNode()
+		.EndTree();
 	REQUIRE(bt != nullptr);
+	// TODO tick and validate
 }
+
+TEST_CASE("Active selector test tree", "[BehaviourTree]")
+{
+	BehaviourTree* tree = BehaviourTreeBuilder()
+		.AddNode<ActiveSelector>()
+			.AddNode<MockBehaviour>().EndNode()
+			.AddNode<MockBehaviour>().EndNode()
+			.EndNode()
+		.EndTree();
+
+	REQUIRE(tree != nullptr);
+	// TODO tick and validate
+
+}
+
