@@ -50,9 +50,9 @@ void Composite::ClearChildren()
 	m_Children.clear();
 }
 
-void BehaviourTree::Tick()
+BStatus BehaviourTree::Tick()
 {
-
+	return m_Root->Tick();
 }
 
 void BehaviourTree::Step()
@@ -64,6 +64,45 @@ void BehaviourTree::Start()
 {
 
 }
+
+
+
+// Debug out
+
+using namespace std;
+
+ostream& operator<<(ostream& stream, const BehaviourTree& bt)
+{
+	const Behaviour& bh = *bt.m_Root;
+	stream << bh;
+	return stream;
+}
+
+ostream& operator<<(ostream& stream, const Behaviour& bh)
+{
+	// TODO reflection type name and status as string
+	// TODO output children if not leaf
+	stream << "Behaviour[Status:" << (int)bh.m_Status << "]";
+	return stream;
+}
+
+ostream& operator<<(ostream& stream, const MockBehaviour& bh)
+{
+	stream << "MockBehaviour[Status:" << (int)bh.m_Status << ", TestCounter:"<<bh.m_TestCounter<<"]";
+	return stream;
+}
+
+ostream& operator<<(ostream& stream, const ActiveSelector& bh)
+{
+	const std::ptrdiff_t index = bh.m_CurrentChild - bh.m_Children.begin();
+	stream << "ActiveSelector[Status:" << (int)bh.m_Status << ", CurrentChild:" << index<<"/" << bh.m_Children.size() << "]";
+	for (const auto& child : bh.m_Children)
+		stream << endl << "    " << *child;
+	return stream;
+}
+
+
+// Unit Tests
 
 TEST_CASE("Build single-node tree", "[BehaviourTree]")
 {
@@ -85,7 +124,11 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 		.EndTree();
 
 	REQUIRE(tree != nullptr);
-	// TODO tick and validate
+	tree->Tick();
+	cout << *tree << endl;
+
+
+	// TODO validate state
 
 }
 

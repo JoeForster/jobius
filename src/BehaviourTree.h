@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 #include <assert.h>
 
 // First attempt at a very very naive and unoptimised behaviour tree implementation.
@@ -67,6 +68,11 @@ public:
 		return m_Parent;
 	}
 
+	// TEMP Construction - can be made unnecessary with templated/concept construction?
+	virtual void AddChild(Behaviour*) { assert(false && "Unsupported AddChild"); }
+
+	friend std::ostream& operator<< (std::ostream& stream, const Behaviour& bt);
+
 protected:
 	virtual void OnInitialise() {}
 	virtual BStatus Update() = 0;
@@ -85,6 +91,8 @@ protected:
 	void OnInitialise() override;
 	BStatus Update() override;
 	void OnTerminate(BStatus) override;
+
+	friend std::ostream& operator<< (std::ostream& stream, const MockBehaviour& bt);
 
 private:
 	int m_TestCounter = -1;
@@ -144,7 +152,7 @@ class Composite : public Behaviour
 public:
 	Composite(Behaviour* parent): Behaviour(parent) {}
 
-	void AddChild(Behaviour*);
+	virtual void AddChild(Behaviour*) override;
 	void RemoveChild(Behaviour*);
 	void ClearChildren();
 
@@ -324,6 +332,8 @@ class ActiveSelector : public Selector
 public:
 	ActiveSelector(Behaviour* parent): Selector(parent) {}
 
+	friend std::ostream& operator<< (std::ostream& stream, const ActiveSelector& bt);
+
 protected:
 	BStatus Update() final
 	{
@@ -349,10 +359,11 @@ public:
 		}
 	}
 
-	void Tick();
+	BStatus Tick();
 	void Step();
 	void Start();
 
+	friend std::ostream& operator<< (std::ostream& stream, const BehaviourTree& bt);
 
 private:
 	Behaviour* m_Root = nullptr;
@@ -376,6 +387,7 @@ public:
 	}
 
 	// TODO: Template this (requires figuring out how to pass in construction params)
+	// TODO: Can then validate at compile-time that adding children to non-leaf nodes only?
 	template<typename T>
 	BehaviourTreeBuilder& AddNode()
 	{
@@ -427,6 +439,7 @@ private:
 		else
 		{
 			assert(nodeParent != nullptr);
+			nodeParent->AddChild(newNode);
 		}
 
 		m_Tree->m_Behaviours.push_back(newNode);
