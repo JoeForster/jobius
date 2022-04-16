@@ -71,33 +71,35 @@ void BehaviourTree::Start()
 
 using namespace std;
 
-ostream& operator<<(ostream& stream, const BehaviourTree& bt)
+ostream& BehaviourTree::DebugToStream(ostream& stream)
 {
-	const Behaviour& bh = *bt.m_Root;
-	stream << bh;
+	m_Root->DebugToStream(stream);
 	return stream;
 }
 
-ostream& operator<<(ostream& stream, const Behaviour& bh)
+ostream& Behaviour::DebugToStream(ostream& stream)
 {
 	// TODO reflection type name and status as string
 	// TODO output children if not leaf
-	stream << "Behaviour[Status:" << (int)bh.m_Status << "]";
+	stream << "Behaviour[Status:" << (int)m_Status << "]";
 	return stream;
 }
 
-ostream& operator<<(ostream& stream, const MockBehaviour& bh)
+ostream& MockBehaviour::DebugToStream(ostream& stream)
 {
-	stream << "MockBehaviour[Status:" << (int)bh.m_Status << ", TestCounter:"<<bh.m_TestCounter<<"]";
+	stream << "MockBehaviour[Status:" << (int)m_Status << ", TestCounter:"<<m_TestCounter<<"]";
 	return stream;
 }
 
-ostream& operator<<(ostream& stream, const ActiveSelector& bh)
+ostream& ActiveSelector::DebugToStream(ostream& stream)
 {
-	const std::ptrdiff_t index = bh.m_CurrentChild - bh.m_Children.begin();
-	stream << "ActiveSelector[Status:" << (int)bh.m_Status << ", CurrentChild:" << index<<"/" << bh.m_Children.size() << "]";
-	for (const auto& child : bh.m_Children)
-		stream << endl << "    " << *child;
+	const std::ptrdiff_t index = m_CurrentChild - m_Children.begin();
+	stream << "ActiveSelector[Status:" << (int)m_Status << ", CurrentChild:" << index<<"/" << m_Children.size() << "]";
+	for (const auto& child : m_Children)
+	{
+		stream << endl << "    ";
+		child->DebugToStream(stream);
+	}
 	return stream;
 }
 
@@ -123,9 +125,19 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 			.EndNode()
 		.EndTree();
 
+	// TODO: Validate state
 	REQUIRE(tree != nullptr);
 	tree->Tick();
-	cout << *tree << endl;
+	tree->DebugToStream(cout) << endl;
+	tree->Tick();
+	tree->DebugToStream(cout) << endl;
+	tree->Tick();
+	tree->DebugToStream(cout) << endl;
+	tree->Tick();
+	tree->DebugToStream(cout) << endl;
+	tree->Tick();
+	tree->DebugToStream(cout) << endl;
+	tree->Tick();
 
 
 	// TODO validate state

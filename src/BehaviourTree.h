@@ -71,7 +71,7 @@ public:
 	// TEMP Construction - can be made unnecessary with templated/concept construction?
 	virtual void AddChild(Behaviour*) { assert(false && "Unsupported AddChild"); }
 
-	friend std::ostream& operator<< (std::ostream& stream, const Behaviour& bt);
+	virtual std::ostream& DebugToStream(std::ostream& stream);
 
 protected:
 	virtual void OnInitialise() {}
@@ -92,7 +92,7 @@ protected:
 	BStatus Update() override;
 	void OnTerminate(BStatus) override;
 
-	friend std::ostream& operator<< (std::ostream& stream, const MockBehaviour& bt);
+	virtual std::ostream& DebugToStream(std::ostream& stream) override;
 
 private:
 	int m_TestCounter = -1;
@@ -301,7 +301,7 @@ protected:
 			// Child either ran successfully or is in-progress
 			if (childStatus != BStatus::FAILURE)
 			{
-				assert(childStatus != BStatus::INVALID);
+				//assert(childStatus != BStatus::INVALID);
 				return childStatus;
 			}
 			// If we ran out, then the whole selector failed to select
@@ -332,7 +332,7 @@ class ActiveSelector : public Selector
 public:
 	ActiveSelector(Behaviour* parent): Selector(parent) {}
 
-	friend std::ostream& operator<< (std::ostream& stream, const ActiveSelector& bt);
+	virtual std::ostream& DebugToStream(std::ostream& stream) override;
 
 protected:
 	BStatus Update() final
@@ -363,7 +363,7 @@ public:
 	void Step();
 	void Start();
 
-	friend std::ostream& operator<< (std::ostream& stream, const BehaviourTree& bt);
+	virtual std::ostream& DebugToStream(std::ostream& stream);
 
 private:
 	Behaviour* m_Root = nullptr;
