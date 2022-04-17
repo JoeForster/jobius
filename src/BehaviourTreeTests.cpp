@@ -35,7 +35,7 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 	// TODO: Validate state
 	REQUIRE(tree != nullptr);
 
-	BStatus status;
+	BehaviourStatus status;
 	auto tickAndPrint = [&]
 	{
 		status = tree->Tick();
@@ -44,19 +44,19 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 	};
 
 	tickAndPrint();
-	REQUIRE(status == BStatus::RUNNING);
-	REQUIRE(failer->GetStatus() == BStatus::ABORTED); // TODO double-check this is valid, or should it be failure?
-	REQUIRE(succeeder->GetStatus() == BStatus::RUNNING);
+	REQUIRE(status == BehaviourStatus::RUNNING);
+	REQUIRE(failer->GetStatus() == BehaviourStatus::ABORTED); // TODO double-check this is valid, or should it be failure?
+	REQUIRE(succeeder->GetStatus() == BehaviourStatus::RUNNING);
 
 	tickAndPrint();
-	REQUIRE(status == BStatus::RUNNING);
-	REQUIRE(failer->GetStatus() == BStatus::FAILURE);
-	REQUIRE(succeeder->GetStatus() == BStatus::RUNNING);
+	REQUIRE(status == BehaviourStatus::RUNNING);
+	REQUIRE(failer->GetStatus() == BehaviourStatus::FAILURE);
+	REQUIRE(succeeder->GetStatus() == BehaviourStatus::RUNNING);
 
 	tickAndPrint();
-	REQUIRE(status == BStatus::SUCCESS);
-	REQUIRE(failer->GetStatus() == BStatus::FAILURE);
-	REQUIRE(succeeder->GetStatus() == BStatus::SUCCESS);
+	REQUIRE(status == BehaviourStatus::SUCCESS);
+	REQUIRE(failer->GetStatus() == BehaviourStatus::FAILURE);
+	REQUIRE(succeeder->GetStatus() == BehaviourStatus::SUCCESS);
 
 }
 

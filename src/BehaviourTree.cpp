@@ -7,10 +7,10 @@
 void MockBehaviour::OnInitialise()
 {
 	m_TestCounter = 3;
-	m_Status = BStatus::RUNNING;
+	m_Status = BehaviourStatus::RUNNING;
 }
 
-BStatus MockBehaviour::Update()
+BehaviourStatus MockBehaviour::Update()
 {
 	// TODO improve by using strategy pattern if it gets complex enough, otherwise just take a lambda?
 	switch (m_Rule)
@@ -20,24 +20,24 @@ BStatus MockBehaviour::Update()
 
 			if (--m_TestCounter <= 0)
 			{
-				m_Status = BStatus::SUCCESS;
+				m_Status = BehaviourStatus::SUCCESS;
 			}
 			else
 			{
-				m_Status = BStatus::RUNNING;
+				m_Status = BehaviourStatus::RUNNING;
 			}
 			break;
 		}
 		case MockRule::ALWAYS_FAIL:
 		{
-			m_Status = BStatus::FAILURE;
+			m_Status = BehaviourStatus::FAILURE;
 			break;
 		}
 	}
 	return m_Status;
 }
 
-void MockBehaviour::OnTerminate(BStatus)
+void MockBehaviour::OnTerminate(BehaviourStatus)
 {
 	m_TestCounter = -1;
 }
@@ -61,7 +61,7 @@ void Composite::ClearChildren()
 	m_Children.clear();
 }
 
-BStatus BehaviourTree::Tick()
+BehaviourStatus BehaviourTree::Tick()
 {
 	return m_Root->Tick();
 }

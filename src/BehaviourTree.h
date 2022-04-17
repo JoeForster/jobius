@@ -6,10 +6,10 @@
 #include <assert.h>
 
 // First attempt at a very very naive and unoptimised behaviour tree implementation.
-// TODO Naming pass required (namespace, smurf, BStatus etc
+// TODO Naming pass required (namespace, smurf, BStatus etc)
 
 
-enum class BStatus
+enum class BehaviourStatus
 {
 	INVALID,
 	RUNNING,
@@ -30,24 +30,24 @@ constexpr char* StatusString[] = {
 	"FAILURE",
 	"ABORTED",
 };
-static_assert(std::size(StatusString) == (size_t)BStatus::BSTATUS_COUNT);
+static_assert(std::size(StatusString) == (size_t)BehaviourStatus::BSTATUS_COUNT);
 
 class Behaviour
 {
 public:
-	Behaviour(Behaviour* parent): m_Status(BStatus::INVALID), m_Parent(parent) {}
+	Behaviour(Behaviour* parent): m_Status(BehaviourStatus::INVALID), m_Parent(parent) {}
 	virtual ~Behaviour() {}
 
-	BStatus Tick()
+	BehaviourStatus Tick()
 	{
-		if (m_Status != BStatus::RUNNING)
+		if (m_Status != BehaviourStatus::RUNNING)
 		{
 			OnInitialise();
 		}
 
 		m_Status = Update();
 
-		if (m_Status != BStatus::RUNNING)
+		if (m_Status != BehaviourStatus::RUNNING)
 		{
 			OnTerminate(m_Status);
 		}
@@ -57,21 +57,21 @@ public:
 
 	void Abort()
 	{
-		OnTerminate(BStatus::ABORTED);
-		m_Status = BStatus::ABORTED;
+		OnTerminate(BehaviourStatus::ABORTED);
+		m_Status = BehaviourStatus::ABORTED;
 	}
 
 	bool IsTerminated() const
 	{
-		return m_Status == BStatus::SUCCESS  ||  m_Status == BStatus::FAILURE;
+		return m_Status == BehaviourStatus::SUCCESS  ||  m_Status == BehaviourStatus::FAILURE;
 	}
 
 	bool IsRunning() const
 	{
-		return m_Status == BStatus::RUNNING;
+		return m_Status == BehaviourStatus::RUNNING;
 	}
 
-	BStatus GetStatus() const
+	BehaviourStatus GetStatus() const
 	{
 		return m_Status;
 	}
@@ -96,13 +96,12 @@ public:
 
 protected:
 	virtual void OnInitialise() {}
-	virtual BStatus Update() = 0;
-	virtual void OnTerminate(BStatus) {}
+	virtual BehaviourStatus Update() = 0;
+	virtual void OnTerminate(BehaviourStatus) {}
 
-	BStatus m_Status;
+	BehaviourStatus m_Status;
 	Behaviour* m_Parent; // TODO use smart pointers?
 };
-
 
 enum class MockRule
 {
@@ -117,8 +116,8 @@ public:
 
 protected:
 	void OnInitialise() override;
-	BStatus Update() override;
-	void OnTerminate(BStatus) override;
+	BehaviourStatus Update() override;
+	void OnTerminate(BehaviourStatus) override;
 
 	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 
@@ -149,28 +148,28 @@ public:
 	{}
 
 protected:
-	BStatus Repeat::Update() override
+	BehaviourStatus Repeat::Update() override
 	{
 		while (true)
 		{
 			m_Child.Tick();
 
 			const auto status = m_Child.GetStatus();
-			if (status == BStatus::RUNNING)
+			if (status == BehaviourStatus::RUNNING)
 			{
 				break;
 			}
-			else if (status == BStatus::FAILURE)
+			else if (status == BehaviourStatus::FAILURE)
 			{
-				return BStatus::FAILURE;
+				return BehaviourStatus::FAILURE;
 			}
 			// TODO should deal with unexpected state value here
 			else if (++m_RepeatCounter == m_NumRepeats)
 			{
-				return BStatus::SUCCESS;
+				return BehaviourStatus::SUCCESS;
 			}
 		}
-		return BStatus::INVALID;
+		return BehaviourStatus::INVALID;
 	}
 
 private:
@@ -193,7 +192,6 @@ public:
 	const Behaviour* GetChildAt(size_t index) const final { return m_Children[index]; }
 
 protected:
-	// TODO would a list or deque make more sense?
 	// TODO can we avoid using raw pointers here?
 	typedef std::vector<Behaviour*> Behaviours;
 	Behaviours m_Children;
@@ -213,26 +211,26 @@ protected:
 		m_CurrentChild = m_Children.begin();
 	}
 
-	virtual BStatus Update() override
+	virtual BehaviourStatus Update() override
 	{
 		assert(m_Children.size() > 0);
 
 		// Run every child until one is running/fails/invalid or we reach the end.
 		while (true)
 		{
-			BStatus childStatus = (*m_CurrentChild)->Tick();
-			if (childStatus != BStatus::SUCCESS)
+			BehaviourStatus childStatus = (*m_CurrentChild)->Tick();
+			if (childStatus != BehaviourStatus::SUCCESS)
 			{
-				assert(childStatus != BStatus::INVALID);
+				assert(childStatus != BehaviourStatus::INVALID);
 				return childStatus;
 			}
 			if (++m_CurrentChild == m_Children.end())
 			{
-				return BStatus::SUCCESS;
+				return BehaviourStatus::SUCCESS;
 			}
 		}
 		// TODO: handle case of no children?
-		return BStatus::INVALID;
+		return BehaviourStatus::INVALID;
 	}
 
 private:
@@ -272,7 +270,7 @@ protected:
 	Policy m_SuccessPolicy;
 	Policy m_FailurePolicy;
 
-	virtual BStatus Update() override
+	virtual BehaviourStatus Update() override
 	{
 		// TODO this doesn't deal with the case that the child list is empty!
 		// TODO what about the case that all children are in the "invalid" state?
@@ -286,29 +284,29 @@ protected:
 				child->Tick();
 			}
 			const auto status = child->GetStatus();
-			if (status == BStatus::SUCCESS)
+			if (status == BehaviourStatus::SUCCESS)
 			{
 				++successCount;
 				if (m_SuccessPolicy == Policy::RequireOne)
 				{
-					return BStatus::SUCCESS;
+					return BehaviourStatus::SUCCESS;
 				}
 			}
-			if (status == BStatus::FAILURE)
+			if (status == BehaviourStatus::FAILURE)
 			{
 				++failureCount;
 				if (m_FailurePolicy == Policy::RequireOne)
 				{
-					return BStatus::FAILURE;
+					return BehaviourStatus::FAILURE;
 				}
 			}
 		}
 		if (m_FailurePolicy == Policy::RequireAll && failureCount == m_Children.size())
-			return BStatus::FAILURE;
+			return BehaviourStatus::FAILURE;
 		if (m_FailurePolicy == Policy::RequireAll && failureCount == m_Children.size())
-			return BStatus::FAILURE;
+			return BehaviourStatus::FAILURE;
 
-		return BStatus::RUNNING;
+		return BehaviourStatus::RUNNING;
 	}
 };
 
@@ -326,28 +324,28 @@ protected:
 		m_CurrentChild = m_Children.begin();
 	}
 
-	virtual BStatus Update() override
+	virtual BehaviourStatus Update() override
 	{
 		assert(m_Children.size() > 0);
 
 		// Tick every child until one succeeds/runs - or fail if none do so.
 		while (true)
 		{
-			BStatus childStatus = (*m_CurrentChild)->Tick();
+			BehaviourStatus childStatus = (*m_CurrentChild)->Tick();
 			// Child either ran successfully or is in-progress
-			if (childStatus != BStatus::FAILURE)
+			if (childStatus != BehaviourStatus::FAILURE)
 			{
-				//assert(childStatus != BStatus::INVALID);
+				//assert(childStatus != BehaviourStatus::INVALID);
 				return childStatus;
 			}
 			// If we ran out, then the whole selector failed to select
 			if (++m_CurrentChild == m_Children.end())
 			{
-				return BStatus::FAILURE;
+				return BehaviourStatus::FAILURE;
 			}
 		}
 		// TODO: handle case of no children?
-		return BStatus::INVALID;
+		return BehaviourStatus::INVALID;
 	}
 
 protected:
@@ -371,11 +369,11 @@ public:
 	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 
 protected:
-	BStatus Update() final
+	BehaviourStatus Update() final
 	{
 		Behaviours::iterator prev = m_CurrentChild;
 		OnInitialise();
-		BStatus result = Selector::Update();
+		BehaviourStatus result = Selector::Update();
 		if (prev != m_Children.end() && m_CurrentChild != prev)
 		{
 			(*prev)->Abort();
@@ -395,7 +393,7 @@ public:
 		}
 	}
 
-	BStatus Tick();
+	BehaviourStatus Tick();
 	void Step();
 	void Start();
 
