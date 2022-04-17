@@ -19,17 +19,17 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 {
 	BehaviourTree* tree = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>()
-			.AddNode_Mock(MockRule::ALWAYS_FAIL).EndNode()
-			.AddNode_Mock(MockRule::RUN_AND_SUCCEED).EndNode()
+			.AddNode_Mock(MockActionRule::ALWAYS_FAIL).EndNode()
+			.AddNode_Mock(MockActionRule::RUN_AND_SUCCEED).EndNode()
 			.EndNode()
 		.EndTree();
 
 	const ActiveSelector* root = dynamic_cast<const ActiveSelector*>( tree->GetRoot() );
 	REQUIRE(root != nullptr);
 	REQUIRE(root->GetChildCount() == 2);
-	const MockBehaviour* failer = dynamic_cast<const MockBehaviour*>( root->GetChildAt(0) );
+	const MockAction* failer = dynamic_cast<const MockAction*>( root->GetChildAt(0) );
 	REQUIRE(failer != nullptr);
-	const MockBehaviour* succeeder = dynamic_cast<const MockBehaviour*>( root->GetChildAt(1) );
+	const MockAction* succeeder = dynamic_cast<const MockAction*>( root->GetChildAt(1) );
 	REQUIRE(succeeder != nullptr);
 
 	// TODO: Validate state

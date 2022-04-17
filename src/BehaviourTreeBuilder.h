@@ -22,9 +22,9 @@ public:
 		return AddNode(node);
 	}
 
-	BehaviourTreeBuilder& AddNode_Mock(MockRule rule)
+	BehaviourTreeBuilder& AddNode_Mock(MockActionRule rule)
 	{
-		Behaviour* node = new MockBehaviour(m_CurrentBehaviour, rule);
+		Behaviour* node = new MockAction(m_CurrentBehaviour, rule);
 		return AddNode(node);
 	}
 

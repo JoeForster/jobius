@@ -64,29 +64,6 @@ protected:
 	Behaviour* m_Parent; // TODO use smart pointers?
 };
 
-enum class MockRule
-{
-	RUN_AND_SUCCEED,
-	ALWAYS_FAIL
-};
-
-class MockBehaviour : public Behaviour
-{
-public:
-	MockBehaviour(Behaviour* parent, MockRule rule): Behaviour(parent), m_Rule(rule) {}
-
-protected:
-	void OnInitialise() override;
-	BehaviourStatus Update() override;
-	void OnTerminate(BehaviourStatus) override;
-
-	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
-
-private:
-	int m_TestCounter = -1;
-	MockRule m_Rule;
-};
-
 class Decorator : public Behaviour
 {
 public:
@@ -241,3 +218,25 @@ private:
 	friend class BehaviourTreeBuilder;
 };
 
+enum class MockActionRule
+{
+	RUN_AND_SUCCEED,
+	ALWAYS_FAIL
+};
+
+class MockAction : public Behaviour
+{
+public:
+	MockAction(Behaviour* parent, MockActionRule rule): Behaviour(parent), m_Rule(rule) {}
+
+protected:
+	void OnInitialise() override;
+	BehaviourStatus Update() override;
+	void OnTerminate(BehaviourStatus) override;
+
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
+
+private:
+	int m_TestCounter = -1;
+	MockActionRule m_Rule;
+};

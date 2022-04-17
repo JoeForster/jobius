@@ -183,42 +183,10 @@ BehaviourStatus ActiveSelector::Update()
 	return result;
 }
 
-void MockBehaviour::OnInitialise()
+void MockAction::OnInitialise()
 {
 	m_TestCounter = 3;
 	m_Status = BehaviourStatus::RUNNING;
-}
-
-BehaviourStatus MockBehaviour::Update()
-{
-	// TODO improve by using strategy pattern if it gets complex enough, otherwise just take a lambda?
-	switch (m_Rule)
-	{
-		case MockRule::RUN_AND_SUCCEED:
-		{
-
-			if (--m_TestCounter <= 0)
-			{
-				m_Status = BehaviourStatus::SUCCESS;
-			}
-			else
-			{
-				m_Status = BehaviourStatus::RUNNING;
-			}
-			break;
-		}
-		case MockRule::ALWAYS_FAIL:
-		{
-			m_Status = BehaviourStatus::FAILURE;
-			break;
-		}
-	}
-	return m_Status;
-}
-
-void MockBehaviour::OnTerminate(BehaviourStatus)
-{
-	m_TestCounter = -1;
 }
 
 
@@ -254,6 +222,40 @@ void BehaviourTree::Step()
 void BehaviourTree::Start()
 {
 
+}
+
+// Mocks
+
+BehaviourStatus MockAction::Update()
+{
+	// TODO improve by using strategy pattern if it gets complex enough, otherwise just take a lambda?
+	switch (m_Rule)
+	{
+	case MockActionRule::RUN_AND_SUCCEED:
+	{
+
+		if (--m_TestCounter <= 0)
+		{
+			m_Status = BehaviourStatus::SUCCESS;
+		}
+		else
+		{
+			m_Status = BehaviourStatus::RUNNING;
+		}
+		break;
+	}
+	case MockActionRule::ALWAYS_FAIL:
+	{
+		m_Status = BehaviourStatus::FAILURE;
+		break;
+	}
+	}
+	return m_Status;
+}
+
+void MockAction::OnTerminate(BehaviourStatus)
+{
+	m_TestCounter = -1;
 }
 
 // Debug out
@@ -300,9 +302,9 @@ ostream& Behaviour::DebugToStream(ostream& stream) const
 	return stream;
 }
 
-ostream& MockBehaviour::DebugToStream(ostream& stream) const
+ostream& MockAction::DebugToStream(ostream& stream) const
 {
-	stream << "MockBehaviour[Status:" << StatusString[(int)m_Status] << ", TestCounter:"<<m_TestCounter<<"]";
+	stream << "MockAction[Status:" << StatusString[(int)m_Status] << ", TestCounter:"<<m_TestCounter<<"]";
 	return stream;
 }
 
