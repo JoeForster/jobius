@@ -14,6 +14,7 @@ set(SOURCES
 	"PlayerControlSystem.cpp"
 	"SDLRenderManager.cpp"
 	"BehaviourTree.cpp"
+	"BehaviourTreeTests.cpp"
 )
 
 set(HEADERS
@@ -40,6 +41,7 @@ set(HEADERS
 	"KBInputComponent.h"
 	"PadInputComponent.h"
 	"BehaviourTree.h"
+	"BehaviourTreeBuilder.h"
 	"catch.hpp"
 )
 
