@@ -38,58 +38,19 @@ public:
 	Behaviour(Behaviour* parent): m_Status(BehaviourStatus::INVALID), m_Parent(parent) {}
 	virtual ~Behaviour() {}
 
-	BehaviourStatus Tick()
-	{
-		if (m_Status != BehaviourStatus::RUNNING)
-		{
-			OnInitialise();
-		}
+	BehaviourStatus Tick();
+	void Abort();
 
-		m_Status = Update();
+	bool IsTerminated() const;
+	bool IsRunning() const;
 
-		if (m_Status != BehaviourStatus::RUNNING)
-		{
-			OnTerminate(m_Status);
-		}
-
-		return m_Status;
-	}
-
-	void Abort()
-	{
-		OnTerminate(BehaviourStatus::ABORTED);
-		m_Status = BehaviourStatus::ABORTED;
-	}
-
-	bool IsTerminated() const
-	{
-		return m_Status == BehaviourStatus::SUCCESS  ||  m_Status == BehaviourStatus::FAILURE;
-	}
-
-	bool IsRunning() const
-	{
-		return m_Status == BehaviourStatus::RUNNING;
-	}
-
-	BehaviourStatus GetStatus() const
-	{
-		return m_Status;
-	}
-
-	const Behaviour* GetParent() const
-	{
-		return m_Parent;
-	}
-
-	Behaviour* GetParent()
-	{
-		return m_Parent;
-	}
+	inline BehaviourStatus GetStatus() const { return m_Status; }
+	inline const Behaviour* GetParent() const { return m_Parent; }
+	inline Behaviour* GetParent() { return m_Parent; }
 
 	virtual size_t GetChildCount() const { return 0; }
 	virtual const Behaviour* GetChildAt(size_t index) const { return nullptr; }
-
-	// TEMP Construction - can be made unnecessary with templated/concept construction?
+	// TEMP Construction - can be made unnecessary if builder knows whether leaf node at compile time (concepts)
 	virtual void AddChild(Behaviour*) { assert(false && "Unsupported AddChild"); }
 
 	virtual std::ostream& DebugToStream(std::ostream& stream) const;
@@ -148,29 +109,7 @@ public:
 	{}
 
 protected:
-	BehaviourStatus Repeat::Update() override
-	{
-		while (true)
-		{
-			m_Child.Tick();
-
-			const auto status = m_Child.GetStatus();
-			if (status == BehaviourStatus::RUNNING)
-			{
-				break;
-			}
-			else if (status == BehaviourStatus::FAILURE)
-			{
-				return BehaviourStatus::FAILURE;
-			}
-			// TODO should deal with unexpected state value here
-			else if (++m_RepeatCounter == m_NumRepeats)
-			{
-				return BehaviourStatus::SUCCESS;
-			}
-		}
-		return BehaviourStatus::INVALID;
-	}
+	BehaviourStatus Repeat::Update() override;
 
 private:
 	unsigned m_RepeatCounter = 0;
@@ -204,34 +143,8 @@ public:
 	Sequence(Behaviour* parent): Composite(parent) {}
 
 protected:
-	virtual void OnInitialise() override
-	{
-		// TODO: This won't work as expected if you alter the child set during run.
-		// Does it ever make sense to restructure the tree during a run, or do we want just some flow to lock it after construction?
-		m_CurrentChild = m_Children.begin();
-	}
-
-	virtual BehaviourStatus Update() override
-	{
-		assert(m_Children.size() > 0);
-
-		// Run every child until one is running/fails/invalid or we reach the end.
-		while (true)
-		{
-			BehaviourStatus childStatus = (*m_CurrentChild)->Tick();
-			if (childStatus != BehaviourStatus::SUCCESS)
-			{
-				assert(childStatus != BehaviourStatus::INVALID);
-				return childStatus;
-			}
-			if (++m_CurrentChild == m_Children.end())
-			{
-				return BehaviourStatus::SUCCESS;
-			}
-		}
-		// TODO: handle case of no children?
-		return BehaviourStatus::INVALID;
-	}
+	virtual void OnInitialise() override;
+	virtual BehaviourStatus Update() override;
 
 private:
 	Behaviours::iterator m_CurrentChild;
@@ -240,14 +153,8 @@ private:
 class Filter : public Sequence
 {
 public:
-	void AddCondition(Behaviour* condition)
-	{
-		m_Children.insert(m_Children.begin(), condition);
-	}
-	void AddAction(Behaviour* action)
-	{
-		m_Children.push_back(action);
-	}
+	void AddCondition(Behaviour* condition);
+	void AddAction(Behaviour* action);
 };
 
 class Parallel : public Composite
@@ -270,44 +177,7 @@ protected:
 	Policy m_SuccessPolicy;
 	Policy m_FailurePolicy;
 
-	virtual BehaviourStatus Update() override
-	{
-		// TODO this doesn't deal with the case that the child list is empty!
-		// TODO what about the case that all children are in the "invalid" state?
-
-		size_t successCount = 0, failureCount = 0;
-		assert(m_Children.size() > 0);
-		for (auto child: m_Children)
-		{
-			if (!child->IsTerminated())
-			{
-				child->Tick();
-			}
-			const auto status = child->GetStatus();
-			if (status == BehaviourStatus::SUCCESS)
-			{
-				++successCount;
-				if (m_SuccessPolicy == Policy::RequireOne)
-				{
-					return BehaviourStatus::SUCCESS;
-				}
-			}
-			if (status == BehaviourStatus::FAILURE)
-			{
-				++failureCount;
-				if (m_FailurePolicy == Policy::RequireOne)
-				{
-					return BehaviourStatus::FAILURE;
-				}
-			}
-		}
-		if (m_FailurePolicy == Policy::RequireAll && failureCount == m_Children.size())
-			return BehaviourStatus::FAILURE;
-		if (m_FailurePolicy == Policy::RequireAll && failureCount == m_Children.size())
-			return BehaviourStatus::FAILURE;
-
-		return BehaviourStatus::RUNNING;
-	}
+	virtual BehaviourStatus Update() override;
 };
 
 // Base "passive" selector: tick children until one succeeds or runs.
@@ -317,36 +187,8 @@ public:
 	Selector(Behaviour* parent): Composite(parent) {}
 
 protected:
-	virtual void OnInitialise() override
-	{
-		// TODO: This won't work as expected if you alter the child set during run.
-		// Does it ever make sense to restructure the tree during a run, or do we want just some flow to lock it after construction?
-		m_CurrentChild = m_Children.begin();
-	}
-
-	virtual BehaviourStatus Update() override
-	{
-		assert(m_Children.size() > 0);
-
-		// Tick every child until one succeeds/runs - or fail if none do so.
-		while (true)
-		{
-			BehaviourStatus childStatus = (*m_CurrentChild)->Tick();
-			// Child either ran successfully or is in-progress
-			if (childStatus != BehaviourStatus::FAILURE)
-			{
-				//assert(childStatus != BehaviourStatus::INVALID);
-				return childStatus;
-			}
-			// If we ran out, then the whole selector failed to select
-			if (++m_CurrentChild == m_Children.end())
-			{
-				return BehaviourStatus::FAILURE;
-			}
-		}
-		// TODO: handle case of no children?
-		return BehaviourStatus::INVALID;
-	}
+	virtual void OnInitialise() override;
+	virtual BehaviourStatus Update() override;
 
 protected:
 	Behaviours::iterator m_CurrentChild;
@@ -369,17 +211,7 @@ public:
 	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 
 protected:
-	BehaviourStatus Update() final
-	{
-		Behaviours::iterator prev = m_CurrentChild;
-		OnInitialise();
-		BehaviourStatus result = Selector::Update();
-		if (prev != m_Children.end() && m_CurrentChild != prev)
-		{
-			(*prev)->Abort();
-		}
-		return result;
-	}
+	BehaviourStatus Update() final;
 };
 
 class BehaviourTree
