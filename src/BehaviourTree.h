@@ -2,7 +2,10 @@
 
 #include <vector>
 #include <iostream>
+#include <iterator>
 #include <assert.h>
+
+// TODO Naming pass required (namespace, smurf, BStatus etc)
 
 // First attempt at a very very naive and unoptimised behaviour tree implementation.
 
@@ -17,6 +20,8 @@ enum class BStatus
 	SUCCESS,
 	FAILURE,
 	ABORTED,
+
+	BSTATUS_COUNT
 };
 
 class Behaviour
@@ -63,15 +68,23 @@ public:
 		return m_Status;
 	}
 
+	const Behaviour* GetParent() const
+	{
+		return m_Parent;
+	}
+
 	Behaviour* GetParent()
 	{
 		return m_Parent;
 	}
 
+	virtual size_t GetChildCount() const { return 0; }
+	virtual const Behaviour* GetChildAt(size_t index) const { return nullptr; }
+
 	// TEMP Construction - can be made unnecessary with templated/concept construction?
 	virtual void AddChild(Behaviour*) { assert(false && "Unsupported AddChild"); }
 
-	virtual std::ostream& DebugToStream(std::ostream& stream);
+	virtual std::ostream& DebugToStream(std::ostream& stream) const;
 
 protected:
 	virtual void OnInitialise() {}
@@ -82,26 +95,37 @@ protected:
 	Behaviour* m_Parent; // TODO use smart pointers?
 };
 
+
+enum class MockRule
+{
+	RUN_AND_SUCCEED,
+	ALWAYS_FAIL
+};
+
 class MockBehaviour : public Behaviour
 {
 public:
-	MockBehaviour(Behaviour* parent): Behaviour(parent) {}
+	MockBehaviour(Behaviour* parent, MockRule rule): Behaviour(parent), m_Rule(rule) {}
 
 protected:
 	void OnInitialise() override;
 	BStatus Update() override;
 	void OnTerminate(BStatus) override;
 
-	virtual std::ostream& DebugToStream(std::ostream& stream) override;
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 
 private:
 	int m_TestCounter = -1;
+	MockRule m_Rule;
 };
 
 class Decorator : public Behaviour
 {
 public:
 	Decorator(Behaviour* parent, Behaviour& child): Behaviour(parent), m_Child(child) {}
+
+	size_t GetChildCount() const final { return 1; }
+	const Behaviour* GetChildAt(size_t index) const final { return (index == 0 ? &m_Child : nullptr); }
 
 protected:
 	Behaviour& m_Child;
@@ -155,6 +179,10 @@ public:
 	virtual void AddChild(Behaviour*) override;
 	void RemoveChild(Behaviour*);
 	void ClearChildren();
+
+	// TODO validate index OR assert consistently when out of bounds
+	size_t GetChildCount() const final { return m_Children.size(); }
+	const Behaviour* GetChildAt(size_t index) const final { return m_Children[index]; }
 
 protected:
 	// TODO would a list or deque make more sense?
@@ -332,7 +360,7 @@ class ActiveSelector : public Selector
 public:
 	ActiveSelector(Behaviour* parent): Selector(parent) {}
 
-	virtual std::ostream& DebugToStream(std::ostream& stream) override;
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 
 protected:
 	BStatus Update() final
@@ -363,7 +391,9 @@ public:
 	void Step();
 	void Start();
 
-	virtual std::ostream& DebugToStream(std::ostream& stream);
+	const Behaviour* GetRoot() const { return m_Root; }
+
+	virtual std::ostream& DebugToStream(std::ostream& stream) const;
 
 private:
 	Behaviour* m_Root = nullptr;
@@ -392,6 +422,12 @@ public:
 	BehaviourTreeBuilder& AddNode()
 	{
 		Behaviour* node = new T(m_CurrentBehaviour);
+		return AddNode(node);
+	}
+
+	BehaviourTreeBuilder& AddNode_Mock(MockRule rule)
+	{
+		Behaviour* node = new MockBehaviour(m_CurrentBehaviour, rule);
 		return AddNode(node);
 	}
 
