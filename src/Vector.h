@@ -12,26 +12,26 @@ struct Vector2f
 	//Vector2f(float initX, float initY)
 	//: x(initX), y(initY) {}
 
-	const Vector2f Vector2f::operator-(const Vector2f& other) const
+	const Vector2f operator-(const Vector2f& other) const
 	{
 		Vector2f v {x - other.x, y - other.y};
 		return v;
 	}
 
-	const Vector2f Vector2f::operator+(const Vector2f& other) const
+	const Vector2f operator+(const Vector2f& other) const
 	{
 		Vector2f v {x + other.x, y + other.y};
 		return v;
 	}
 
 
-	const Vector2f Vector2f::operator*(const Vector2f& other) const
+	const Vector2f operator*(const Vector2f& other) const
 	{
 		Vector2f v{x * other.x, y * other.y};
 		return v;
 	}
 
-	Vector2f& Vector2f::operator+=(const Vector2f& other)
+	Vector2f& operator+=(const Vector2f& other)
 	{
 		x = x + other.x;
 		y = y + other.y;
@@ -39,7 +39,7 @@ struct Vector2f
 		return *this;
 	}
 
-	Vector2f& Vector2f::operator-=(const Vector2f& other)
+	Vector2f& operator-=(const Vector2f& other)
 	{
 		x = x - other.x;
 		y = y - other.y;
@@ -47,7 +47,7 @@ struct Vector2f
 		return *this;
 	}
 
-	Vector2f& Vector2f::operator*=(const float aFloat)
+	Vector2f& operator*=(const float aFloat)
 	{
 		x *= aFloat;
 		y *= aFloat;
@@ -55,7 +55,7 @@ struct Vector2f
 		return *this;
 	}
 
-	Vector2f& Vector2f::operator/=(const float aFloat)
+	Vector2f& operator/=(const float aFloat)
 	{
 		x /= aFloat;
 		y /= aFloat;
@@ -63,20 +63,20 @@ struct Vector2f
 		return *this;
 	}
 
-	bool Vector2f::operator>(const Vector2f& rVec) const
+	bool operator>(const Vector2f& rVec) const
 	{
 		return (x > rVec.x && y > rVec.y);
 	}
-	bool Vector2f::operator>=(const Vector2f& rVec) const
+	bool operator>=(const Vector2f& rVec) const
 	{
 		return (x >= rVec.x && y >= rVec.y);
 	}
 
-	bool Vector2f::operator<(const Vector2f& rVec) const
+	bool operator<(const Vector2f& rVec) const
 	{
 		return (x < rVec.x && y < rVec.y);
 	}
-	bool Vector2f::operator<=(const Vector2f& rVec) const
+	bool operator<=(const Vector2f& rVec) const
 	{
 		return (x <= rVec.x && y <= rVec.y);
 	}
@@ -87,17 +87,17 @@ struct Vector2f
 				fabsf(y) < std::numeric_limits<float>::epsilon());
 	}
 
-	float Vector2f::MagnitudeSq() const
+	float MagnitudeSq() const
 	{
 		return x*x + y*y;
 	}
 
-	float Vector2f::Magnitude() const
+	float Magnitude() const
 	{
 		return sqrtf(x*x + y*y);
 	}
 
-	void Vector2f::Normalise()
+	void Normalise()
 	{
 		float mag = Magnitude();
 
