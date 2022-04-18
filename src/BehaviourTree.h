@@ -22,7 +22,7 @@ enum class BehaviourStatus
 };
 
 // TODO there's probably a more modern C++ way of getting an enum-string mapping like this
-constexpr char* StatusString[] = {
+constexpr const char* StatusString[] = {
 	"INVALID",
 	"RUNNING",
 	"SUSPENDED",
