@@ -19,8 +19,8 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 {
 	BehaviourTree* tree = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>()
-			.AddNode_Mock(MockActionRule::ALWAYS_FAIL).EndNode()
-			.AddNode_Mock(MockActionRule::RUN_AND_SUCCEED).EndNode()
+			.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL).EndNode()
+			.AddNode<MockAction>(MockActionRule::RUN_AND_SUCCEED).EndNode()
 			.EndNode()
 		.EndTree();
 

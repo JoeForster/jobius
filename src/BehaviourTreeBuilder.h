@@ -9,22 +9,32 @@ public:
 	{
 	}
 
-	// TODO: Template this (requires figuring out how to pass in construction params)
-	// TODO: Can then validate at compile-time that adding children to non-leaf nodes only?
-	template<typename T>
-	BehaviourTreeBuilder& AddNode()
+	// TODO: Specialisation for leaf nodes that auto-ends?
+	template<typename T, typename... Args>
+	BehaviourTreeBuilder& AddNode(Args... args)
 	{
-		Behaviour* node = new T(m_CurrentBehaviour);
-		return AddNode(node);
+		Behaviour* newNode = new T(m_CurrentBehaviour, args...);
+		Behaviour* nodeParent = newNode->GetParent();
+		assert(newNode->GetParent() == m_CurrentBehaviour);
+		if (m_Tree->m_Root == nullptr)
+		{
+			assert(nodeParent == nullptr);
+			m_Tree->m_Root = newNode;
+		}
+		else
+		{
+			assert(nodeParent != nullptr);
+			nodeParent->AddChild(newNode);
+		}
+
+		m_Tree->m_Behaviours.push_back(newNode);
+
+		m_CurrentBehaviour = newNode;
+
+
+		return *this;
 	}
 
-	BehaviourTreeBuilder& AddNode_Mock(MockActionRule rule)
-	{
-		Behaviour* node = new MockAction(m_CurrentBehaviour, rule);
-		return AddNode(node);
-	}
-
-	// TODO: Auto-end leaf nodes.
 	BehaviourTreeBuilder& EndNode()
 	{
 		if (m_CurrentBehaviour == m_Tree->m_Root)
@@ -51,34 +61,4 @@ public:
 private:
 	BehaviourTree* m_Tree;
 	Behaviour* m_CurrentBehaviour;
-
-	// Ref code for concept usage in AddNode
-	//template <typename T>
-	//concept BehaviourType = std::is_base_of<Behaviour, T>::value;
-
-	// TODO would be nice, but how would we do this with variable constructor params?
-	//template<class T>
-	//BehaviourTreeBuilder& AddNode()
-	// Add a newly-constructed node (takes ownership of memory)
-	BehaviourTreeBuilder& AddNode(Behaviour* newNode)
-	{
-		Behaviour* nodeParent = newNode->GetParent();
-		assert(newNode->GetParent() == m_CurrentBehaviour);
-		if (m_Tree->m_Root == nullptr)
-		{
-			assert(nodeParent == nullptr);
-			m_Tree->m_Root = newNode;
-		}
-		else
-		{
-			assert(nodeParent != nullptr);
-			nodeParent->AddChild(newNode);
-		}
-
-		m_Tree->m_Behaviours.push_back(newNode);
-
-		m_CurrentBehaviour = newNode;
-
-		return *this;
-	}
 };
