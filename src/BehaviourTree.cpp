@@ -265,7 +265,7 @@ using namespace std;
 ostream& BehaviourTree::DebugToStream(ostream& stream) const
 {
 	stream << "BehaviourTree ->" << endl;
-	int indentLevel = 1; // TODO
+	int indentLevel = 1;
 	const Behaviour* prevParent = nullptr;
 	std::list<const Behaviour*> writeQueue = { m_Root };
 	while (writeQueue.empty() == false)

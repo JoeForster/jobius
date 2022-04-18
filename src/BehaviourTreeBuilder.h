@@ -1,9 +1,5 @@
 #include "BehaviourTree.h"
 
-// TODO: Requires us to upgrade standard to C++20 - which needs some fixes to our codebase..
-//template <typename T>
-//concept BehaviourType = std::is_base_of<Behaviour, T>::value;
-
 class BehaviourTreeBuilder
 {
 public:
@@ -55,6 +51,10 @@ public:
 private:
 	BehaviourTree* m_Tree;
 	Behaviour* m_CurrentBehaviour;
+
+	// Ref code for concept usage in AddNode
+	//template <typename T>
+	//concept BehaviourType = std::is_base_of<Behaviour, T>::value;
 
 	// TODO would be nice, but how would we do this with variable constructor params?
 	//template<class T>
