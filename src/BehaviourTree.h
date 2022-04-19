@@ -134,6 +134,8 @@ public:
 	void AddAction(Behaviour* action);
 };
 
+
+// Parallel node: run through each child, returning success/failure based on the corresponding Policy value.
 class Parallel : public Composite
 {
 public:
@@ -157,6 +159,17 @@ protected:
 	virtual BehaviourStatus Update() override;
 };
 
+// Monitor node: a parallel node which will always re-check a set of conditions befor eexecuting the actions.
+// Children sequence is a set of conditions first, then the actions.
+class Monitor : public Parallel
+{
+public:
+	Monitor(Behaviour* parent): Parallel(parent, Policy::RequireOne, Policy::RequireOne) {}
+
+	void AddCondition(Behaviour* condition);
+	void AddAction(Behaviour* action);
+};
+
 // Base "passive" selector: tick children until one succeeds or runs.
 class Selector : public Composite
 {
@@ -169,17 +182,6 @@ protected:
 
 protected:
 	Behaviours::iterator m_CurrentChild;
-};
-
-// Monitor node: a parallel node which will always re-check a set of conditions befor eexecuting the actions.
-// Children sequence is a set of conditions first, then the actions.
-class Monitor : public Parallel
-{
-public:
-	Monitor(Behaviour* parent): Parallel(parent, Policy::RequireOne, Policy::RequireOne) {}
-
-	void AddCondition(Behaviour* condition);
-	void AddAction(Behaviour* action);
 };
 
 // Active selector: like a passive selector but keeps re-checking higher-priority (leftmost) children before moving on to the next.

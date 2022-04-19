@@ -140,6 +140,18 @@ BehaviourStatus Parallel::Update()
 	return BehaviourStatus::RUNNING;
 }
 
+
+void Monitor::AddCondition(Behaviour* condition)
+{
+	m_Children.insert(m_Children.begin(), condition);
+}
+
+void Monitor::AddAction(Behaviour* action)
+{
+	m_Children.push_back(action);
+}
+
+
 void Selector::OnInitialise()
 {
 	// TODO: This won't work as expected if you alter the child set during run.
@@ -171,16 +183,6 @@ BehaviourStatus Selector::Update()
 	return BehaviourStatus::INVALID;
 }
 
-
-void Monitor::AddCondition(Behaviour* condition)
-{
-	m_Children.insert(m_Children.begin(), condition);
-}
-
-void Monitor::AddAction(Behaviour* action)
-{
-	m_Children.push_back(action);
-}
 
 BehaviourStatus ActiveSelector::Update()
 {
