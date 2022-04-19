@@ -86,7 +86,7 @@ public:
 	{}
 
 protected:
-	BehaviourStatus Repeat::Update() override;
+	BehaviourStatus Update() override;
 
 private:
 	unsigned m_RepeatCounter = 0;
@@ -171,12 +171,15 @@ protected:
 	Behaviours::iterator m_CurrentChild;
 };
 
+// Monitor node: a parallel node which will always re-check a set of conditions befor eexecuting the actions.
+// Children sequence is a set of conditions first, then the actions.
 class Monitor : public Parallel
 {
 public:
 	Monitor(Behaviour* parent): Parallel(parent, Policy::RequireOne, Policy::RequireOne) {}
 
-	// TODO
+	void AddCondition(Behaviour* condition);
+	void AddAction(Behaviour* action);
 };
 
 // Active selector: like a passive selector but keeps re-checking higher-priority (leftmost) children before moving on to the next.
