@@ -220,6 +220,10 @@ protected:
 	BehaviourStatus Update() final;
 };
 
+// BEHAVIOUR TREE wrapper class
+// - Owns the Behaviour memory once added
+// - Tracks the state of the tree (locked/started)
+
 class BehaviourTree
 {
 public:
@@ -245,69 +249,3 @@ private:
 	friend class BehaviourTreeBuilder;
 };
 
-enum class MockActionRule
-{
-	RUN_AND_SUCCEED,
-	ALWAYS_FAIL,
-
-	MARULE_COUNT
-};
-
-constexpr const char* MockActionString[] = {
-	"RUN_AND_SUCCEED",
-	"ALWAYS_FAIL"
-};
-static_assert(std::size(MockActionString) == (size_t)MockActionRule::MARULE_COUNT);
-
-class MockAction : public Behaviour
-{
-public:
-	MockAction(Behaviour* parent, const BehaviourTreeState& treeState, MockActionRule rule)
-	: Behaviour(parent, treeState), m_Rule(rule) {}
-
-protected:
-	void OnInitialise() override;
-	BehaviourStatus Update() override;
-	void OnTerminate(BehaviourStatus) override;
-
-	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
-
-private:
-	int m_TestCounter = -1;
-	MockActionRule m_Rule;
-};
-
-enum class MockConditionRule
-{
-	ALWAYS_SUCCEED,
-	ALWAYS_FAIL,
-	FAIL_AND_THEN_SUCCEED,
-	SUCEED_AND_THEN_FAIL,
-
-	MCRULE_COUNT
-};
-
-constexpr const char* MockConditionString[] = {
-	"ALWAYS_SUCCEED",
-	"ALWAYS_FAIL",
-	"FAIL_AND_THEN_SUCCEED",
-	"SUCEED_AND_THEN_FAIL"
-};
-static_assert(std::size(MockConditionString) == (size_t)MockConditionRule::MCRULE_COUNT);
-
-class MockCondition : public Behaviour
-{
-public:
-	MockCondition(Behaviour* parent, const BehaviourTreeState& treeState, MockConditionRule rule)
-		: Behaviour(parent, treeState), m_Rule(rule) {}
-
-protected:
-	void OnInitialise() override;
-	BehaviourStatus Update() override;
-	void OnTerminate(BehaviourStatus) override;
-
-	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
-
-private:
-	MockConditionRule m_Rule;
-};

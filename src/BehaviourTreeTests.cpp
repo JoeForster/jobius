@@ -3,6 +3,116 @@
 #include "BehaviourTree.h"
 #include "BehaviourTreeBuilder.h"
 
+// MOCK TYPES
+// TODO likely to go into their own new header/cpp once this file gets too massive...
+enum class MockActionRule
+{
+	RUN_AND_SUCCEED,
+	ALWAYS_FAIL,
+
+	MARULE_COUNT
+};
+
+constexpr const char* MockActionString[] = {
+	"RUN_AND_SUCCEED",
+	"ALWAYS_FAIL"
+};
+static_assert(std::size(MockActionString) == (size_t)MockActionRule::MARULE_COUNT);
+
+class MockAction : public Behaviour
+{
+public:
+	MockAction(Behaviour* parent, const BehaviourTreeState& treeState, MockActionRule rule)
+	: Behaviour(parent, treeState), m_Rule(rule) {}
+
+protected:
+	void OnInitialise() override
+	{
+		m_TestCounter = 3;
+		m_Status = BehaviourStatus::RUNNING;
+	}
+
+	BehaviourStatus Update()
+	{
+		// TODO improve by using strategy pattern if it gets complex enough, otherwise just take a lambda?
+		switch (m_Rule)
+		{
+		case MockActionRule::RUN_AND_SUCCEED:
+		{
+
+			if (--m_TestCounter <= 0)
+			{
+				m_Status = BehaviourStatus::SUCCESS;
+			}
+			else
+			{
+				m_Status = BehaviourStatus::RUNNING;
+			}
+			break;
+		}
+		case MockActionRule::ALWAYS_FAIL:
+		{
+			m_Status = BehaviourStatus::FAILURE;
+			break;
+		}
+		}
+		return m_Status;
+	}
+
+	void OnTerminate(BehaviourStatus) override
+	{
+		m_TestCounter = -1;
+	}
+
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
+
+private:
+	int m_TestCounter = -1;
+	MockActionRule m_Rule;
+};
+
+enum class MockConditionRule
+{
+	ALWAYS_SUCCEED,
+	ALWAYS_FAIL,
+	FAIL_AND_THEN_SUCCEED,
+	SUCEED_AND_THEN_FAIL,
+
+	MCRULE_COUNT
+};
+
+constexpr const char* MockConditionString[] = {
+	"ALWAYS_SUCCEED",
+	"ALWAYS_FAIL",
+	"FAIL_AND_THEN_SUCCEED",
+	"SUCEED_AND_THEN_FAIL"
+};
+static_assert(std::size(MockConditionString) == (size_t)MockConditionRule::MCRULE_COUNT);
+
+class MockCondition : public Behaviour
+{
+public:
+	MockCondition(Behaviour* parent, const BehaviourTreeState& treeState, MockConditionRule rule)
+		: Behaviour(parent, treeState), m_Rule(rule) {}
+
+protected:
+	void OnInitialise() override;
+	BehaviourStatus Update() override;
+	void OnTerminate(BehaviourStatus) override;
+
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
+
+private:
+	MockConditionRule m_Rule;
+};
+
+std::ostream& MockAction::DebugToStream(std::ostream& stream) const
+{
+	stream << "MockAction[Status:" << StatusString[(int)m_Status] << ", TestCounter:"<<m_TestCounter<<"]";
+	return stream;
+}
+
+
 // Unit Tests
 // TODO common init/cleanup block (just make the builder, bt pointer, delete at end?)
 // TODO more!

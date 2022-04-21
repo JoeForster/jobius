@@ -223,13 +223,6 @@ BehaviourStatus ActiveSelector::Update()
 	return result;
 }
 
-void MockAction::OnInitialise()
-{
-	m_TestCounter = 3;
-	m_Status = BehaviourStatus::RUNNING;
-}
-
-
 void Composite::AddChild(Behaviour* behaviour)
 {
 	if (!CanChangeStructure())
@@ -295,40 +288,6 @@ void BehaviourTree::Start()
 	m_State.IsStarted = true;
 }
 
-// Mocks
-
-BehaviourStatus MockAction::Update()
-{
-	// TODO improve by using strategy pattern if it gets complex enough, otherwise just take a lambda?
-	switch (m_Rule)
-	{
-	case MockActionRule::RUN_AND_SUCCEED:
-	{
-
-		if (--m_TestCounter <= 0)
-		{
-			m_Status = BehaviourStatus::SUCCESS;
-		}
-		else
-		{
-			m_Status = BehaviourStatus::RUNNING;
-		}
-		break;
-	}
-	case MockActionRule::ALWAYS_FAIL:
-	{
-		m_Status = BehaviourStatus::FAILURE;
-		break;
-	}
-	}
-	return m_Status;
-}
-
-void MockAction::OnTerminate(BehaviourStatus)
-{
-	m_TestCounter = -1;
-}
-
 // Debug out
 
 using namespace std;
@@ -370,12 +329,6 @@ ostream& BehaviourTree::DebugToStream(ostream& stream) const
 ostream& Behaviour::DebugToStream(ostream& stream) const
 {
 	stream << "Behaviour[Status:" << StatusString[(int)m_Status] << "]";
-	return stream;
-}
-
-ostream& MockAction::DebugToStream(ostream& stream) const
-{
-	stream << "MockAction[Status:" << StatusString[(int)m_Status] << ", TestCounter:"<<m_TestCounter<<"]";
 	return stream;
 }
 
