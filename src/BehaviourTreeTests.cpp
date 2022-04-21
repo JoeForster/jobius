@@ -35,6 +35,8 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 	// TODO: Validate state
 	REQUIRE(tree != nullptr);
 
+	tree->Start();
+
 	BehaviourStatus status;
 	auto tickAndPrint = [&]
 	{

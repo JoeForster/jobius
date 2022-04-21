@@ -224,17 +224,19 @@ void Composite::ClearChildren()
 
 BehaviourStatus BehaviourTree::Tick()
 {
+	assert(m_IsStarted && "Behaviour tree ticked but not yest started");
 	return m_Root->Tick();
 }
 
 void BehaviourTree::Step()
 {
-
+	assert(false && "Not implemented");
 }
 
 void BehaviourTree::Start()
 {
-
+	assert(!m_IsStarted);
+	m_IsStarted = true;
 }
 
 // Mocks
@@ -325,5 +327,11 @@ ostream& ActiveSelector::DebugToStream(ostream& stream) const
 {
 	const std::ptrdiff_t index = m_CurrentChild - m_Children.begin();
 	stream << "ActiveSelector[Status:" << StatusString[(int)m_Status] << ", CurrentChild:" << index<<"/" << m_Children.size() << "]";
+	return stream;
+}
+
+ostream& Monitor::DebugToStream(ostream& stream) const
+{
+	stream << "Monitor[Status:" << StatusString[(int)m_Status] << "]";
 	return stream;
 }

@@ -168,6 +168,8 @@ public:
 
 	void AddCondition(Behaviour* condition);
 	void AddAction(Behaviour* action);
+
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 };
 
 // Base "passive" selector: tick children until one succeeds or runs.
@@ -211,13 +213,16 @@ public:
 	void Step();
 	void Start();
 
-	const Behaviour* GetRoot() const { return m_Root; }
+	inline const Behaviour* GetRoot() const { return m_Root; }
+	inline bool CanChangeStructure() const { return !m_IsStarted; }
 
 	virtual std::ostream& DebugToStream(std::ostream& stream) const;
 
 private:
 	Behaviour* m_Root = nullptr;
 	std::vector<Behaviour*> m_Behaviours;
+
+	bool m_IsStarted = false;
 
 	// TODO: figure out a better way to do builder pattern without using friend?
 	friend class BehaviourTreeBuilder;
@@ -226,8 +231,16 @@ private:
 enum class MockActionRule
 {
 	RUN_AND_SUCCEED,
-	ALWAYS_FAIL
+	ALWAYS_FAIL,
+
+	MARULE_COUNT
 };
+
+constexpr const char* MockActionString[] = {
+	"RUN_AND_SUCCEED",
+	"ALWAYS_FAIL"
+};
+static_assert(std::size(MockActionString) == (size_t)MockActionRule::MARULE_COUNT);
 
 class MockAction : public Behaviour
 {
@@ -244,4 +257,38 @@ protected:
 private:
 	int m_TestCounter = -1;
 	MockActionRule m_Rule;
+};
+
+enum class MockConditionRule
+{
+	ALWAYS_SUCCEED,
+	ALWAYS_FAIL,
+	FAIL_AND_THEN_SUCCEED,
+	SUCEED_AND_THEN_FAIL,
+
+	MCRULE_COUNT
+};
+
+constexpr const char* MockConditionString[] = {
+	"ALWAYS_SUCCEED",
+	"ALWAYS_FAIL",
+	"FAIL_AND_THEN_SUCCEED",
+	"SUCEED_AND_THEN_FAIL"
+};
+static_assert(std::size(MockConditionString) == (size_t)MockConditionRule::MCRULE_COUNT);
+
+class MockCondition : public Behaviour
+{
+public:
+	MockCondition(Behaviour* parent, MockConditionRule rule): Behaviour(parent), m_Rule(rule) {}
+
+protected:
+	void OnInitialise() override;
+	BehaviourStatus Update() override;
+	void OnTerminate(BehaviourStatus) override;
+
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
+
+private:
+	MockConditionRule m_Rule;
 };
