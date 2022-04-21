@@ -158,11 +158,16 @@ TEST_CASE("Illegal modification of structure", "[BehaviourTree]")
 	REQUIRE(root != nullptr);
 	REQUIRE(root->GetChildCount() == 0);
 
-	// NOTE: This is a bit of a hacky test which bypasses the normal BehaviourTreeBuilder interface. 
+	// TODO: Rethink needed maybe: bit of a hacky test which bypasses the normal BehaviourTreeBuilder interface,
+	// since EndTree clears the parent node that would be used and asserts.
+	// Want to do something like:
+	//REQUIRE_THROWS_WITH(builder.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL), "ILLEGAL change of tree structure!");
+	// But does it make sense to mess with the builder interface just for this test?
+	// Instead for now:
 	Behaviour* bh = new MockAction(root, bt->GetState(), MockActionRule::ALWAYS_FAIL);
 	REQUIRE_THROWS_WITH(root->AddChild(bh), "ILLEGAL change of tree structure!");
-
 	delete bh; // Should have failed to add so tree didn't take ownership of this memory
+
 	delete bt;
 
 }
