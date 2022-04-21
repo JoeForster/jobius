@@ -4,6 +4,13 @@
 #include <algorithm>
 #include <list>
 
+
+Behaviour::Behaviour(Behaviour* parent, const BehaviourTreeState& treeState)
+: m_Status(BehaviourStatus::INVALID)
+, m_Parent(parent)
+, m_TreeState(treeState)
+{}
+
 BehaviourStatus Behaviour::Tick()
 {
 	if (m_Status != BehaviourStatus::RUNNING)
@@ -63,8 +70,8 @@ BehaviourStatus Repeat::Update()
 
 void Sequence::OnInitialise()
 {
-	// TODO: This won't work as expected if you alter the child set during run.
-	// Does it ever make sense to restructure the tree during a run, or do we want just some flow to lock it after construction?
+	// TODO_ERRORHANDLING This won't work as expected if you alter the child set during run.
+	// For now we use the CanChangeStructure check to guard against this.
 	m_CurrentChild = m_Children.begin();
 }
 
@@ -93,10 +100,20 @@ BehaviourStatus Sequence::Update()
 
 void Filter::AddCondition(Behaviour* condition)
 {
+	if (!CanChangeStructure())
+	{
+		// TODO_ERRORHANDLING: temp just for unit tests
+		throw std::exception("ILLEGAL change of tree structure!");
+	}
 	m_Children.insert(m_Children.begin(), condition);
 }
 void Filter::AddAction(Behaviour* action)
 {
+	if (!CanChangeStructure())
+	{
+		// TODO_ERRORHANDLING: temp just for unit tests
+		throw std::exception("ILLEGAL change of tree structure!");
+	}
 	m_Children.push_back(action);
 }
 
@@ -143,11 +160,21 @@ BehaviourStatus Parallel::Update()
 
 void Monitor::AddCondition(Behaviour* condition)
 {
+	if (!CanChangeStructure())
+	{
+		// TODO_ERRORHANDLING: temp just for unit tests
+		throw std::exception("ILLEGAL change of tree structure!");
+	}
 	m_Children.insert(m_Children.begin(), condition);
 }
 
 void Monitor::AddAction(Behaviour* action)
 {
+	if (!CanChangeStructure())
+	{
+		// TODO_ERRORHANDLING: temp just for unit tests
+		throw std::exception("ILLEGAL change of tree structure!");
+	}
 	m_Children.push_back(action);
 }
 
@@ -205,6 +232,11 @@ void MockAction::OnInitialise()
 
 void Composite::AddChild(Behaviour* behaviour)
 {
+	if (!CanChangeStructure())
+	{
+		// TODO_ERRORHANDLING: temp just for unit tests
+		throw std::exception("ILLEGAL change of tree structure!");
+	}
 	auto existing = std::find(m_Children.begin(), m_Children.end(), behaviour);
 	assert(existing == m_Children.end());
 	m_Children.push_back(behaviour);
@@ -212,6 +244,11 @@ void Composite::AddChild(Behaviour* behaviour)
 
 void Composite::RemoveChild(Behaviour* behaviour)
 {
+	if (!CanChangeStructure())
+	{
+		// TODO_ERRORHANDLING: temp just for unit tests
+		throw std::exception("ILLEGAL change of tree structure!");
+	}
 	auto existing = std::find(m_Children.begin(), m_Children.end(), behaviour);
 	assert(existing != m_Children.end());
 	m_Children.erase(existing);
@@ -219,12 +256,31 @@ void Composite::RemoveChild(Behaviour* behaviour)
 
 void Composite::ClearChildren()
 {
+	if (!CanChangeStructure())
+	{
+		// TODO_ERRORHANDLING: temp just for unit tests
+		throw std::exception("ILLEGAL change of tree structure!");
+	}
 	m_Children.clear();
+}
+
+BehaviourTree::~BehaviourTree()
+{
+	for (auto b : m_Behaviours)
+	{
+		delete b;
+	}
 }
 
 BehaviourStatus BehaviourTree::Tick()
 {
-	assert(m_IsStarted && "Behaviour tree ticked but not yest started");
+	assert(m_State.IsStructureLocked && "Behaviour tree ticked but not yet locked");
+	if (!m_State.IsStarted)
+	{
+		// TODO: This is just temporary to verify a unit test. We want our own assertion/error-handling types
+		// which are handled appropriately depending on whether we're running in engine, test mode, etc
+		throw std::exception("Behaviour tree ticked but not yet started");
+	}
 	return m_Root->Tick();
 }
 
@@ -235,8 +291,8 @@ void BehaviourTree::Step()
 
 void BehaviourTree::Start()
 {
-	assert(!m_IsStarted);
-	m_IsStarted = true;
+	assert(!m_State.IsStarted);
+	m_State.IsStarted = true;
 }
 
 // Mocks

@@ -5,9 +5,8 @@
 #include <iterator>
 #include <assert.h>
 
-// First attempt at a very very naive and unoptimised behaviour tree implementation.
+// First attempt at a very very naive and unoptimised (first-generation, OOP) behaviour tree implementation.
 // TODO Naming pass required (namespace, smurf, BStatus etc)
-
 
 enum class BehaviourStatus
 {
@@ -32,10 +31,19 @@ constexpr const char* StatusString[] = {
 };
 static_assert(std::size(StatusString) == (size_t)BehaviourStatus::BSTATUS_COUNT);
 
+// Holder for state of behaviour tree accessible to nodes within
+// (to prevent circular behaviour <--> tree dependency)
+// May become an enum?
+struct BehaviourTreeState
+{
+	bool IsStructureLocked = false;
+	bool IsStarted = false;
+};
+
 class Behaviour
 {
 public:
-	Behaviour(Behaviour* parent): m_Status(BehaviourStatus::INVALID), m_Parent(parent) {}
+	Behaviour(Behaviour* parent, const BehaviourTreeState& treeState);
 	virtual ~Behaviour() {}
 
 	BehaviourStatus Tick();
@@ -60,14 +68,20 @@ protected:
 	virtual BehaviourStatus Update() = 0;
 	virtual void OnTerminate(BehaviourStatus) {}
 
+	inline bool CanChangeStructure() const { return !m_TreeState.IsStructureLocked; }
+
 	BehaviourStatus m_Status;
 	Behaviour* m_Parent; // TODO use smart pointers?
+
+private:
+	const BehaviourTreeState& m_TreeState;
 };
 
 class Decorator : public Behaviour
 {
 public:
-	Decorator(Behaviour* parent, Behaviour& child): Behaviour(parent), m_Child(child) {}
+	Decorator(Behaviour* parent, const BehaviourTreeState& treeState, Behaviour& child)
+	: Behaviour(parent, treeState), m_Child(child) {}
 
 	size_t GetChildCount() const final { return 1; }
 	const Behaviour* GetChildAt(size_t index) const final { return (index == 0 ? &m_Child : nullptr); }
@@ -80,8 +94,8 @@ protected:
 class Repeat : public Decorator
 {
 public:
-	Repeat(Behaviour* parent, Behaviour& child, unsigned numRepeats)
-	: Decorator(parent, child)
+	Repeat(Behaviour* parent, const BehaviourTreeState& treeState, Behaviour& child, unsigned numRepeats)
+	: Decorator(parent, treeState, child)
 	, m_NumRepeats(numRepeats)
 	{}
 
@@ -97,7 +111,7 @@ private:
 class Composite : public Behaviour
 {
 public:
-	Composite(Behaviour* parent): Behaviour(parent) {}
+	Composite(Behaviour* parent, const BehaviourTreeState& treeState): Behaviour(parent, treeState) {}
 
 	virtual void AddChild(Behaviour*) override;
 	void RemoveChild(Behaviour*);
@@ -117,7 +131,7 @@ protected:
 class Sequence : public Composite
 {
 public:
-	Sequence(Behaviour* parent): Composite(parent) {}
+	Sequence(Behaviour* parent, const BehaviourTreeState& treeState): Composite(parent, treeState) {}
 
 protected:
 	virtual void OnInitialise() override;
@@ -130,6 +144,8 @@ private:
 class Filter : public Sequence
 {
 public:
+	Filter(Behaviour* parent, const BehaviourTreeState& treeState): Sequence(parent, treeState) {}
+
 	void AddCondition(Behaviour* condition);
 	void AddAction(Behaviour* action);
 };
@@ -145,8 +161,8 @@ public:
 		RequireAll
 	};
 
-	Parallel(Behaviour* parent, Policy success, Policy failure)
-	: Composite(parent)
+	Parallel(Behaviour* parent, const BehaviourTreeState& treeState, Policy success, Policy failure)
+	: Composite(parent, treeState)
 	, m_SuccessPolicy(success)
 	, m_FailurePolicy(failure)
 	{
@@ -164,7 +180,9 @@ protected:
 class Monitor : public Parallel
 {
 public:
-	Monitor(Behaviour* parent): Parallel(parent, Policy::RequireOne, Policy::RequireOne) {}
+	Monitor(Behaviour* parent, const BehaviourTreeState& treeState)
+	: Parallel(parent, treeState, Policy::RequireOne, Policy::RequireOne)
+	{}
 
 	void AddCondition(Behaviour* condition);
 	void AddAction(Behaviour* action);
@@ -176,7 +194,9 @@ public:
 class Selector : public Composite
 {
 public:
-	Selector(Behaviour* parent): Composite(parent) {}
+	Selector(Behaviour* parent, const BehaviourTreeState& treeState)
+	: Composite(parent, treeState)
+	{}
 
 protected:
 	virtual void OnInitialise() override;
@@ -190,7 +210,9 @@ protected:
 class ActiveSelector : public Selector
 {
 public:
-	ActiveSelector(Behaviour* parent): Selector(parent) {}
+	ActiveSelector(Behaviour* parent, const BehaviourTreeState& treeState)
+	: Selector(parent, treeState)
+	{}
 
 	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 
@@ -201,20 +223,15 @@ protected:
 class BehaviourTree
 {
 public:
-	~BehaviourTree()
-	{
-		for (auto b : m_Behaviours)
-		{
-			delete b;
-		}
-	}
+	BehaviourTree() = default;
+	~BehaviourTree();
 
 	BehaviourStatus Tick();
 	void Step();
 	void Start();
 
-	inline const Behaviour* GetRoot() const { return m_Root; }
-	inline bool CanChangeStructure() const { return !m_IsStarted; }
+	inline Behaviour* GetRoot() { return m_Root; }
+	inline const BehaviourTreeState& GetState() const { return m_State; }
 
 	virtual std::ostream& DebugToStream(std::ostream& stream) const;
 
@@ -222,7 +239,7 @@ private:
 	Behaviour* m_Root = nullptr;
 	std::vector<Behaviour*> m_Behaviours;
 
-	bool m_IsStarted = false;
+	BehaviourTreeState m_State;
 
 	// TODO: figure out a better way to do builder pattern without using friend?
 	friend class BehaviourTreeBuilder;
@@ -245,7 +262,8 @@ static_assert(std::size(MockActionString) == (size_t)MockActionRule::MARULE_COUN
 class MockAction : public Behaviour
 {
 public:
-	MockAction(Behaviour* parent, MockActionRule rule): Behaviour(parent), m_Rule(rule) {}
+	MockAction(Behaviour* parent, const BehaviourTreeState& treeState, MockActionRule rule)
+	: Behaviour(parent, treeState), m_Rule(rule) {}
 
 protected:
 	void OnInitialise() override;
@@ -280,7 +298,8 @@ static_assert(std::size(MockConditionString) == (size_t)MockConditionRule::MCRUL
 class MockCondition : public Behaviour
 {
 public:
-	MockCondition(Behaviour* parent, MockConditionRule rule): Behaviour(parent), m_Rule(rule) {}
+	MockCondition(Behaviour* parent, const BehaviourTreeState& treeState, MockConditionRule rule)
+		: Behaviour(parent, treeState), m_Rule(rule) {}
 
 protected:
 	void OnInitialise() override;

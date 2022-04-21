@@ -13,7 +13,7 @@ public:
 	template<typename T, typename... Args>
 	BehaviourTreeBuilder& AddNode(Args... args)
 	{
-		Behaviour* newNode = new T(m_CurrentBehaviour, args...);
+		Behaviour* newNode = new T(m_CurrentBehaviour, m_Tree->m_State, args...);
 		Behaviour* nodeParent = newNode->GetParent();
 		assert(newNode->GetParent() == m_CurrentBehaviour);
 		if (m_Tree->m_Root == nullptr)
@@ -55,6 +55,8 @@ public:
 	{
 		// We should have gone back to the root via EndNode
 		assert(m_CurrentBehaviour == nullptr);
+		assert(!m_Tree->m_State.IsStructureLocked);
+		m_Tree->m_State.IsStructureLocked = true;
 		return m_Tree;
 	}
 
