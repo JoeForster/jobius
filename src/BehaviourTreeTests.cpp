@@ -7,14 +7,18 @@
 // TODO likely to go into their own new header/cpp once this file gets too massive...
 enum class MockActionRule
 {
+	SUCCEED,
 	RUN_AND_SUCCEED,
+	FAIL_AND_THEN_SUCCEED,
 	ALWAYS_FAIL,
 
 	MARULE_COUNT
 };
 
 constexpr const char* MockActionString[] = {
+	"SUCCEED",
 	"RUN_AND_SUCCEED",
+	"FAIL_AND_THEN_SUCCEED",
 	"ALWAYS_FAIL"
 };
 static_assert(std::size(MockActionString) == (size_t)MockActionRule::MARULE_COUNT);
@@ -37,6 +41,11 @@ protected:
 		// TODO improve by using strategy pattern if it gets complex enough, otherwise just take a lambda?
 		switch (m_Rule)
 		{
+		case MockActionRule::SUCCEED:
+		{
+			m_Status = BehaviourStatus::SUCCESS;
+			break;
+		}
 		case MockActionRule::RUN_AND_SUCCEED:
 		{
 
@@ -47,6 +56,19 @@ protected:
 			else
 			{
 				m_Status = BehaviourStatus::RUNNING;
+			}
+			break;
+		}
+		case MockActionRule::FAIL_AND_THEN_SUCCEED:
+		{
+
+			if (--m_TestCounter <= 0)
+			{
+				m_Status = BehaviourStatus::SUCCESS;
+			}
+			else
+			{
+				m_Status = BehaviourStatus::FAILURE;
 			}
 			break;
 		}
@@ -219,4 +241,100 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 
 	delete bt;
 }
+
+// these are just for clarity in the unit test code right now.. But could grow?
+// TOOD: more concise way of making these, without resorting to preprocessor macro?
+class MockIsPlayerVisible : public MockCondition
+{
+public:
+	MockIsPlayerVisible(Behaviour* parent, const BehaviourTreeState& treeState)
+	: MockCondition(parent, treeState, MockConditionRule::FAIL_AND_THEN_SUCCEED)
+	{}
+};
+
+class MockIsPlayerInRange : public MockCondition
+{
+public:
+	MockIsPlayerInRange(Behaviour* parent, const BehaviourTreeState& treeState)
+	: MockCondition(parent, treeState, MockConditionRule::FAIL_AND_THEN_SUCCEED)
+	{}
+};
+
+class MockFireAtPlayer : public MockAction
+{
+public:
+	MockFireAtPlayer(Behaviour* parent, const BehaviourTreeState& treeState)
+	: MockAction(parent, treeState, MockActionRule::SUCCEED)
+	{}
+};
+
+class MockMoveToPlayersLKP : public MockAction
+{
+public:
+	MockMoveToPlayersLKP(Behaviour* parent, const BehaviourTreeState& treeState)
+	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
+	{}
+};
+
+class MockLookAround : public MockAction
+{
+public:
+	MockLookAround(Behaviour* parent, const BehaviourTreeState& treeState)
+	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
+	{}
+};
+
+class MockHaveSuspectedLocation : public MockCondition
+{
+public:
+	MockHaveSuspectedLocation(Behaviour* parent, const BehaviourTreeState& treeState)
+	: MockCondition(parent, treeState, MockConditionRule::ALWAYS_SUCCEED)
+	{}
+};
+
+class MockMoveToRandomPosition : public MockAction
+{
+public:
+	MockMoveToRandomPosition(Behaviour* parent, const BehaviourTreeState& treeState)
+	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
+	{}
+};
+/*
+TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
+{
+	// TODO requires Condition and Repeat node fixes
+	BehaviourTree* bt = BehaviourTreeBuilder()
+		.AddNode<ActiveSelector>()
+			.AddNode<Sequence>() // Attack the player if seen
+				.AddNode<MockIsPlayerVisible>(MockActionRule::ALWAYS_FAIL).EndNode()
+				.AddNode<ActiveSelector>()
+					.AddNode<Sequence>()
+						.AddNode<MockIsPlayerInRange().EndNode()
+						.AddNode<Repeat>(3)
+							.AddChild<MockFireAtPlayer>().EndNode()
+						.EndNode()
+					.EndNode()
+				.EndNode()
+			.EndNode()
+			.AddNode<Sequence>() // Search near last-known position
+				.AddNode<MockHaveSuspectedLocation>().EndNode()
+				.AddNode<MockMoveToPlayersLKP>().EndNode()
+				.AddNode<MockLookAround>().EndNode()
+			.AddNode<Sequence>() // Random wander
+				.AddNode<MockMoveToRandomPosition>().EndNode()
+				.AddNode<MockLookAround>().EndNode()
+
+		.EndNode()
+		.EndTree();
+	REQUIRE(bt != nullptr);
+
+	bt->Start();
+	// TODO: Update and validate some state
+	bt->Tick();
+
+
+
+	delete bt;
+}
+*/
 
