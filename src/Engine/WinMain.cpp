@@ -5,7 +5,6 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
-
 #include "EntityManager.h"
 #include "ComponentManager.h"
 #include "World.h"
@@ -24,16 +23,7 @@
 #include "KBInputComponent.h"
 #include "PadInputComponent.h"
 
-
-// TODO: Move unit tests into their own project/subfolder
-#define CATCH_CONFIG_MAIN
-#include "catch.hpp"
-
-
-TEST_CASE( "1: All test cases reside in other .cpp files (empty)", "[multi-file:1]" ) {
-}
-
-int _FIXME_main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	/* initialize SDL */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
