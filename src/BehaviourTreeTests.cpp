@@ -86,7 +86,11 @@ protected:
 		m_TestCounter = -1;
 	}
 
-	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override
+	{
+		stream << "MockAction[Status:" << StatusString[(int)m_Status] << ", TestCounter:"<<m_TestCounter<<"]";
+		return stream;
+	}
 
 private:
 	int m_TestCounter = -1;
@@ -110,29 +114,72 @@ constexpr const char* MockConditionString[] = {
 	"SUCEED_AND_THEN_FAIL"
 };
 static_assert(std::size(MockConditionString) == (size_t)MockConditionRule::MCRULE_COUNT);
-
+#
+// Condition (test): run once, return result and terminate
+// TODO: Could generalise to a Condition, perhaps taking a lambda or strategy?
 class MockCondition : public Behaviour
 {
 public:
 	MockCondition(Behaviour* parent, const BehaviourTreeState& treeState, MockConditionRule rule)
-		: Behaviour(parent, treeState), m_Rule(rule) {}
+		: Behaviour(parent, treeState), m_Rule(rule), m_TestCounter(1) {}
 
 protected:
-	void OnInitialise() override;
-	BehaviourStatus Update() override;
-	void OnTerminate(BehaviourStatus) override;
+	void OnInitialise() override
+	{
+		// NOTE since basic conditions are "instantaneous" and then terminate,
+		// We must persist our counter and not reset it here.
+	}
 
-	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
+	BehaviourStatus Update() override
+	{
+		switch (m_Rule)
+		{
+			case MockConditionRule::ALWAYS_SUCCEED:
+				m_Status = BehaviourStatus::SUCCESS;
+				break;
+			case MockConditionRule::ALWAYS_FAIL:
+				m_Status = BehaviourStatus::FAILURE;
+				break;
+			case MockConditionRule::FAIL_AND_THEN_SUCCEED:
+				if (--m_TestCounter < 0)
+				{
+					m_Status = BehaviourStatus::SUCCESS;
+					m_TestCounter = 0;
+				}
+				else
+				{
+					m_Status = BehaviourStatus::FAILURE;
+				}
+				break;
+			case MockConditionRule::SUCEED_AND_THEN_FAIL:
+				if (--m_TestCounter < 0)
+				{
+					m_Status = BehaviourStatus::FAILURE;
+					m_TestCounter = 0;
+				}
+				else
+				{
+					m_Status = BehaviourStatus::SUCCESS;
+				}
+				break;
+		}
+		return m_Status;
+	}
+
+	void OnTerminate(BehaviourStatus) override
+	{
+	}
+
+	virtual std::ostream& DebugToStream(std::ostream& stream) const override
+	{
+		stream << "MockCondition[Status:" << StatusString[(int)m_Status] << ", TestCounter:"<<m_TestCounter<<"]";
+		return stream;
+	}
 
 private:
+	int m_TestCounter = 1;
 	MockConditionRule m_Rule;
 };
-
-std::ostream& MockAction::DebugToStream(std::ostream& stream) const
-{
-	stream << "MockAction[Status:" << StatusString[(int)m_Status] << ", TestCounter:"<<m_TestCounter<<"]";
-	return stream;
-}
 
 
 // Unit Tests
@@ -143,8 +190,7 @@ std::ostream& MockAction::DebugToStream(std::ostream& stream) const
 TEST_CASE("Build single-node tree", "[BehaviourTree]")
 {
 	BehaviourTree* bt = BehaviourTreeBuilder()
-		.AddNode<ActiveSelector>()
-			.EndNode()
+		.AddNode<ActiveSelector>().EndNode()
 		.EndTree();
 	REQUIRE(bt != nullptr);
 
@@ -157,7 +203,7 @@ TEST_CASE("Illegal tree update", "[BehaviourTree]")
 		.AddNode<ActiveSelector>()
 			.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL).EndNode()
 			.AddNode<MockAction>(MockActionRule::RUN_AND_SUCCEED).EndNode()
-			.EndNode()
+		.EndNode()
 		.EndTree();
 		
 	// Tick a tree before starting it
@@ -171,8 +217,7 @@ TEST_CASE("Illegal modification of structure", "[BehaviourTree]")
 {
 	auto builder = BehaviourTreeBuilder();
 	BehaviourTree* bt = builder
-			.AddNode<Sequence>()
-			.EndNode()
+			.AddNode<Sequence>().EndNode()
 		.EndTree();
 	REQUIRE(bt != nullptr);
 
@@ -200,7 +245,7 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 		.AddNode<ActiveSelector>()
 			.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL).EndNode()
 			.AddNode<MockAction>(MockActionRule::RUN_AND_SUCCEED).EndNode()
-			.EndNode()
+		.EndNode()
 		.EndTree();
 
 	const ActiveSelector* root = dynamic_cast<const ActiveSelector*>( bt->GetRoot() );
@@ -299,32 +344,33 @@ public:
 	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
 	{}
 };
-/*
+
 TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
 {
 	// TODO requires Condition and Repeat node fixes
 	BehaviourTree* bt = BehaviourTreeBuilder()
-		.AddNode<ActiveSelector>()
+		.AddNode<ActiveSelector>() // Root
 			.AddNode<Sequence>() // Attack the player if seen
-				.AddNode<MockIsPlayerVisible>(MockActionRule::ALWAYS_FAIL).EndNode()
+				.AddNode<MockIsPlayerVisible>().EndNode()
 				.AddNode<ActiveSelector>()
 					.AddNode<Sequence>()
-						.AddNode<MockIsPlayerInRange().EndNode()
+						.AddNode<MockIsPlayerInRange>().EndNode()
 						.AddNode<Repeat>(3)
-							.AddChild<MockFireAtPlayer>().EndNode()
+							.AddNode<MockFireAtPlayer>().EndNode()
 						.EndNode()
 					.EndNode()
 				.EndNode()
-			.EndNode()
+			.EndNode() // End sequence: Attack player if seen
 			.AddNode<Sequence>() // Search near last-known position
 				.AddNode<MockHaveSuspectedLocation>().EndNode()
 				.AddNode<MockMoveToPlayersLKP>().EndNode()
 				.AddNode<MockLookAround>().EndNode()
+			.EndNode() // End sequence: search near last-known position
 			.AddNode<Sequence>() // Random wander
 				.AddNode<MockMoveToRandomPosition>().EndNode()
 				.AddNode<MockLookAround>().EndNode()
-
-		.EndNode()
+			.EndNode() // End sequence: random wander
+		.EndNode() // End root active selector
 		.EndTree();
 	REQUIRE(bt != nullptr);
 
@@ -336,5 +382,5 @@ TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
 
 	delete bt;
 }
-*/
+
 

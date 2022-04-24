@@ -44,13 +44,19 @@ bool Behaviour::IsRunning() const
 	return m_Status == BehaviourStatus::RUNNING;
 }
 
+void Decorator::OnInitialise()
+{
+	assert(m_Child != nullptr && "Decorator OnInitialise no child set");
+}
+
 BehaviourStatus Repeat::Update()
 {
+	assert(m_Child != nullptr);
 	while (true)
 	{
-		m_Child.Tick();
+		m_Child->Tick();
 
-		const auto status = m_Child.GetStatus();
+		const auto status = m_Child->GetStatus();
 		if (status == BehaviourStatus::RUNNING)
 		{
 			break;

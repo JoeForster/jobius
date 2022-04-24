@@ -80,22 +80,26 @@ private:
 class Decorator : public Behaviour
 {
 public:
-	Decorator(Behaviour* parent, const BehaviourTreeState& treeState, Behaviour& child)
-	: Behaviour(parent, treeState), m_Child(child) {}
+	Decorator(Behaviour* parent, const BehaviourTreeState& treeState)
+	: Behaviour(parent, treeState)
+	, m_Child(nullptr) {}
 
 	size_t GetChildCount() const final { return 1; }
-	const Behaviour* GetChildAt(size_t index) const final { return (index == 0 ? &m_Child : nullptr); }
+	const Behaviour* GetChildAt(size_t index) const final { return (index == 0 ? m_Child : nullptr); }
+	void AddChild(Behaviour* child) override { assert(m_Child == nullptr); m_Child = child; }
 
 protected:
-	Behaviour& m_Child;
+	virtual void OnInitialise() override;
+
+	Behaviour* m_Child;
 };
 
 // Repeat decorator: call the child N times immediately, if it succeeds.
 class Repeat : public Decorator
 {
 public:
-	Repeat(Behaviour* parent, const BehaviourTreeState& treeState, Behaviour& child, unsigned numRepeats)
-	: Decorator(parent, treeState, child)
+	Repeat(Behaviour* parent, const BehaviourTreeState& treeState, unsigned numRepeats)
+	: Decorator(parent, treeState)
 	, m_NumRepeats(numRepeats)
 	{}
 
