@@ -6,15 +6,19 @@
 #include <SDL_ttf.h>
 
 #include "EntityManager.h"
-#include "ComponentManager.h"
 #include "World.h"
-#include "SpriteRenderSystem.h"
+
+#include "ComponentManager.h"
 #include "SDLRenderManager.h"
+
+#include "SpriteRenderSystem.h"
 #include "SDLInputSystem.h"
 #include "PlayerControlSystem.h"
+#include "NPCControlSystem.h"
 #include "PhysicsSystem.h"
 #include "BoxCollisionSystem.h"
 #include "PlaneCollisionSystem.h"
+
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
 #include "RigidBodyComponent.h"
@@ -22,6 +26,7 @@
 #include "PlaneComponent.h"
 #include "KBInputComponent.h"
 #include "PadInputComponent.h"
+#include "NPCBehaviourComponent.h"
 
 int main(int argc, char* argv[])
 {
@@ -63,9 +68,12 @@ int main(int argc, char* argv[])
 	assert(resID_asteroid != SDLRenderManager::ResourceID_Invalid);
 	ResourceID resID_fighter = renderMan->LoadTexture("assets/sprites/fighter_lr.png");
 	assert(resID_fighter != SDLRenderManager::ResourceID_Invalid);
+	ResourceID resID_ufo = renderMan->LoadTexture("assets/sprites/ufo.png");
+	assert(resID_ufo != SDLRenderManager::ResourceID_Invalid);
 
 	std::shared_ptr<World> world = std::make_shared<World>();
 
+	// TODO Currently we get a crash if we add a component we forgot to register. Can we check at compile time?
 	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
 	world->RegisterComponent<RigidBodyComponent>();
@@ -73,6 +81,7 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<PlaneComponent>();
 	world->RegisterComponent<KBInputComponent>();
 	world->RegisterComponent<PadInputComponent>();
+	world->RegisterComponent<NPCBehaviourComponent>();
 
 	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
@@ -81,6 +90,7 @@ int main(int argc, char* argv[])
 	// Init systems
 	world->RegisterSystem<SDLInputSystem>()->Init();
 	world->RegisterSystem<PlayerControlSystem>()->Init();
+	world->RegisterSystem<NPCControlSystem>()->Init();
 	world->RegisterSystem<PhysicsSystem>()->Init(renderInit);
 	world->RegisterSystem<BoxCollisionSystem>()->Init(renderInit);
 	world->RegisterSystem<PlaneCollisionSystem>()->Init(renderInit);
@@ -116,6 +126,9 @@ int main(int argc, char* argv[])
 	auto player2Entity = createSpriteWithPhysics(*world, resID_fighter, { 700, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
 	world->AddComponent<KBInputComponent>(player2Entity);
 	world->AddComponent<PadInputComponent>(player2Entity, {1});
+
+	auto ufoEntity = createSpriteWithPhysics(*world, resID_ufo, { 200, 200, 200 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
+	world->AddComponent<NPCBehaviourComponent>(ufoEntity);
 
 	static constexpr float s_TargetFrameTime = 1.0f/60.0f; 
 

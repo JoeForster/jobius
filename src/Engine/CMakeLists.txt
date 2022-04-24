@@ -13,6 +13,7 @@ set(ENGINE_SOURCES
 	"${CMAKE_SOURCE_DIR}/src/Engine/SpriteRenderSystem.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/SDLInputSystem.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PlayerControlSystem.cpp"
+	"${CMAKE_SOURCE_DIR}/src/Engine/NPCControlSystem.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/SDLRenderManager.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTree.cpp"
 )
@@ -30,6 +31,7 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/PhysicsSystem.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/SDLInputSystem.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PlayerControlSystem.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/NPCControlSystem.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/System.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/SDLRenderManager.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/SystemManager.h"
@@ -40,6 +42,7 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/PlaneComponent.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/KBInputComponent.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PadInputComponent.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/NPCBehaviourComponent.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTree.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTreeBuilder.h"
 )

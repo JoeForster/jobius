@@ -13,6 +13,7 @@ enum class ComponentType
 	CT_PLANE,
 	CT_KBINPUT,
 	CT_PADINPUT,
+	CT_NPCBHV,
 	CT_MAX
 };
 
