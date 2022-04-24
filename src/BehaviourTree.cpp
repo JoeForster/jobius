@@ -184,6 +184,12 @@ void Monitor::AddAction(Behaviour* action)
 	m_Children.push_back(action);
 }
 
+Selector::Selector(Behaviour* parent, const BehaviourTreeState& treeState)
+: Composite(parent, treeState)
+, m_CurrentChild(m_Children.begin())
+{
+}
+
 
 void Selector::OnInitialise()
 {
@@ -340,7 +346,9 @@ ostream& Behaviour::DebugToStream(ostream& stream) const
 
 ostream& ActiveSelector::DebugToStream(ostream& stream) const
 {
-	const std::ptrdiff_t index = m_CurrentChild - m_Children.begin();
+	// FIXME: Iterator may be invalidated here if child list modified but OnInitialise not yet called.
+	// There must be a cleaner/safer way to do this.
+	const std::ptrdiff_t index = (GetStatus() == BehaviourStatus::INVALID ? 0 : m_CurrentChild - m_Children.begin());
 	stream << "ActiveSelector[Status:" << StatusString[(int)m_Status] << ", CurrentChild:" << index<<"/" << m_Children.size() << "]";
 	return stream;
 }

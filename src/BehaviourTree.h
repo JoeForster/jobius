@@ -198,9 +198,7 @@ public:
 class Selector : public Composite
 {
 public:
-	Selector(Behaviour* parent, const BehaviourTreeState& treeState)
-	: Composite(parent, treeState)
-	{}
+	Selector(Behaviour* parent, const BehaviourTreeState& treeState);
 
 protected:
 	virtual void OnInitialise() override;

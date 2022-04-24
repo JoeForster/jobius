@@ -347,7 +347,7 @@ public:
 
 TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
 {
-	// TODO requires Condition and Repeat node fixes
+
 	BehaviourTree* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>() // Root
 			.AddNode<Sequence>() // Attack the player if seen
@@ -375,10 +375,17 @@ TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
 	REQUIRE(bt != nullptr);
 
 	bt->Start();
+
+	BehaviourStatus status;
+	auto tickAndPrint = [&]
+	{
+		status = bt->Tick();
+		bt->DebugToStream(std::cout) << std::endl << "  TREE STATUS --> " << StatusString[(int)status] << std::endl;
+
+	};
+	
 	// TODO: Update and validate some state
-	bt->Tick();
-
-
+	tickAndPrint();
 
 	delete bt;
 }
