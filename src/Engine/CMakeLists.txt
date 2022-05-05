@@ -43,6 +43,7 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/KBInputComponent.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PadInputComponent.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/NPCBehaviourComponent.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/Behaviours.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTree.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTreeBuilder.h"
 )
