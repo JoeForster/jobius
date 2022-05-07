@@ -330,10 +330,10 @@ public:
 	{}
 };
 
-class MockHaveSuspectedLocation : public MockCondition
+class MockCheckHasPlayersLKP : public MockCondition
 {
 public:
-	MockHaveSuspectedLocation(Behaviour* parent, const BehaviourTreeState& treeState)
+	MockCheckHasPlayersLKP(Behaviour* parent, const BehaviourTreeState& treeState)
 	: MockCondition(parent, treeState, MockConditionRule::ALWAYS_SUCCEED)
 	{}
 };
@@ -363,7 +363,7 @@ TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
 				.EndNode()
 			.EndNode() // End sequence: Attack player if seen
 			.AddNode<Sequence>() // Search near last-known position
-				.AddNode<MockHaveSuspectedLocation>().EndNode()
+				.AddNode<MockCheckHasPlayersLKP>().EndNode()
 				.AddNode<MockMoveToPlayersLKP>().EndNode()
 				.AddNode<MockLookAround>().EndNode()
 			.EndNode() // End sequence: search near last-known position

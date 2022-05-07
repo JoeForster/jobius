@@ -97,6 +97,20 @@ struct Vector2f
 		return sqrtf(x*x + y*y);
 	}
 
+	float Dist(const Vector2f v) const
+	{
+		const float dx = x-v.x;
+		const float dy = y-v.y;
+		return sqrtf(dx*dx + dy*dy);
+	}
+
+	float DistSq(const Vector2f v) const
+	{
+		const float dx = x-v.x;
+		const float dy = y-v.y;
+		return dx*dx + dy*dy;
+	}
+
 	void Normalise()
 	{
 		float mag = Magnitude();

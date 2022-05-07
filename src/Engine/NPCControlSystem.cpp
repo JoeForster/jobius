@@ -3,20 +3,30 @@
 #include "KBInputComponent.h"
 #include "PadInputComponent.h"
 #include "RigidBodyComponent.h"
+#include "TransformComponent.h"
 #include "World.h"
 #include "BehaviourTreeBuilder.h"
 #include "Behaviours.h"
 
 
-// STUBS - need linking up with sensor/behaviour.
+// TODO HACK STATICS single-NPC test for now
 
+struct AIConfig
+{
+	float ArriveDistSq = 5.f * 5.f;
+	float VisionRadiusSq = 100.f * 100.f;
+	float AttackRadiusSq = 20.f * 20.f;
+};
+
+static AIConfig s_AIConfig;
 
 struct Blackboard
 {
-	Vector3f NPCPosition {};
-	Vector3f NPCTargetPosition {};
-	Vector3f PlayerPos {};
-	Vector3f PlayerLastKnownPos {};
+	Vector2f NPCPos {};
+	Vector2f NPCTargetPos {};
+	bool NPCTargetPosSet = false;
+	Vector2f PlayerPos {};
+	Vector2f PlayerLastKnownPos {};
 	bool PlayerLastKnownPosSet = false;
 	bool NPCFired = false;
 };
@@ -32,8 +42,7 @@ public:
 
 	BehaviourStatus Update() override
 	{
-		// TODO: Vector dist
-		if (false)//s_Blackboard.NPCPosition.DistanceTo(s_Blackboard.PlayerPos) < s_VisionRadius)
+		if (s_Blackboard.NPCPos.DistSq(s_Blackboard.PlayerPos) < s_AIConfig.VisionRadiusSq)
 		{
 			m_Status = BehaviourStatus::SUCCESS;
 		}
@@ -54,8 +63,7 @@ public:
 
 	BehaviourStatus Update() override
 	{
-		// TODO: Vector dist
-		if (false)//s_Blackboard.NPCPosition.DistanceTo(s_Blackboard.PlayerPos) < s_AttackRadius)
+		if (s_Blackboard.NPCPos.DistSq(s_Blackboard.PlayerPos) < s_AIConfig.AttackRadiusSq)
 		{
 			m_Status = BehaviourStatus::SUCCESS;
 		}
@@ -93,20 +101,34 @@ public:
 
 	BehaviourStatus Update() override
 	{
-		if (s_Blackboard.PlayerLastKnownPosSet)
+
+		if (!s_Blackboard.NPCTargetPosSet)
 		{
-			m_Status = BehaviourStatus::FAILURE;
+			if (s_Blackboard.PlayerLastKnownPosSet)
+			{
+				s_Blackboard.NPCTargetPos = s_Blackboard.PlayerLastKnownPos;
+				s_Blackboard.NPCTargetPosSet = true;
+			}
 		}
-		// TODO: Vector dist
-		else if (false)//s_Blackboard.NPCPosition.distanceTo(
+
+		if (s_Blackboard.NPCTargetPosSet)
 		{
-			m_Status = BehaviourStatus::SUCCESS;
+			if (s_Blackboard.NPCPos.DistSq(s_Blackboard.PlayerLastKnownPos) < s_AIConfig.ArriveDistSq)
+			{
+				m_Status = BehaviourStatus::SUCCESS;
+			}
+			else
+			{
+				s_Blackboard.NPCTargetPos = s_Blackboard.NPCPos;
+				s_Blackboard.NPCTargetPosSet = false;
+				m_Status = BehaviourStatus::RUNNING;
+			}
 		}
 		else
 		{
-			s_Blackboard.NPCTargetPosition = s_Blackboard.NPCPosition;
-			m_Status = BehaviourStatus::RUNNING;
+			m_Status = BehaviourStatus::FAILURE;
 		}
+		
 		return m_Status;
 	}
 };
@@ -168,6 +190,7 @@ void NPCControlSystem::Init(const SystemInitialiser& initialiser)
 	EntitySignature sysSignature;
 	sysSignature.set((size_t)ComponentType::CT_NPCBHV);
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
+	sysSignature.set((size_t)ComponentType::CT_TRANSFORM);
 	m_ParentWorld->SetSystemSignature<NPCControlSystem>(sysSignature);
 }
 
@@ -179,46 +202,64 @@ void NPCControlSystem::Update(float deltaSecs)
 	for (EntityID e : mEntities)
 	{
 		auto& rigidBody = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
+		auto& npcTransform = m_ParentWorld->GetComponent<TransformComponent>(e);
+		
+		// TODO Read player pos state into blackboard
+		s_Blackboard.PlayerPos = Vector2f::ZERO;
+		s_Blackboard.NPCPos.x = npcTransform.m_Pos.x;
+		s_Blackboard.NPCPos.y = npcTransform.m_Pos.y;
 
-		// TODO plug in behaviour tree actions/queries and test
-		//Vector2f desiredVel;
-
-		static BehaviourTree* bt = BehaviourTreeBuilder()
-			.AddNode<ActiveSelector>() // Root
-				.AddNode<Sequence>() // Attack the player if seen
-					.AddNode<IsPlayerVisible>().EndNode()
-					.AddNode<ActiveSelector>()
-						.AddNode<Sequence>()
-							.AddNode<IsPlayerInRange>().EndNode()
-							.AddNode<Repeat>(3)
-								.AddNode<FireAtPlayer>().EndNode()
+		// TODO tree per NPC
+		// (manage separately in system for now - then  need to figure out how to ECS/componentise a BT)
+		static BehaviourTree* bt = nullptr;
+		
+		if (bt == nullptr)
+		{
+			bt = BehaviourTreeBuilder()
+				.AddNode<ActiveSelector>() // Root
+					.AddNode<Sequence>() // Attack the player if seen
+						.AddNode<IsPlayerVisible>().EndNode()
+						.AddNode<ActiveSelector>()
+							.AddNode<Sequence>()
+								.AddNode<IsPlayerInRange>().EndNode()
+								.AddNode<Repeat>(3)
+									.AddNode<FireAtPlayer>().EndNode()
+								.EndNode()
 							.EndNode()
 						.EndNode()
-					.EndNode()
-				.EndNode() // End sequence: Attack player if seen
-				.AddNode<Sequence>() // Search near last-known position
-					.AddNode<CheckHasPlayersLKP>().EndNode()
-					.AddNode<MoveToPlayersLKP>().EndNode()
-					.AddNode<LookAround>().EndNode()
-				.EndNode() // End sequence: search near last-known position
-				.AddNode<Sequence>() // Random wander
-					.AddNode<MoveToRandomPosition>().EndNode()
-					.AddNode<LookAround>().EndNode()
-				.EndNode() // End sequence: random wander
-			.EndNode() // End root active selector
-			.EndTree();
+					.EndNode() // End sequence: Attack player if seen
+					.AddNode<Sequence>() // Search near last-known position
+						.AddNode<CheckHasPlayersLKP>().EndNode()
+						.AddNode<MoveToPlayersLKP>().EndNode()
+						.AddNode<LookAround>().EndNode()
+					.EndNode() // End sequence: search near last-known position
+					.AddNode<Sequence>() // Random wander
+						.AddNode<MoveToRandomPosition>().EndNode()
+						.AddNode<LookAround>().EndNode()
+					.EndNode() // End sequence: random wander
+				.EndNode() // End root active selector
+				.EndTree();
 
-		// HACK TEST movement just to prove this is plugged in correctly
-		static float counter = 0;
-		static float vel = 1.0f;
-
-		counter += deltaSecs;
-		if (counter >= 2.0f)
-		{
-			counter = 0.0f;
-			vel *= -1.0f;
+			bt->Start();
 		}
-		rigidBody.m_Vel.x = vel;
+
+		// Tick the static tree
+		bt->Tick();
+
+		// HACK TEST control based on BT outputs just to test
+
+		rigidBody.m_Vel.x = 0.f;
+		rigidBody.m_Vel.y = 0.f;
+		
+		if (s_Blackboard.NPCTargetPosSet)
+		{
+			Vector2f controlVel = s_Blackboard.NPCTargetPos - s_Blackboard.NPCPos;
+			if (controlVel.MagnitudeSq() > 1.0f)
+			{
+				controlVel.Normalise();
+				rigidBody.m_Vel;
+			}
+		}
 
 		//if (UP)) rigidBody.m_Vel.y -= 1.0f;
 		//if (DOWN)) rigidBody.m_Vel.y += 1.0f;
