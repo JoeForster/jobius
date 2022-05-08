@@ -1,7 +1,6 @@
 #include "NPCControlSystem.h"
 
-#include "KBInputComponent.h"
-#include "PadInputComponent.h"
+#include "NPCBehaviourComponent.h"
 #include "RigidBodyComponent.h"
 #include "TransformComponent.h"
 #include "World.h"
@@ -14,7 +13,7 @@
 struct AIConfig
 {
 	float ArriveDistSq = 5.f * 5.f;
-	float VisionRadiusSq = 100.f * 100.f;
+	float VisionRadiusSq = 200.f * 200.f;
 	float AttackRadiusSq = 20.f * 20.f;
 };
 
@@ -33,10 +32,10 @@ struct Blackboard
 
 static Blackboard s_Blackboard;
 
-class IsPlayerVisible : public Condition
+class CheckPlayerVisible : public Condition
 {
 public:
-	IsPlayerVisible(Behaviour* parent, const BehaviourTreeState& treeState)
+	CheckPlayerVisible(Behaviour* parent, BehaviourTreeState& treeState)
 	: Condition(parent, treeState)
 	{}
 
@@ -45,6 +44,8 @@ public:
 		if (s_Blackboard.NPCPos.DistSq(s_Blackboard.PlayerPos) < s_AIConfig.VisionRadiusSq)
 		{
 			m_Status = BehaviourStatus::SUCCESS;
+			s_Blackboard.PlayerLastKnownPosSet = true;
+			s_Blackboard.PlayerLastKnownPos = s_Blackboard.PlayerPos;
 		}
 		else
 		{
@@ -57,7 +58,7 @@ public:
 class IsPlayerInRange : public Condition
 {
 public:
-	IsPlayerInRange(Behaviour* parent, const BehaviourTreeState& treeState)
+	IsPlayerInRange(Behaviour* parent, BehaviourTreeState& treeState)
 	: Condition(parent, treeState)
 	{}
 
@@ -80,7 +81,7 @@ public:
 class FireAtPlayer : public Action
 {
 public:
-	FireAtPlayer(Behaviour* parent, const BehaviourTreeState& treeState)
+	FireAtPlayer(Behaviour* parent, BehaviourTreeState& treeState)
 	: Action(parent, treeState)
 	{}
 
@@ -95,7 +96,7 @@ public:
 class MoveToPlayersLKP : public Action
 {
 public:
-	MoveToPlayersLKP(Behaviour* parent, const BehaviourTreeState& treeState)
+	MoveToPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState)
 	: Action(parent, treeState)
 	{}
 
@@ -113,14 +114,14 @@ public:
 
 		if (s_Blackboard.NPCTargetPosSet)
 		{
-			if (s_Blackboard.NPCPos.DistSq(s_Blackboard.PlayerLastKnownPos) < s_AIConfig.ArriveDistSq)
+			if (s_Blackboard.NPCPos.DistSq(s_Blackboard.NPCTargetPos) < s_AIConfig.ArriveDistSq)
 			{
+				s_Blackboard.NPCTargetPos = s_Blackboard.NPCPos;
+				s_Blackboard.NPCTargetPosSet = false;
 				m_Status = BehaviourStatus::SUCCESS;
 			}
 			else
 			{
-				s_Blackboard.NPCTargetPos = s_Blackboard.NPCPos;
-				s_Blackboard.NPCTargetPosSet = false;
 				m_Status = BehaviourStatus::RUNNING;
 			}
 		}
@@ -136,7 +137,7 @@ public:
 class LookAround : public Action
 {
 public:
-	LookAround(Behaviour* parent, const BehaviourTreeState& treeState)
+	LookAround(Behaviour* parent, BehaviourTreeState& treeState)
 	: Action(parent, treeState)
 	{}
 
@@ -150,7 +151,7 @@ public:
 class CheckHasPlayersLKP : public Condition
 {
 public:
-	CheckHasPlayersLKP(Behaviour* parent, const BehaviourTreeState& treeState)
+	CheckHasPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState)
 	: Condition(parent, treeState)
 	{}
 
@@ -171,7 +172,7 @@ public:
 class MoveToRandomPosition : public Action
 {
 public:
-	MoveToRandomPosition(Behaviour* parent, const BehaviourTreeState& treeState)
+	MoveToRandomPosition(Behaviour* parent, BehaviourTreeState& treeState)
 	: Action(parent, treeState)
 	{}
 
@@ -201,11 +202,19 @@ void NPCControlSystem::Update(float deltaSecs)
 
 	for (EntityID e : mEntities)
 	{
+		auto& npcBhv = m_ParentWorld->GetComponent<NPCBehaviourComponent>(e);
 		auto& rigidBody = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 		auto& npcTransform = m_ParentWorld->GetComponent<TransformComponent>(e);
-		
-		// TODO Read player pos state into blackboard
-		s_Blackboard.PlayerPos = Vector2f::ZERO;
+
+		// TODO_AI_SENSOR Sensor system read of game state goes here
+		const EntityID playerEntity = npcBhv.m_PlayerEntity;
+		if (playerEntity != INVALID_ENTITY_ID)
+		{
+			const auto& playerTransform = m_ParentWorld->GetComponent<TransformComponent>(playerEntity);
+
+			s_Blackboard.PlayerPos.x = playerTransform.m_Pos.x;
+			s_Blackboard.PlayerPos.y = playerTransform.m_Pos.y;
+		}
 		s_Blackboard.NPCPos.x = npcTransform.m_Pos.x;
 		s_Blackboard.NPCPos.y = npcTransform.m_Pos.y;
 
@@ -218,7 +227,7 @@ void NPCControlSystem::Update(float deltaSecs)
 			bt = BehaviourTreeBuilder()
 				.AddNode<ActiveSelector>() // Root
 					.AddNode<Sequence>() // Attack the player if seen
-						.AddNode<IsPlayerVisible>().EndNode()
+						.AddNode<CheckPlayerVisible>().EndNode()
 						.AddNode<ActiveSelector>()
 							.AddNode<Sequence>()
 								.AddNode<IsPlayerInRange>().EndNode()
@@ -245,8 +254,20 @@ void NPCControlSystem::Update(float deltaSecs)
 
 		// Tick the static tree
 		bt->Tick();
+		// TODO_DEBUG_DRAW
+		//bt->DebugToStream(std::cout) << std::endl;
+		std::cout << "LastActiveNode: ";
+		const Behaviour* an = bt->GetState().LastActiveNode;
+		//if (an != nullptr)
+		{
+			an->DebugToStream(std::cout) << std::endl;
+		}
+		//else
+		//{
+		//	std::cout << "NULL" << std::endl;
+		//}
 
-		// HACK TEST control based on BT outputs just to test
+		// TODO_AI_STEERING the steering/locomotion controller would be responsible for the below
 
 		rigidBody.m_Vel.x = 0.f;
 		rigidBody.m_Vel.y = 0.f;
@@ -256,15 +277,10 @@ void NPCControlSystem::Update(float deltaSecs)
 			Vector2f controlVel = s_Blackboard.NPCTargetPos - s_Blackboard.NPCPos;
 			if (controlVel.MagnitudeSq() > 1.0f)
 			{
-				controlVel.Normalise();
-				rigidBody.m_Vel;
+				controlVel.SetMagnitude(0.5f);
+				rigidBody.m_Vel = controlVel;
 			}
 		}
-
-		//if (UP)) rigidBody.m_Vel.y -= 1.0f;
-		//if (DOWN)) rigidBody.m_Vel.y += 1.0f;
-		//if (LEFT)) rigidBody.m_Vel.x -= 1.0f;
-		//if (RIGHT)) rigidBody.m_Vel.x += 1.0f;
 
 		rigidBody.m_Mass = 0.0f;
 		rigidBody.m_Kinematic = true;

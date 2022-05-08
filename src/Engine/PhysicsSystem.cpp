@@ -27,7 +27,7 @@ void PhysicsSystem::Update(float deltaSecs)
 	System::Update(deltaSecs);
 
 	// Hack test motion - TODO simple integrate here use mass properly
-	constexpr float gravityAccel = 9.8f;
+	constexpr float gravityAccel = 0.f;//9.8f;
 	constexpr float terminalVelocity = 10.0f;
 	for (EntityID e : mEntities)
 	{

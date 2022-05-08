@@ -5,7 +5,7 @@
 #include <list>
 
 
-Behaviour::Behaviour(Behaviour* parent, const BehaviourTreeState& treeState)
+Behaviour::Behaviour(Behaviour* parent, BehaviourTreeState& treeState)
 : m_Status(BehaviourStatus::INVALID)
 , m_Parent(parent)
 , m_TreeState(treeState)
@@ -17,7 +17,8 @@ BehaviourStatus Behaviour::Tick()
 	{
 		OnInitialise();
 	}
-
+	
+	m_TreeState.LastActiveNode = this;
 	m_Status = Update();
 
 	if (m_Status != BehaviourStatus::RUNNING)
@@ -184,7 +185,7 @@ void Monitor::AddAction(Behaviour* action)
 	m_Children.push_back(action);
 }
 
-Selector::Selector(Behaviour* parent, const BehaviourTreeState& treeState)
+Selector::Selector(Behaviour* parent, BehaviourTreeState& treeState)
 : Composite(parent, treeState)
 , m_CurrentChild(m_Children.begin())
 {
@@ -306,7 +307,7 @@ using namespace std;
 
 ostream& BehaviourTree::DebugToStream(ostream& stream) const
 {
-	stream << "BehaviourTree ->" << endl;
+	stream << "BehaviourTree[status=" << StatusString[(int)m_Root->GetStatus()] << "]" << endl;
 	int indentLevel = 1;
 	const Behaviour* prevParent = nullptr;
 	std::list<const Behaviour*> writeQueue = { m_Root };
@@ -340,7 +341,7 @@ ostream& BehaviourTree::DebugToStream(ostream& stream) const
 
 ostream& Behaviour::DebugToStream(ostream& stream) const
 {
-	stream << "Behaviour[Status:" << StatusString[(int)m_Status] << "]";
+	stream << typeid(*this).name() << "[Status:" << StatusString[(int)m_Status] << "]";
 	return stream;
 }
 

@@ -8,6 +8,8 @@ struct NPCBehaviourComponent
 	static constexpr ComponentType GetComponentType() { return ComponentType::CT_NPCBHV; }
 
 	NPCBehaviourComponent() {}
+	NPCBehaviourComponent(EntityID playerEntity): m_PlayerEntity(playerEntity) {}
 
-	// TODO any state
+	// TODO_AI_SENSOR TEMP dirty direct player access
+	EntityID m_PlayerEntity = INVALID_ENTITY_ID;
 };

@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 	world->AddComponent<PadInputComponent>(player2Entity, {1});
 
 	auto ufoEntity = createSpriteWithPhysics(*world, resID_ufo, { 200, 200, 200 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
-	world->AddComponent<NPCBehaviourComponent>(ufoEntity);
+	world->AddComponent<NPCBehaviourComponent>(ufoEntity, {player1Entity});
 
 	static constexpr float s_TargetFrameTime = 1.0f/60.0f; 
 

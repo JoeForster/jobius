@@ -34,16 +34,20 @@ static_assert(std::size(StatusString) == (size_t)BehaviourStatus::BSTATUS_COUNT)
 // Holder for state of behaviour tree accessible to nodes within
 // (to prevent circular behaviour <--> tree dependency)
 // May become an enum?
+// TODO: some of this should be made const again, if we don't do away with this soon..
+class Behaviour;
+
 struct BehaviourTreeState
 {
 	bool IsStructureLocked = false;
 	bool IsStarted = false;
+	const Behaviour* LastActiveNode = nullptr;
 };
 
 class Behaviour
 {
 public:
-	Behaviour(Behaviour* parent, const BehaviourTreeState& treeState);
+	Behaviour(Behaviour* parent, BehaviourTreeState& treeState);
 	virtual ~Behaviour() {}
 
 	BehaviourStatus Tick();
@@ -74,13 +78,13 @@ protected:
 	Behaviour* m_Parent; // TODO use smart pointers?
 
 private:
-	const BehaviourTreeState& m_TreeState;
+	BehaviourTreeState& m_TreeState;
 };
 
 class Decorator : public Behaviour
 {
 public:
-	Decorator(Behaviour* parent, const BehaviourTreeState& treeState)
+	Decorator(Behaviour* parent, BehaviourTreeState& treeState)
 	: Behaviour(parent, treeState)
 	, m_Child(nullptr) {}
 
@@ -98,7 +102,7 @@ protected:
 class Repeat : public Decorator
 {
 public:
-	Repeat(Behaviour* parent, const BehaviourTreeState& treeState, unsigned numRepeats)
+	Repeat(Behaviour* parent, BehaviourTreeState& treeState, unsigned numRepeats)
 	: Decorator(parent, treeState)
 	, m_NumRepeats(numRepeats)
 	{}
@@ -115,7 +119,7 @@ private:
 class Composite : public Behaviour
 {
 public:
-	Composite(Behaviour* parent, const BehaviourTreeState& treeState): Behaviour(parent, treeState) {}
+	Composite(Behaviour* parent, BehaviourTreeState& treeState): Behaviour(parent, treeState) {}
 
 	virtual void AddChild(Behaviour*) override;
 	void RemoveChild(Behaviour*);
@@ -135,7 +139,7 @@ protected:
 class Sequence : public Composite
 {
 public:
-	Sequence(Behaviour* parent, const BehaviourTreeState& treeState): Composite(parent, treeState) {}
+	Sequence(Behaviour* parent, BehaviourTreeState& treeState): Composite(parent, treeState) {}
 
 protected:
 	virtual void OnInitialise() override;
@@ -148,7 +152,7 @@ private:
 class Filter : public Sequence
 {
 public:
-	Filter(Behaviour* parent, const BehaviourTreeState& treeState): Sequence(parent, treeState) {}
+	Filter(Behaviour* parent, BehaviourTreeState& treeState): Sequence(parent, treeState) {}
 
 	void AddCondition(Behaviour* condition);
 	void AddAction(Behaviour* action);
@@ -165,7 +169,7 @@ public:
 		RequireAll
 	};
 
-	Parallel(Behaviour* parent, const BehaviourTreeState& treeState, Policy success, Policy failure)
+	Parallel(Behaviour* parent, BehaviourTreeState& treeState, Policy success, Policy failure)
 	: Composite(parent, treeState)
 	, m_SuccessPolicy(success)
 	, m_FailurePolicy(failure)
@@ -184,7 +188,7 @@ protected:
 class Monitor : public Parallel
 {
 public:
-	Monitor(Behaviour* parent, const BehaviourTreeState& treeState)
+	Monitor(Behaviour* parent, BehaviourTreeState& treeState)
 	: Parallel(parent, treeState, Policy::RequireOne, Policy::RequireOne)
 	{}
 
@@ -198,7 +202,7 @@ public:
 class Selector : public Composite
 {
 public:
-	Selector(Behaviour* parent, const BehaviourTreeState& treeState);
+	Selector(Behaviour* parent, BehaviourTreeState& treeState);
 
 protected:
 	virtual void OnInitialise() override;
@@ -212,7 +216,7 @@ protected:
 class ActiveSelector : public Selector
 {
 public:
-	ActiveSelector(Behaviour* parent, const BehaviourTreeState& treeState)
+	ActiveSelector(Behaviour* parent, BehaviourTreeState& treeState)
 	: Selector(parent, treeState)
 	{}
 
@@ -237,7 +241,7 @@ public:
 	void Start();
 
 	inline Behaviour* GetRoot() { return m_Root; }
-	inline const BehaviourTreeState& GetState() const { return m_State; }
+	inline BehaviourTreeState& GetState() { return m_State; }
 
 	virtual std::ostream& DebugToStream(std::ostream& stream) const;
 

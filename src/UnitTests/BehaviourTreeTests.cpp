@@ -27,7 +27,7 @@ static_assert(std::size(MockActionString) == (size_t)MockActionRule::MARULE_COUN
 class MockAction : public Behaviour
 {
 public:
-	MockAction(Behaviour* parent, const BehaviourTreeState& treeState, MockActionRule rule)
+	MockAction(Behaviour* parent, BehaviourTreeState& treeState, MockActionRule rule)
 	: Behaviour(parent, treeState), m_Rule(rule) {}
 
 protected:
@@ -121,7 +121,7 @@ static_assert(std::size(MockConditionString) == (size_t)MockConditionRule::MCRUL
 class MockCondition : public Behaviour
 {
 public:
-	MockCondition(Behaviour* parent, const BehaviourTreeState& treeState, MockConditionRule rule)
+	MockCondition(Behaviour* parent, BehaviourTreeState& treeState, MockConditionRule rule)
 		: Behaviour(parent, treeState), m_Rule(rule), m_TestCounter(1) {}
 
 protected:
@@ -293,7 +293,7 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 class MockIsPlayerVisible : public MockCondition
 {
 public:
-	MockIsPlayerVisible(Behaviour* parent, const BehaviourTreeState& treeState)
+	MockIsPlayerVisible(Behaviour* parent, BehaviourTreeState& treeState)
 	: MockCondition(parent, treeState, MockConditionRule::FAIL_AND_THEN_SUCCEED)
 	{}
 };
@@ -301,7 +301,7 @@ public:
 class MockIsPlayerInRange : public MockCondition
 {
 public:
-	MockIsPlayerInRange(Behaviour* parent, const BehaviourTreeState& treeState)
+	MockIsPlayerInRange(Behaviour* parent, BehaviourTreeState& treeState)
 	: MockCondition(parent, treeState, MockConditionRule::FAIL_AND_THEN_SUCCEED)
 	{}
 };
@@ -309,7 +309,7 @@ public:
 class MockFireAtPlayer : public MockAction
 {
 public:
-	MockFireAtPlayer(Behaviour* parent, const BehaviourTreeState& treeState)
+	MockFireAtPlayer(Behaviour* parent, BehaviourTreeState& treeState)
 	: MockAction(parent, treeState, MockActionRule::SUCCEED)
 	{}
 };
@@ -317,7 +317,7 @@ public:
 class MockMoveToPlayersLKP : public MockAction
 {
 public:
-	MockMoveToPlayersLKP(Behaviour* parent, const BehaviourTreeState& treeState)
+	MockMoveToPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState)
 	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
 	{}
 };
@@ -325,7 +325,7 @@ public:
 class MockLookAround : public MockAction
 {
 public:
-	MockLookAround(Behaviour* parent, const BehaviourTreeState& treeState)
+	MockLookAround(Behaviour* parent, BehaviourTreeState& treeState)
 	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
 	{}
 };
@@ -333,7 +333,7 @@ public:
 class MockCheckHasPlayersLKP : public MockCondition
 {
 public:
-	MockCheckHasPlayersLKP(Behaviour* parent, const BehaviourTreeState& treeState)
+	MockCheckHasPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState)
 	: MockCondition(parent, treeState, MockConditionRule::ALWAYS_SUCCEED)
 	{}
 };
@@ -341,7 +341,7 @@ public:
 class MockMoveToRandomPosition : public MockAction
 {
 public:
-	MockMoveToRandomPosition(Behaviour* parent, const BehaviourTreeState& treeState)
+	MockMoveToRandomPosition(Behaviour* parent, BehaviourTreeState& treeState)
 	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
 	{}
 };
