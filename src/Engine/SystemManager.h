@@ -56,6 +56,8 @@ public:
 			assert(system != nullptr);
 			const EntitySignature& systemSignature = m_Signatures[systemIndex];
 
+			// TODO use EntityQuery (or ultimately do away with signatures once we have a proper query system)
+
 			// Entity signature matches system signature - insert into set
 			if ((entitySignature & systemSignature) == systemSignature)
 			{

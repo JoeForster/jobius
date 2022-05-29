@@ -15,6 +15,7 @@
 #include "SDLInputSystem.h"
 #include "PlayerControlSystem.h"
 #include "NPCControlSystem.h"
+#include "NPCSensorSystem.h"
 #include "PhysicsSystem.h"
 #include "BoxCollisionSystem.h"
 #include "PlaneCollisionSystem.h"
@@ -26,7 +27,8 @@
 #include "PlaneComponent.h"
 #include "KBInputComponent.h"
 #include "PadInputComponent.h"
-#include "NPCBehaviourComponent.h"
+#include "NPCBlackboardComponent.h"
+#include "PlayerComponent.h"
 
 int main(int argc, char* argv[])
 {
@@ -81,7 +83,8 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<PlaneComponent>();
 	world->RegisterComponent<KBInputComponent>();
 	world->RegisterComponent<PadInputComponent>();
-	world->RegisterComponent<NPCBehaviourComponent>();
+	world->RegisterComponent<NPCBlackboardComponent>();
+	world->RegisterComponent<PlayerComponent>();
 
 	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
@@ -91,6 +94,7 @@ int main(int argc, char* argv[])
 	world->RegisterSystem<SDLInputSystem>()->Init();
 	world->RegisterSystem<PlayerControlSystem>()->Init();
 	world->RegisterSystem<NPCControlSystem>()->Init();
+	world->RegisterSystem<NPCSensorSystem>()->Init();
 	world->RegisterSystem<PhysicsSystem>()->Init(renderInit);
 	world->RegisterSystem<BoxCollisionSystem>()->Init(renderInit);
 	world->RegisterSystem<PlaneCollisionSystem>()->Init(renderInit);
@@ -122,13 +126,15 @@ int main(int argc, char* argv[])
 	auto player1Entity = createSpriteWithPhysics(*world, resID_fighter, { 500, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
 	world->AddComponent<KBInputComponent>(player1Entity);
 	world->AddComponent<PadInputComponent>(player1Entity, {0});
+	world->AddComponent<PlayerComponent>(player1Entity, {0});
 
 	auto player2Entity = createSpriteWithPhysics(*world, resID_fighter, { 700, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
 	world->AddComponent<KBInputComponent>(player2Entity);
 	world->AddComponent<PadInputComponent>(player2Entity, {1});
+	world->AddComponent<PlayerComponent>(player2Entity, {1});
 
 	auto ufoEntity = createSpriteWithPhysics(*world, resID_ufo, { 200, 200, 200 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
-	world->AddComponent<NPCBehaviourComponent>(ufoEntity, {player1Entity});
+	world->AddComponent<NPCBlackboardComponent>(ufoEntity);
 
 	static constexpr float s_TargetFrameTime = 1.0f/60.0f; 
 

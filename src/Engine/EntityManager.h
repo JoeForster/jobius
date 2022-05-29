@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <bitset>
 #include <queue>
+#include <set>
 
 enum class ComponentType
 {
@@ -13,7 +14,8 @@ enum class ComponentType
 	CT_PLANE,
 	CT_KBINPUT,
 	CT_PADINPUT,
-	CT_NPCBHV,
+	CT_BLACKBOARD_NPC,
+	CT_PLAYER,
 	CT_MAX
 };
 
@@ -24,6 +26,8 @@ using EntitySignature = std::bitset<NUM_COMPONENT_TYPES>;
 
 constexpr size_t MAX_ENTITIES = 10;
 constexpr EntityID INVALID_ENTITY_ID = MAX_ENTITIES;
+
+class EntityQuery;
 
 class EntityManager
 {
@@ -38,6 +42,8 @@ public:
 
 	void SetSignature(EntityID entity, EntitySignature signature);
 	EntitySignature GetSignature(EntityID entity);
+
+	void ExecuteQuery(EntityQuery query, std::set<EntityID>& entitiesOut);
 
 	static bool ValidEntityID(EntityID entity)
 	{

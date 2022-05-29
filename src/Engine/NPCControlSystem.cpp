@@ -1,6 +1,6 @@
 #include "NPCControlSystem.h"
 
-#include "NPCBehaviourComponent.h"
+#include "NPCBlackboardComponent.h"
 #include "RigidBodyComponent.h"
 #include "TransformComponent.h"
 #include "World.h"
@@ -189,7 +189,7 @@ void NPCControlSystem::Init(const SystemInitialiser& initialiser)
 	System::Init(initialiser);
 	
 	EntitySignature sysSignature;
-	sysSignature.set((size_t)ComponentType::CT_NPCBHV);
+	sysSignature.set((size_t)ComponentType::CT_BLACKBOARD_NPC);
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
 	sysSignature.set((size_t)ComponentType::CT_TRANSFORM);
 	m_ParentWorld->SetSystemSignature<NPCControlSystem>(sysSignature);
@@ -202,19 +202,13 @@ void NPCControlSystem::Update(float deltaSecs)
 
 	for (EntityID e : mEntities)
 	{
-		auto& npcBhv = m_ParentWorld->GetComponent<NPCBehaviourComponent>(e);
+		auto& npcBB = m_ParentWorld->GetComponent<NPCBlackboardComponent>(e);
 		auto& rigidBody = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 		auto& npcTransform = m_ParentWorld->GetComponent<TransformComponent>(e);
 
-		// TODO_AI_SENSOR Sensor system read of game state goes here
-		const EntityID playerEntity = npcBhv.m_PlayerEntity;
-		if (playerEntity != INVALID_ENTITY_ID)
-		{
-			const auto& playerTransform = m_ParentWorld->GetComponent<TransformComponent>(playerEntity);
-
-			s_Blackboard.PlayerPos.x = playerTransform.m_Pos.x;
-			s_Blackboard.PlayerPos.y = playerTransform.m_Pos.y;
-		}
+		// TODO_AI_BLACKBOARD validation if no player?
+		s_Blackboard.PlayerPos.x = npcBB.PlayerPos.x;
+		s_Blackboard.PlayerPos.y = npcBB.PlayerPos.y;
 		s_Blackboard.NPCPos.x = npcTransform.m_Pos.x;
 		s_Blackboard.NPCPos.y = npcTransform.m_Pos.y;
 

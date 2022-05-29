@@ -15,6 +15,7 @@ enum class SystemType
 	ST_INPUT,
 	ST_PLAYERCONTROL,
 	ST_NPCCONTROL,
+	ST_NPCSENSOR,
 	ST_MAX
 };
 

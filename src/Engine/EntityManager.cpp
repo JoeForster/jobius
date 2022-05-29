@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "World.h"
+
 EntityManager::EntityManager()
 : m_NumAvailableEntities(0)
 {
@@ -51,4 +53,14 @@ EntitySignature EntityManager::GetSignature(EntityID entity)
 	return m_Signatures[entity];
 }
 
-
+void EntityManager::ExecuteQuery(EntityQuery query, std::set<EntityID>& entitiesOut)
+{
+	for (EntityID entity = 0; entity < m_TailID; ++entity)
+	{
+		// Entity signature matches system signature - insert into set
+		if (query.CheckEntity(entity))
+		{
+			entitiesOut.insert(entity);
+		}
+	}
+}

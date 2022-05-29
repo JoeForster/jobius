@@ -8,6 +8,24 @@
 
 struct Rect2D;
 
+// Simplistic query: given a signature, return entities with at least those components
+// TODO: If the common case is "pre-query once and keep entity list, updating when entities are added",
+// then does it make sense to hold an entity list in here and act like SystemManager::OnEntitySignatureChanged?
+class EntityQuery
+{
+public:
+	EntityQuery(EntitySignature signature): m_QuerySignature(signature) {}
+
+	bool CheckEntity(EntitySignature entitySignature) const
+	{
+		return (m_QuerySignature & entitySignature) == m_QuerySignature;
+	}
+
+private:
+	EntitySignature m_QuerySignature;
+};
+
+
 class World : public std::enable_shared_from_this<World>
 {
 public:
@@ -80,6 +98,11 @@ public:
 	void SetSystemSignature(EntitySignature signature)
 	{
 		m_SystemManager.SetSignature<T>(signature);
+	}
+
+	void ExecuteQuery(EntityQuery query, std::set<EntityID>& entitiesOut)
+	{
+		m_EntityManager.ExecuteQuery(query, entitiesOut);
 	}
 
 	void Update(float deltaSecs)
