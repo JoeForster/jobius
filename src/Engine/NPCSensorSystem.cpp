@@ -40,10 +40,10 @@ void NPCSensorSystem::Update(float deltaSecs)
 		auto& player = m_ParentWorld->GetComponent<PlayerComponent>(e);
 		if (player.m_PlayerIndex == 0)
 		{
-			const auto& playerTransform = m_ParentWorld->GetComponent<TransformComponent>(targetPlayer);
-			playerPos = &playerTransform.m_Pos;
 			targetPlayer = e;
 			assert(targetPlayer != INVALID_ENTITY_ID);
+			const auto& playerTransform = m_ParentWorld->GetComponent<TransformComponent>(targetPlayer);
+			playerPos = &playerTransform.m_Pos;
 			break;
 		}
 

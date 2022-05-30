@@ -24,7 +24,7 @@ EntityID EntityManager::CreateEntity()
 	{
 		return INVALID_ENTITY_ID;
 	}
-
+	// I hate this, and I'm the one who wrote it..!
 	return m_AvailableEntities[--m_NumAvailableEntities];
 }
 
@@ -55,10 +55,12 @@ EntitySignature EntityManager::GetSignature(EntityID entity)
 
 void EntityManager::ExecuteQuery(EntityQuery query, std::set<EntityID>& entitiesOut)
 {
-	for (EntityID entity = 0; entity < m_TailID; ++entity)
+	// TODO fix to only loop over valid entities once we've made this ID array stuff more sane
+	for (EntityID entity = 0; entity < MAX_ENTITIES; ++entity)
 	{
 		// Entity signature matches system signature - insert into set
-		if (query.CheckEntity(entity))
+		EntitySignature signature = m_Signatures[entity];
+		if (entity != INVALID_ENTITY_ID && query.CheckEntity(signature))
 		{
 			entitiesOut.insert(entity);
 		}

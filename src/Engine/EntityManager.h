@@ -55,7 +55,6 @@ private:
 	EntityID m_AvailableEntities[MAX_ENTITIES];
 	EntityID m_NumAvailableEntities;
 
-	EntityID m_TailID = 0;
 	EntitySignature m_Signatures[MAX_ENTITIES];
 
 };
