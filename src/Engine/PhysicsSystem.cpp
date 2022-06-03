@@ -49,9 +49,14 @@ void PhysicsSystem::Update(float deltaSecs)
 		}
 	
 		// HACK TEST until we have a floor: wrap around.
-		if (t.m_Pos.y > 500)
+		const auto& bounds = m_ParentWorld->GetBounds();
+		if (t.m_Pos.y > bounds.max.y)
 		{
-			t.m_Pos.y -= 500;
+			t.m_Pos.y = bounds.min.y;
+		}
+		else if (t.m_Pos.y < bounds.min.y)
+		{
+			t.m_Pos.y = bounds.max.y;
 		}
 	}
 }
