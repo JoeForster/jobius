@@ -119,21 +119,23 @@ int main(int argc, char* argv[])
 		w.AddComponent<AABBComponent>(e, { boxSize, boxOffset } );
 		return e;
 	};
+	int nextPlayerIndex = 0;
+	auto createPlayer = [&](Vector3f pos)
+	{
+		auto playerEntity = createSpriteWithPhysics(*world, resID_fighter, pos, {120, 54}, {60, 27});
+		world->AddComponent<KBInputComponent>(playerEntity);
+		world->AddComponent<PadInputComponent>(playerEntity, {nextPlayerIndex});
+		world->AddComponent<PlayerComponent>(playerEntity, {nextPlayerIndex});
+		++nextPlayerIndex;
+	};
 
 	createSprite(*world, resID_asteroid, { 50, 0, 0 });
-	createSpriteWithPhysics(*world, resID_asteroid, { 150, 0, 0 }, Vector2f{60.0f, 50.0f}, Vector2f{25.0f, 25.0f});
+	createSpriteWithPhysics(*world, resID_asteroid, { 150, 0, 0 }, { 70, 60 }, { 35, 30 });
 
-	auto player1Entity = createSpriteWithPhysics(*world, resID_fighter, { 500, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
-	world->AddComponent<KBInputComponent>(player1Entity);
-	world->AddComponent<PadInputComponent>(player1Entity, {0});
-	world->AddComponent<PlayerComponent>(player1Entity, {0});
+	createPlayer({ 500, 0, 0 });
+	createPlayer({ 700, 0, 0 });
 
-	auto player2Entity = createSpriteWithPhysics(*world, resID_fighter, { 700, 0, 0 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
-	world->AddComponent<KBInputComponent>(player2Entity);
-	world->AddComponent<PadInputComponent>(player2Entity, {1});
-	world->AddComponent<PlayerComponent>(player2Entity, {1});
-
-	auto ufoEntity = createSpriteWithPhysics(*world, resID_ufo, { 200, 200, 200 }, Vector2f{200.0f, 100.0f}, Vector2f{50.0f, 25.0f});
+	auto ufoEntity = createSpriteWithPhysics(*world, resID_ufo, { 200, 200, 200 }, { 158, 48 }, { 79, 24 });
 	world->AddComponent<NPCBlackboardComponent>(ufoEntity);
 
 	static constexpr float s_TargetFrameTime = 1.0f/60.0f; 
