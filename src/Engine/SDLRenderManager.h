@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-//#include "Types.h"
+// TODO_RESOURCE_MANAGEMENT move resource ID and invalid ID into own header
 typedef size_t ResourceID;
 
 // Forward declarations of SDL types
@@ -18,7 +18,8 @@ struct SDL_Rect;
 struct _TTF_Font;
 typedef struct _TTF_Font TTF_Font;
 
-
+// TODO_RESOURCE_MANAGEMENT separate concept of resources from SDL-specific
+// TODO fix up code style here (but whole thing needs a refactor too anyway)
 class SDLRenderManager
 {
 public:
@@ -46,7 +47,9 @@ public:
 	ResourceID LoadFont(const char* szFontPath);
 	// Create or update a text resource given a string and a resource.
 	// Optionally take an existing text ID to update rather than create.
-	ResourceID PrepareText(const char* aText, ResourceID aFontID, ResourceID aUpdateTextID = ResourceID_Invalid);
+	bool PrepareText(const char* aText, ResourceID aFontID, ResourceID& aUpdateTextID);
+	// HACK - we only have one pre-loaded font for debug for now
+	ResourceID GetDefaultFont() const { return 0; }
 
 	// Render clear, generally at frame start
 	void RenderClear();

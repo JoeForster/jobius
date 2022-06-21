@@ -73,6 +73,10 @@ int main(int argc, char* argv[])
 	ResourceID resID_ufo = renderMan->LoadTexture("assets/sprites/ufo.png");
 	assert(resID_ufo != SDLRenderManager::ResourceID_Invalid);
 
+	ResourceID resID_font = renderMan->LoadFont("assets/fonts/FreeMono.ttf");
+	assert(resID_font != SDLRenderManager::ResourceID_Invalid);
+
+
 	std::shared_ptr<World> world = std::make_shared<World>();
 
 	// TODO Currently we get a crash if we add a component we forgot to register. Can we check at compile time?

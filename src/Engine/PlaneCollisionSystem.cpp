@@ -59,11 +59,11 @@ void PlaneCollisionSystem::Render()
 {
 	System::Render();
 
-	// TODO move this to World render
+	// TODO_DEBUG_DRAW move this to World render
 
 	Rect2D bounds = m_ParentWorld->GetBounds();
 
-	//// TODO multi draw line
+	//// TODO_DEBUG_DRAW multi draw line
 	m_RenderMan->DrawLine((int)bounds.min.x, (int)bounds.min.y, (int)bounds.max.x, (int)bounds.min.y);
 	m_RenderMan->DrawLine((int)bounds.max.x, (int)bounds.min.y, (int)bounds.max.x, (int)bounds.max.y);
 	m_RenderMan->DrawLine((int)bounds.max.x, (int)bounds.max.y, (int)bounds.min.x, (int)bounds.max.y);

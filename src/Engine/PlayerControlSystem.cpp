@@ -42,6 +42,7 @@ void PlayerControlSystem::Update(float deltaSecs)
 
 		desiredVel.x += padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_X);
 		desiredVel.y += padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y);
+		printf("DesiredVel: %f %f\n", desiredVel.x, desiredVel.y);
 
 		rigidBody.m_Mass = kbInput.IsPressed(KB_KEY::KEY_SPACE) || padInput.IsPressed(GAMEPAD_BTN::BTN_FACE_CROSS) ? 0.0f : 1.0f;
 

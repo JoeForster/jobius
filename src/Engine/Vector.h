@@ -133,6 +133,19 @@ struct Vector2f
 			*this *= newMag/mag;
 		}
 	}
+
+	void LimitMagnitude(float minMag, float maxMag)
+	{
+		float mag = Magnitude();
+		if (mag < minMag)
+		{
+			*this = ZERO;
+		}
+		else if (mag > maxMag)
+		{
+			*this *= maxMag/mag;
+		}
+	}
 };
 
 struct Vector3f
