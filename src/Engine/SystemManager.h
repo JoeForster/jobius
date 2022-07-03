@@ -84,11 +84,15 @@ public:
 
 	void RenderAllSystems()
 	{
-		for (auto& system : m_Systems)
+		constexpr RenderPass renderPasses[] = { RenderPass::MAIN, RenderPass::DEBUG };
+		for (auto pass : renderPasses)
 		{
-			if (system != nullptr)
+			for (auto& system : m_Systems)
 			{
-				system->Render();
+				if (system != nullptr)
+				{
+					system->Render(pass);
+				}
 			}
 		}
 	}

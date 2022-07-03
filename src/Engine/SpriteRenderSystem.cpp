@@ -19,10 +19,8 @@ void SpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 	m_ParentWorld->SetSystemSignature<SpriteRenderSystem>(renderSignature);
 }
 
-void SpriteRenderSystem::Render()
+void SpriteRenderSystem::Render_Main()
 {
-	System::Render();
-
 	// TODO if multiple systems do render, then the "clear" stuff needs to be separated out?
 	m_RenderMan->RenderClear();
 

@@ -32,7 +32,7 @@ void PhysicsSystem::Update(float deltaSecs)
 	constexpr float gravityAccel = 0.f;//9.8f;
 	constexpr float minVelocity = 0.01f;
 	constexpr float terminalVelocity = 10.0f;
-	static float damping = 0.7f;
+	static float damping = 1.0f;
 	for (EntityID e : mEntities)
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
@@ -70,10 +70,8 @@ void PhysicsSystem::Update(float deltaSecs)
 	}
 }
 
-void PhysicsSystem::Render()
+void PhysicsSystem::Render_Debug()
 {
-	System::Render();
-
 	for (EntityID e : mEntities)
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
@@ -90,10 +88,10 @@ void PhysicsSystem::Render()
 		EntityResMap::iterator existing = m_DebugText.find(e);
 		if (existing == m_DebugText.end())
 		{
-			ResourceID text = SDLRenderManager::ResourceID_Invalid;
+			ResourceID text = ResourceID_Invalid;
 			if (m_RenderMan->PrepareText(ss.str().c_str(), font, text))
 			{
-				m_RenderMan->DrawText(text, t.m_Pos.x, t.m_Pos.y);
+				m_RenderMan->DrawText(text, (int)t.m_Pos.x, (int)t.m_Pos.y);
 				m_DebugText[e] = text;
 			}
 		}
@@ -102,7 +100,7 @@ void PhysicsSystem::Render()
 			ResourceID text = existing->second;
 			if (m_RenderMan->PrepareText(ss.str().c_str(), font, text))
 			{
-				m_RenderMan->DrawText(text, t.m_Pos.x, t.m_Pos.y);
+				m_RenderMan->DrawText(text, (int)t.m_Pos.x, (int)t.m_Pos.y);
 			}
 		}
 	}

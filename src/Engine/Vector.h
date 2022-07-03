@@ -148,6 +148,16 @@ struct Vector2f
 	}
 };
 
+
+struct Vector2i
+{
+	int x = 0;
+	int y = 0;
+
+	static const Vector2i ZERO;
+};
+
+
 struct Vector3f
 {
 	float x = 0.0f;
@@ -156,6 +166,7 @@ struct Vector3f
 
 	static const Vector3f ZERO;
 };
+
 
 struct Rect2D
 {

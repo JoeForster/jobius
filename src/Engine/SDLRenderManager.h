@@ -5,8 +5,7 @@
 #include <string>
 #include <memory>
 
-// TODO_RESOURCE_MANAGEMENT move resource ID and invalid ID into own header
-typedef size_t ResourceID;
+#include "RenderTypes.h"
 
 // Forward declarations of SDL types
 struct SDL_Window;
@@ -23,8 +22,6 @@ typedef struct _TTF_Font TTF_Font;
 class SDLRenderManager
 {
 public:
-	static const ResourceID ResourceID_Invalid = ~0u;
-
 	static std::shared_ptr<SDLRenderManager> Create(SDL_Window* window, SDL_Renderer* renderer);
 
 	// TODO want to make this protected/private but it's awkward - could do with derived type

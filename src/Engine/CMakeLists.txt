@@ -20,6 +20,7 @@ set(ENGINE_SOURCES
 )
 
 set(ENGINE_HEADERS
+	"${CMAKE_SOURCE_DIR}/src/Engine/RenderTypes.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/ComponentArray.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/ComponentManager.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/Vector.h"

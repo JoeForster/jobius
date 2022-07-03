@@ -8,7 +8,7 @@ struct SpriteComponent
 	static constexpr ComponentType GetComponentType() { return ComponentType::CT_SPRITE; }
 
 	SpriteComponent()
-		: m_SpriteID{ SDLRenderManager::ResourceID_Invalid } {}
+		: m_SpriteID{ ResourceID_Invalid } {}
 
 	SpriteComponent(ResourceID spriteID)
 		: m_SpriteID(spriteID) {}

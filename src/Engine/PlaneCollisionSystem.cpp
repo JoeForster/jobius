@@ -55,10 +55,8 @@ void PlaneCollisionSystem::Update(float deltaSecs)
 	}
 }
 
-void PlaneCollisionSystem::Render()
+void PlaneCollisionSystem::Render_Debug()
 {
-	System::Render();
-
 	// TODO_DEBUG_DRAW move this to World render
 
 	Rect2D bounds = m_ParentWorld->GetBounds();

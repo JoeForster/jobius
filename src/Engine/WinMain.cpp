@@ -67,14 +67,14 @@ int main(int argc, char* argv[])
 
 	std::shared_ptr<SDLRenderManager> renderMan = SDLRenderManager::Create(window, renderer);
 	ResourceID resID_asteroid = renderMan->LoadTexture("assets/sprites/asteroid.png");
-	assert(resID_asteroid != SDLRenderManager::ResourceID_Invalid);
+	assert(resID_asteroid != ResourceID_Invalid);
 	ResourceID resID_fighter = renderMan->LoadTexture("assets/sprites/fighter_lr.png");
-	assert(resID_fighter != SDLRenderManager::ResourceID_Invalid);
+	assert(resID_fighter != ResourceID_Invalid);
 	ResourceID resID_ufo = renderMan->LoadTexture("assets/sprites/ufo.png");
-	assert(resID_ufo != SDLRenderManager::ResourceID_Invalid);
+	assert(resID_ufo != ResourceID_Invalid);
 
 	ResourceID resID_font = renderMan->LoadFont("assets/fonts/FreeMono.ttf");
-	assert(resID_font != SDLRenderManager::ResourceID_Invalid);
+	assert(resID_font != ResourceID_Invalid);
 
 
 	std::shared_ptr<World> world = std::make_shared<World>();
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 
 	// Init systems
 	world->RegisterSystem<SDLInputSystem>()->Init();
-	world->RegisterSystem<PlayerControlSystem>()->Init();
+	world->RegisterSystem<PlayerControlSystem>()->Init(renderInit);
 	world->RegisterSystem<NPCControlSystem>()->Init();
 	world->RegisterSystem<NPCSensorSystem>()->Init();
 	world->RegisterSystem<PhysicsSystem>()->Init(renderInit);

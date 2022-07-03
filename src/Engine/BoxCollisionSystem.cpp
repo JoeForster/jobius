@@ -55,10 +55,8 @@ void BoxCollisionSystem::Update(float deltaSecs)
 	}
 }
 
-void BoxCollisionSystem::Render()
+void BoxCollisionSystem::Render_Debug()
 {
-	System::Render();
-
 	for (EntityID e : mEntities)
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
