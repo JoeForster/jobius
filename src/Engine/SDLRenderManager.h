@@ -18,7 +18,6 @@ struct _TTF_Font;
 typedef struct _TTF_Font TTF_Font;
 
 // TODO_RESOURCE_MANAGEMENT separate concept of resources from SDL-specific
-// TODO fix up code style here (but whole thing needs a refactor too anyway)
 class SDLRenderManager
 {
 public:
@@ -27,7 +26,7 @@ public:
 	// TODO want to make this protected/private but it's awkward - could do with derived type
 	// but need a nice way to pass in needed type-specific resources like the window and renderer.
 	// See: https://stackoverflow.com/questions/8147027/how-do-i-call-stdmake-shared-on-a-class-with-only-protected-or-private-const
-	SDLRenderManager(SDL_Window* aWindow, SDL_Renderer* aRenderer);
+	SDLRenderManager(SDL_Window* window, SDL_Renderer* renderer);
 	~SDLRenderManager(void);
 
 	// N.B. In a real project you might have a "locking" mechanism that
@@ -37,14 +36,14 @@ public:
 	// Load an image file given a path.
 	// Return an ID to be stored by the caller and used in Draw.
 	// returns ResourceID_Invalid if it failed to load.
-	ResourceID LoadTexture(const char* szImagePath);
+	ResourceID LoadTexture(const char* imagePath);
 	// Load a font file given a path.
 	// Return an ID to be stored by the caller and used in Draw.
 	// returns ResourceID_Invalid if it failed to load.
-	ResourceID LoadFont(const char* szFontPath);
+	ResourceID LoadFont(const char* fontPath);
 	// Create or update a text resource given a string and a resource.
 	// Optionally take an existing text ID to update rather than create.
-	bool PrepareText(const char* aText, ResourceID aFontID, ResourceID& aUpdateTextID);
+	bool PrepareText(const char* text, ResourceID fontID, ResourceID& textResID);
 	// HACK - we only have one pre-loaded font for debug for now
 	ResourceID GetDefaultFont() const { return 0; }
 
@@ -52,8 +51,10 @@ public:
 	void RenderClear();
 
 	// Draw image based on its ID returned by LoadImage
-	void Draw(ResourceID anImageID, int aCellX = 0, int aCellY = 0);
-	void DrawText(ResourceID aTextID, int aX, int aY);
+	void Draw(ResourceID imageID, int x = 0, int y = 0);
+	void DrawText(ResourceID textID, int aX, int aY);
+	// Helper to both prepare and draw text in one
+	bool DrawText(const char* text, ResourceID fontID, ResourceID& textResID, int x = 0, int y = 0);
 
 	// WIP Primitive drawing helpers
 	void DrawLine(int x0, int y0, int x1, int y1); 

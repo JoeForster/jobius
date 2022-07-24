@@ -1,6 +1,7 @@
 #include "PhysicsSystem.h"
 
-#include <sstream>
+#include <string>
+#include <format>
 
 #include "TransformComponent.h"
 #include "RigidBodyComponent.h"
@@ -82,14 +83,9 @@ void PhysicsSystem::Render_Debug()
 		
 		// TODO format and prepare helpers to get this to one line
 		const ResourceID font = m_RenderMan->GetDefaultFont();
-		
-		std::ostringstream ss;
-		ss.precision(2);
-		ss << rb.m_Vel.x << ", " << rb.m_Vel.y;
 
-		if (m_RenderMan->PrepareText(ss.str().c_str(), font, dt.m_ResID))
-		{
-			m_RenderMan->DrawText(dt.m_ResID, (int)t.m_Pos.x, (int)t.m_Pos.y);
-		}
+		m_RenderMan->DrawText(
+			std::format("{:.2f}, {:.2f}", rb.m_Vel.x, rb.m_Vel.y).c_str(),
+			font, dt.m_ResID, (int)t.m_Pos.x, (int)t.m_Pos.y);
 	}
 }

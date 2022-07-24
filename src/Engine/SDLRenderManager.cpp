@@ -110,7 +110,7 @@ void SDLRenderManager::RenderClear()
 	SDL_RenderClear(m_Renderer);
 }
 
-void SDLRenderManager::Draw(ResourceID imageID, int aCellX, int aCellY)
+void SDLRenderManager::Draw(ResourceID imageID, int x, int y)
 {
 	// Basic checks (but assume vectors are same size, which is verified on load)
 	assert(imageID != ResourceID_Invalid);
@@ -123,25 +123,25 @@ void SDLRenderManager::Draw(ResourceID imageID, int aCellX, int aCellY)
 	SDL_Texture* imageTex = m_ImageTextures[imageID];
 	SDL_Rect* sizeRect = m_ImageSizeRects[imageID];
 	SDL_Rect posRect;
-	posRect.x = aCellX;
-	posRect.y = aCellY;
+	posRect.x = x;
+	posRect.y = y;
 	posRect.w = sizeRect->w;
 	posRect.h = sizeRect->h;
 
 	SDL_RenderCopy(m_Renderer, imageTex, sizeRect, &posRect);
 }
 
-bool SDLRenderManager::PrepareText(const char* aText, ResourceID aFontID, ResourceID& aUpdateTextID)
+bool SDLRenderManager::PrepareText(const char* text, ResourceID fontID, ResourceID& textResID)
 {
 	// Basic checks
-	assert(aFontID != ResourceID_Invalid);
-	if (aFontID == ResourceID_Invalid)
+	assert(fontID != ResourceID_Invalid);
+	if (fontID == ResourceID_Invalid)
 		return false; // Invalid ID passed
-	assert(aFontID < m_Fonts.size());
-	if (aFontID >= m_Fonts.size())
+	assert(fontID < m_Fonts.size());
+	if (fontID >= m_Fonts.size())
 		return false; // Invalid ID passed
 
-	TTF_Font* font = m_Fonts[aFontID];
+	TTF_Font* font = m_Fonts[fontID];
 
 	// Colour is hard-coded for now.
 	SDL_Color fg = { 255,0,0,255 };
@@ -150,31 +150,31 @@ bool SDLRenderManager::PrepareText(const char* aText, ResourceID aFontID, Resour
 	// TODO_RESOURCE_MANAGEMENT consider a way of doing this without creating strings on
 	// the heap - though any use of a hash would have to avoid issues
 	// with collisions
-	if (aUpdateTextID != ResourceID_Invalid)
+	if (textResID != ResourceID_Invalid)
 	{
-		assert(aUpdateTextID < m_TextTextures.size());
+		assert(textResID < m_TextTextures.size());
 		assert(m_TextTextures.size() == m_TextSizeRects.size());
 		assert(m_TextValues.size() == m_TextValues.size());
 
-		if (m_TextValues[aUpdateTextID] != aText)
+		if (m_TextValues[textResID] != text)
 		{
-			if (m_TextTextures[aUpdateTextID] != nullptr)
+			if (m_TextTextures[textResID] != nullptr)
 			{
-				SDL_DestroyTexture(m_TextTextures[aUpdateTextID]);
-				m_TextTextures[aUpdateTextID] = nullptr;
+				SDL_DestroyTexture(m_TextTextures[textResID]);
+				m_TextTextures[textResID] = nullptr;
 			}
 			// There might be a more efficient way to update this without
 			// recreating everything, but this should be fine for our use.
-			SDL_Surface* surface = TTF_RenderText_Solid(font, aText, fg);
-			m_TextTextures[aUpdateTextID] = SDL_CreateTextureFromSurface(m_Renderer, surface);
+			SDL_Surface* surface = TTF_RenderText_Solid(font, text, fg);
+			m_TextTextures[textResID] = SDL_CreateTextureFromSurface(m_Renderer, surface);
 
-			SDL_Rect* sizeRect = m_TextSizeRects[aUpdateTextID];
+			SDL_Rect* sizeRect = m_TextSizeRects[textResID];
 			sizeRect->x = 0;
 			sizeRect->y = 0;
 			sizeRect->w = surface->w;
 			sizeRect->h = surface->h;
 
-			m_TextValues[aUpdateTextID] = aText;
+			m_TextValues[textResID] = text;
 
 			SDL_FreeSurface(surface);
 		}
@@ -182,12 +182,12 @@ bool SDLRenderManager::PrepareText(const char* aText, ResourceID aFontID, Resour
 	// NEW TEXT - create a new texture for it
 	else
 	{
-		SDL_Surface* surface = TTF_RenderText_Solid(font, aText, fg);
+		SDL_Surface* surface = TTF_RenderText_Solid(font, text, fg);
 		SDL_Texture* optimizedSurface = SDL_CreateTextureFromSurface(m_Renderer, surface);
 
-		aUpdateTextID = m_TextTextures.size();
-		assert(aUpdateTextID == m_TextValues.size());
-		assert(aUpdateTextID == m_TextSizeRects.size());
+		textResID = m_TextTextures.size();
+		assert(textResID == m_TextValues.size());
+		assert(textResID == m_TextSizeRects.size());
 
 		SDL_Rect* sizeRect = new SDL_Rect;
 		sizeRect->x = 0;
@@ -197,7 +197,7 @@ bool SDLRenderManager::PrepareText(const char* aText, ResourceID aFontID, Resour
 
 		// Store everything created here to be used by Draw for this ID.
 		m_TextTextures.push_back(optimizedSurface);
-		m_TextValues.push_back(aText);
+		m_TextValues.push_back(text);
 		m_TextSizeRects.push_back(sizeRect);
 
 		SDL_FreeSurface(surface);
@@ -206,21 +206,21 @@ bool SDLRenderManager::PrepareText(const char* aText, ResourceID aFontID, Resour
 	return true;
 }
 
-void SDLRenderManager::DrawText(ResourceID aTextID, int aX, int aY)
+void SDLRenderManager::DrawText(ResourceID textID, int aX, int aY)
 {
 	// Basic checks - TODO might be something worth removing once everything is verified,
 	// since the caller should be responsible for passing valid IDs where required.
-	assert(aTextID != ResourceID_Invalid);
-	if (aTextID == ResourceID_Invalid)
+	assert(textID != ResourceID_Invalid);
+	if (textID == ResourceID_Invalid)
 		return; // Invalid ID passed
-	assert(aTextID < m_TextTextures.size());
-	if (aTextID >= m_TextTextures.size())
+	assert(textID < m_TextTextures.size());
+	if (textID >= m_TextTextures.size())
 		return; // Invalid ID passed
 
 	// Colour is hard-coded for now.
 	SDL_Color fg = { 255,0,0,255 };
-	SDL_Texture* optimizedSurface = m_TextTextures[aTextID];
-	SDL_Rect* sizeRect = m_TextSizeRects[aTextID];
+	SDL_Texture* optimizedSurface = m_TextTextures[textID];
+	SDL_Rect* sizeRect = m_TextSizeRects[textID];
 
 	SDL_Rect posRect;
 	posRect.x = aX;
@@ -229,6 +229,16 @@ void SDLRenderManager::DrawText(ResourceID aTextID, int aX, int aY)
 	posRect.h = sizeRect->h;
 
 	SDL_RenderCopy(m_Renderer, optimizedSurface, sizeRect, &posRect);
+}
+
+bool SDLRenderManager::DrawText(const char* text, ResourceID fontID, ResourceID& textResID, int x, int y)
+{
+	bool result = PrepareText(text, fontID, textResID);
+	if (result)
+	{
+		DrawText(textResID, x, y);
+	}
+	return result;
 }
 
 
