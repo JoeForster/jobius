@@ -131,12 +131,12 @@ void SDLRenderManager::Draw(ResourceID imageID, int x, int y)
 	SDL_RenderCopy(m_Renderer, imageTex, sizeRect, &posRect);
 }
 
-bool SDLRenderManager::PrepareText(const char* text, ResourceID fontID, ResourceID& textResID)
+bool SDLRenderManager::PrepareText(const char* text, ResourceID& textResID, ResourceID fontID)
 {
-	// Basic checks
-	assert(fontID != ResourceID_Invalid);
+	// Basic checks	
 	if (fontID == ResourceID_Invalid)
-		return false; // Invalid ID passed
+		fontID = GetDefaultFont();
+	assert(fontID != ResourceID_Invalid);
 	assert(fontID < m_Fonts.size());
 	if (fontID >= m_Fonts.size())
 		return false; // Invalid ID passed
@@ -144,7 +144,7 @@ bool SDLRenderManager::PrepareText(const char* text, ResourceID fontID, Resource
 	TTF_Font* font = m_Fonts[fontID];
 
 	// Colour is hard-coded for now.
-	SDL_Color fg = { 255,0,0,255 };
+	SDL_Color fg = { 255, 0, 0, 255 };
 
 	// EXISTING TEXT - only re-create it if the text has changed
 	// TODO_RESOURCE_MANAGEMENT consider a way of doing this without creating strings on
@@ -231,9 +231,9 @@ void SDLRenderManager::DrawText(ResourceID textID, int aX, int aY)
 	SDL_RenderCopy(m_Renderer, optimizedSurface, sizeRect, &posRect);
 }
 
-bool SDLRenderManager::DrawText(const char* text, ResourceID fontID, ResourceID& textResID, int x, int y)
+bool SDLRenderManager::DrawText(const char* text, ResourceID& textResID, int x, int y, ResourceID fontID)
 {
-	bool result = PrepareText(text, fontID, textResID);
+	bool result = PrepareText(text, textResID, fontID);
 	if (result)
 	{
 		DrawText(textResID, x, y);

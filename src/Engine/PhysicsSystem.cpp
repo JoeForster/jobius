@@ -81,11 +81,8 @@ void PhysicsSystem::Render_Debug()
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 		
-		// TODO format and prepare helpers to get this to one line
-		const ResourceID font = m_RenderMan->GetDefaultFont();
-
 		m_RenderMan->DrawText(
 			std::format("{:.2f}, {:.2f}", rb.m_Vel.x, rb.m_Vel.y).c_str(),
-			font, dt.m_ResID, (int)t.m_Pos.x, (int)t.m_Pos.y);
+			dt.m_ResID, (int)t.m_Pos.x, (int)t.m_Pos.y);
 	}
 }

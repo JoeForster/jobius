@@ -1,11 +1,14 @@
 #include "PlayerControlSystem.h"
 
-#include <sstream>
+#include <format>
+#include <string>
 
 #include "KBInputComponent.h"
 #include "TransformComponent.h"
 #include "PadInputComponent.h"
 #include "RigidBodyComponent.h"
+#include "DebugTextComponent.h"
+
 #include "World.h"
 #include "SDLRenderManager.h"
 
@@ -17,8 +20,8 @@ void PlayerControlSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_TRANSFORM); // TODO_DEBUG_DRAW this is only needed for debug...
 	sysSignature.set((size_t)ComponentType::CT_KBINPUT);
 	sysSignature.set((size_t)ComponentType::CT_PADINPUT);
-	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
 	m_ParentWorld->SetSystemSignature<PlayerControlSystem>(sysSignature);
+	sysSignature.set((size_t)ComponentType::CT_DEBUGTEXT);
 	m_ParentWorld->SetSystemDebugSignature<PlayerControlSystem>(sysSignature);
 
 
@@ -75,36 +78,16 @@ void PlayerControlSystem::Render_Debug()
 {
 	for (EntityID e : mEntities)
 	{
-		//auto& kb = m_ParentWorld->GetComponent<KBInputComponent>(e);
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& pad = m_ParentWorld->GetComponent<PadInputComponent>(e);
-		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
-		
-		// TODO_DEBUG_DRAW here for now, but need a separate pass for debug.
-		const ResourceID font = m_RenderMan->GetDefaultFont();
-		
-		// TODO tidy this, there has to be a better way of "find and update reference if it wasn't already in there"
-		std::ostringstream ss;
-		ss.precision(2);
-		ss << rb.m_Vel.x << ", " << rb.m_Vel.y;
+		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 
-		EntityResMap::iterator existing = m_DebugText.find(e);
-		if (existing == m_DebugText.end())
-		{
-			ResourceID text = ResourceID_Invalid;
-			if (m_RenderMan->PrepareText(ss.str().c_str(), font, text))
-			{
-				m_RenderMan->DrawText(text, (int)t.m_Pos.x, (int)t.m_Pos.y);
-				m_DebugText[e] = text;
-			}
-		}
-		else
-		{
-			ResourceID text = existing->second;
-			if (m_RenderMan->PrepareText(ss.str().c_str(), font, text))
-			{
-				m_RenderMan->DrawText(text, (int)t.m_Pos.x, (int)t.m_Pos.y);
-			}
-		}
+		m_RenderMan->DrawText(
+			std::format("{:.2f}, {:.2f}, {:.2f}, {:.2f}",
+				pad.GetAxis(GAMEPAD_AXIS::AXIS_LS_X),
+				pad.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y),
+				pad.GetAxis(GAMEPAD_AXIS::AXIS_RS_X),
+				pad.GetAxis(GAMEPAD_AXIS::AXIS_RS_Y)).c_str(),
+			dt.m_ResID, (int)t.m_Pos.x, (int)t.m_Pos.y + 20);
 	}
 }

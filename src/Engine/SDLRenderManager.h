@@ -43,7 +43,7 @@ public:
 	ResourceID LoadFont(const char* fontPath);
 	// Create or update a text resource given a string and a resource.
 	// Optionally take an existing text ID to update rather than create.
-	bool PrepareText(const char* text, ResourceID fontID, ResourceID& textResID);
+	bool PrepareText(const char* text, ResourceID& textResID, ResourceID fontID = ResourceID_Invalid);
 	// HACK - we only have one pre-loaded font for debug for now
 	ResourceID GetDefaultFont() const { return 0; }
 
@@ -54,7 +54,7 @@ public:
 	void Draw(ResourceID imageID, int x = 0, int y = 0);
 	void DrawText(ResourceID textID, int aX, int aY);
 	// Helper to both prepare and draw text in one
-	bool DrawText(const char* text, ResourceID fontID, ResourceID& textResID, int x = 0, int y = 0);
+	bool DrawText(const char* text, ResourceID& textResID, int x = 0, int y = 0, ResourceID fontID = ResourceID_Invalid);
 
 	// WIP Primitive drawing helpers
 	void DrawLine(int x0, int y0, int x1, int y1); 
