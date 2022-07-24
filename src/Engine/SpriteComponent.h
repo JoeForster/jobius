@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ComponentManager.h"
-#include "SDLRenderManager.h"
+#include "RenderTypes.h"
 
 struct SpriteComponent
 {

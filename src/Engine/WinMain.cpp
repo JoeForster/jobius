@@ -29,6 +29,7 @@
 #include "PadInputComponent.h"
 #include "NPCBlackboardComponent.h"
 #include "PlayerComponent.h"
+#include "DebugTextComponent.h"
 
 int main(int argc, char* argv[])
 {
@@ -89,6 +90,7 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<PadInputComponent>();
 	world->RegisterComponent<NPCBlackboardComponent>();
 	world->RegisterComponent<PlayerComponent>();
+	world->RegisterComponent<DebugTextComponent>();
 
 	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
@@ -121,6 +123,7 @@ int main(int argc, char* argv[])
 		w.AddComponent<SpriteComponent>(e, resID);
 		w.AddComponent<RigidBodyComponent>(e);
 		w.AddComponent<AABBComponent>(e, { boxSize, boxOffset } );
+		w.AddComponent<DebugTextComponent>(e);
 		return e;
 	};
 	int nextPlayerIndex = 0;

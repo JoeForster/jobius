@@ -15,6 +15,7 @@ void SDLInputSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_KBINPUT);
 	sysSignature.set((size_t)ComponentType::CT_PADINPUT);
 	m_ParentWorld->SetSystemSignature<SDLInputSystem>(sysSignature);
+	m_ParentWorld->SetSystemDebugSignature<SDLInputSystem>(sysSignature);
 
 	int numJoysticks = SDL_NumJoysticks();
 	printf("[SDLInputSystem] Num joysticks: %d\n", numJoysticks);

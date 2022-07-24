@@ -4,6 +4,7 @@
 
 #include "TransformComponent.h"
 #include "RigidBodyComponent.h"
+#include "DebugTextComponent.h"
 #include "AABBComponent.h"
 #include "World.h"
 #include "SDLRenderManager.h"
@@ -16,6 +17,8 @@ void PhysicsSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_TRANSFORM);
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
 	m_ParentWorld->SetSystemSignature<PhysicsSystem>(sysSignature);
+	sysSignature.set((size_t)ComponentType::CT_DEBUGTEXT);
+	m_ParentWorld->SetSystemDebugSignature<PhysicsSystem>(sysSignature);
 
 	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);
 	m_RenderMan = renderInit.m_RenderMan;
@@ -37,7 +40,6 @@ void PhysicsSystem::Update(float deltaSecs)
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
-
 
 		if (rb.m_Colliding)
 		{
@@ -72,36 +74,22 @@ void PhysicsSystem::Update(float deltaSecs)
 
 void PhysicsSystem::Render_Debug()
 {
-	for (EntityID e : mEntities)
+	for (EntityID e : mEntitiesDebug)
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
+		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 		
-		// TODO_DEBUG_DRAW here for now, but need a separate pass for debug.
+		// TODO format and prepare helpers to get this to one line
 		const ResourceID font = m_RenderMan->GetDefaultFont();
 		
-		// TODO tidy this, there has to be a better way of "find and update reference if it wasn't already in there"
 		std::ostringstream ss;
 		ss.precision(2);
 		ss << rb.m_Vel.x << ", " << rb.m_Vel.y;
 
-		EntityResMap::iterator existing = m_DebugText.find(e);
-		if (existing == m_DebugText.end())
+		if (m_RenderMan->PrepareText(ss.str().c_str(), font, dt.m_ResID))
 		{
-			ResourceID text = ResourceID_Invalid;
-			if (m_RenderMan->PrepareText(ss.str().c_str(), font, text))
-			{
-				m_RenderMan->DrawText(text, (int)t.m_Pos.x, (int)t.m_Pos.y);
-				m_DebugText[e] = text;
-			}
-		}
-		else
-		{
-			ResourceID text = existing->second;
-			if (m_RenderMan->PrepareText(ss.str().c_str(), font, text))
-			{
-				m_RenderMan->DrawText(text, (int)t.m_Pos.x, (int)t.m_Pos.y);
-			}
+			m_RenderMan->DrawText(dt.m_ResID, (int)t.m_Pos.x, (int)t.m_Pos.y);
 		}
 	}
 }

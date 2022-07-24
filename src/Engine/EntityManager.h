@@ -16,6 +16,7 @@ enum class ComponentType
 	CT_PADINPUT,
 	CT_BLACKBOARD_NPC,
 	CT_PLAYER,
+	CT_DEBUGTEXT,
 	CT_MAX
 };
 

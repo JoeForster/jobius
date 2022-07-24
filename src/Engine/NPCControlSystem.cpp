@@ -193,6 +193,7 @@ void NPCControlSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
 	sysSignature.set((size_t)ComponentType::CT_TRANSFORM);
 	m_ParentWorld->SetSystemSignature<NPCControlSystem>(sysSignature);
+	m_ParentWorld->SetSystemDebugSignature<NPCControlSystem>(sysSignature);
 }
 
 

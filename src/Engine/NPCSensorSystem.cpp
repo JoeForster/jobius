@@ -16,6 +16,7 @@ void NPCSensorSystem::Init(const SystemInitialiser& initialiser)
 	EntitySignature sysSignature;
 	sysSignature.set((size_t)ComponentType::CT_BLACKBOARD_NPC);
 	m_ParentWorld->SetSystemSignature<NPCSensorSystem>(sysSignature);
+	m_ParentWorld->SetSystemDebugSignature<NPCSensorSystem>(sysSignature);
 }
 
 

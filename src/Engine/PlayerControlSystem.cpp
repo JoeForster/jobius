@@ -19,6 +19,7 @@ void PlayerControlSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_PADINPUT);
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
 	m_ParentWorld->SetSystemSignature<PlayerControlSystem>(sysSignature);
+	m_ParentWorld->SetSystemDebugSignature<PlayerControlSystem>(sysSignature);
 
 
 	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);

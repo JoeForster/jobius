@@ -32,6 +32,16 @@ public:
 		m_Signatures[typeIndex] = signature;
 	}
 
+	template<class T>
+	void SetDebugSignature(EntitySignature signature)
+	{
+		SystemType type = T::GetSystemType();
+		size_t typeIndex = (size_t)type;
+		assert(m_Systems[typeIndex] != nullptr && "System used before registered.");
+
+		m_DebugSignatures[typeIndex] = signature;
+	}
+
 	void OnEntityDestroyed(EntityID entity)
 	{
 		// Erase a destroyed entity from all system lists
@@ -42,6 +52,7 @@ public:
 			{
 				// mEntities is a set so no check needed
 				system->mEntities.erase(entity);
+				system->mEntitiesDebug.erase(entity);
 			}
 		}
 	}
@@ -57,6 +68,8 @@ public:
 			const EntitySignature& systemSignature = m_Signatures[systemIndex];
 
 			// TODO use EntityQuery (or ultimately do away with signatures once we have a proper query system)
+			// TODO following from above, shouldn't be necessary to have a second hard-coded signature for debug
+			// - instead just tie a query to an update function (or allow multiple queries per system?)
 
 			// Entity signature matches system signature - insert into set
 			if ((entitySignature & systemSignature) == systemSignature)
@@ -67,6 +80,17 @@ public:
 			else
 			{
 				system->mEntities.erase(entity);
+			}
+
+			// Same again for debug..
+			const EntitySignature& debugSignature = m_DebugSignatures[systemIndex];
+			if ((entitySignature & debugSignature) == debugSignature)
+			{
+				system->mEntitiesDebug.insert(entity);
+			}
+			else
+			{
+				system->mEntitiesDebug.erase(entity);
 			}
 		}
 	}
@@ -102,6 +126,8 @@ public:
 private:
 	// Map from SystemType to a signature
 	EntitySignature m_Signatures[NUM_SYSTEM_TYPES];
+	// Debug update may have a different signature for extra debug components
+	EntitySignature m_DebugSignatures[NUM_SYSTEM_TYPES];
 
 	// Map from SystemType to a system pointer
 	std::shared_ptr<System> m_Systems[NUM_SYSTEM_TYPES];

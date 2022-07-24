@@ -100,6 +100,12 @@ public:
 		m_SystemManager.SetSignature<T>(signature);
 	}
 
+	template<typename T>
+	void SetSystemDebugSignature(EntitySignature signature)
+	{
+		m_SystemManager.SetDebugSignature<T>(signature);
+	}
+
 	void ExecuteQuery(EntityQuery query, std::set<EntityID>& entitiesOut)
 	{
 		m_EntityManager.ExecuteQuery(query, entitiesOut);

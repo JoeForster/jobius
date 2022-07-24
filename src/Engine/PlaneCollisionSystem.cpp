@@ -15,6 +15,7 @@ void PlaneCollisionSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_PLANE);
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
 	m_ParentWorld->SetSystemSignature<PlaneCollisionSystem>(sysSignature);
+	m_ParentWorld->SetSystemDebugSignature<PlaneCollisionSystem>(sysSignature);
 
 	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);
 	m_RenderMan = renderInit.m_RenderMan;

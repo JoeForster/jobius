@@ -3,6 +3,7 @@
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
 #include "World.h"
+#include "SDLRenderManager.h"
 
 void SpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -17,6 +18,7 @@ void SpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 	renderSignature.set((size_t)ComponentType::CT_TRANSFORM);
 	renderSignature.set((size_t)ComponentType::CT_SPRITE);
 	m_ParentWorld->SetSystemSignature<SpriteRenderSystem>(renderSignature);
+	m_ParentWorld->SetSystemDebugSignature<SpriteRenderSystem>(renderSignature);
 }
 
 void SpriteRenderSystem::Render_Main()

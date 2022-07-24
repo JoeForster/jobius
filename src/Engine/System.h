@@ -47,6 +47,7 @@ public:
 	}
 
 	std::set<EntityID> mEntities;
+	std::set<EntityID> mEntitiesDebug;
 
 	// Init to "finalise" the World, ready to render/update.
 	virtual void Init(const SystemInitialiser& initialiser = s_EmptyInitialiser)
