@@ -4,6 +4,8 @@
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 
+#include "Vector.h"
+
 #include <assert.h>
 
 std::shared_ptr<SDLRenderManager> SDLRenderManager::Create(SDL_Window* window, SDL_Renderer* renderer)
@@ -241,9 +243,17 @@ bool SDLRenderManager::DrawText(const char* text, ResourceID& textResID, int x, 
 	return result;
 }
 
-
 void SDLRenderManager::DrawLine(int x0, int y0, int x1, int y1)
 {
 	SDL_SetRenderDrawColor(m_Renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderDrawLine(m_Renderer, x0, y0, x1, y1);
+}
+
+void SDLRenderManager::DrawRect(const Rect2D& r)
+{
+	SDL_SetRenderDrawColor(m_Renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderDrawLine(m_Renderer, (int)r.min.x, (int)r.min.y, (int)r.max.x, (int)r.min.y);
+	SDL_RenderDrawLine(m_Renderer, (int)r.max.x, (int)r.min.y, (int)r.max.x, (int)r.max.y);
+	SDL_RenderDrawLine(m_Renderer, (int)r.max.x, (int)r.max.y, (int)r.min.x, (int)r.max.y);
+	SDL_RenderDrawLine(m_Renderer, (int)r.min.x, (int)r.max.y, (int)r.min.x, (int)r.min.y);
 }

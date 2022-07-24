@@ -17,6 +17,8 @@ struct SDL_Rect;
 struct _TTF_Font;
 typedef struct _TTF_Font TTF_Font;
 
+struct Rect2D;
+
 // TODO_RESOURCE_MANAGEMENT separate concept of resources from SDL-specific
 class SDLRenderManager
 {
@@ -56,8 +58,9 @@ public:
 	// Helper to both prepare and draw text in one
 	bool DrawText(const char* text, ResourceID& textResID, int x = 0, int y = 0, ResourceID fontID = ResourceID_Invalid);
 
-	// WIP Primitive drawing helpers
-	void DrawLine(int x0, int y0, int x1, int y1); 
+	// Primitive drawing helpers
+	void DrawLine(int x0, int y0, int x1, int y1);
+	void DrawRect(const Rect2D& r); 
 
 private:
 	bool Init();

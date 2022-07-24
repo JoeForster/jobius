@@ -59,20 +59,16 @@ void PlaneCollisionSystem::Update(float deltaSecs)
 void PlaneCollisionSystem::Render_Debug()
 {
 	// TODO_DEBUG_DRAW move this to World render
-
+	// TODO_DEBUG_DRAW support for colours
+	// TODO_DEBUG_DRAW world->screen coordinates
 	Rect2D bounds = m_ParentWorld->GetBounds();
 
-	//// TODO_DEBUG_DRAW multi draw line
-	m_RenderMan->DrawLine((int)bounds.min.x, (int)bounds.min.y, (int)bounds.max.x, (int)bounds.min.y);
-	m_RenderMan->DrawLine((int)bounds.max.x, (int)bounds.min.y, (int)bounds.max.x, (int)bounds.max.y);
-	m_RenderMan->DrawLine((int)bounds.max.x, (int)bounds.max.y, (int)bounds.min.x, (int)bounds.max.y);
-	m_RenderMan->DrawLine((int)bounds.min.x, (int)bounds.max.y, (int)bounds.min.x, (int)bounds.min.y);
+	m_RenderMan->DrawRect(bounds);
 
 	for (EntityID e : mEntities)
 	{
-		// TODO RENDER PLANE
+		// TODO_DEBUG_DRAW draw plane
 		auto& transform = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& plane = m_ParentWorld->GetComponent<PlaneComponent>(e);
-
 	}
 }
