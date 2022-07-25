@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "RenderTypes.h"
+#include "Vector.h"
 
 // Forward declarations of SDL types
 struct SDL_Window;
@@ -53,10 +54,10 @@ public:
 	void RenderClear();
 
 	// Draw image based on its ID returned by LoadImage
-	void Draw(ResourceID imageID, int x = 0, int y = 0);
-	void DrawText(ResourceID textID, int aX, int aY);
+	void Draw(ResourceID imageID, Vector2i screenCoords = Vector2i::ZERO);
+	void DrawText(ResourceID textID, Vector2i screenCoords = Vector2i::ZERO);
 	// Helper to both prepare and draw text in one
-	bool DrawText(const char* text, ResourceID& textResID, int x = 0, int y = 0, ResourceID fontID = ResourceID_Invalid);
+	bool DrawText(const char* text, ResourceID& textResID, Vector2i screenCoords = Vector2i::ZERO, ResourceID fontID = ResourceID_Invalid);
 
 	// Primitive drawing helpers
 	void DrawLine(int x0, int y0, int x1, int y1);

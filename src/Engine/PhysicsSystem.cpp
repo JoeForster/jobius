@@ -9,6 +9,7 @@
 #include "AABBComponent.h"
 #include "World.h"
 #include "SDLRenderManager.h"
+#include "Coordinates.h"
 
 void PhysicsSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -81,8 +82,9 @@ void PhysicsSystem::Render_Debug()
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 		
+		const Vector2i gridCoords = WorldToGrid(t.m_Pos);
 		m_RenderMan->DrawText(
-			std::format("{:.2f}, {:.2f}", rb.m_Vel.x, rb.m_Vel.y).c_str(),
-			dt.m_ResID, (int)t.m_Pos.x, (int)t.m_Pos.y);
+			std::format("{:.2f}({}), {:.2f}({})", rb.m_Vel.x, gridCoords.x, rb.m_Vel.y, gridCoords.y).c_str(),
+			dt.m_ResID, WorldToScreen(t.m_Pos));
 	}
 }

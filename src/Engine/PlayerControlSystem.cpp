@@ -11,6 +11,7 @@
 
 #include "World.h"
 #include "SDLRenderManager.h"
+#include "Coordinates.h"
 
 void PlayerControlSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -82,12 +83,13 @@ void PlayerControlSystem::Render_Debug()
 		auto& pad = m_ParentWorld->GetComponent<PadInputComponent>(e);
 		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 
+		static Vector2i offset (0, 20); 
 		m_RenderMan->DrawText(
 			std::format("{:.2f}, {:.2f}, {:.2f}, {:.2f}",
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_LS_X),
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y),
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_RS_X),
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_RS_Y)).c_str(),
-			dt.m_ResID, (int)t.m_Pos.x, (int)t.m_Pos.y + 20);
+			dt.m_ResID, WorldToScreen(t.m_Pos) + offset);
 	}
 }

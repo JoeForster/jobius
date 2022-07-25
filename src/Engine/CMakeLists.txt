@@ -24,6 +24,7 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/ComponentArray.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/ComponentManager.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/Vector.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/Coordinates.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/World.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/EntityManager.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PhysicsSystem.h"

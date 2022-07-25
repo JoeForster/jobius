@@ -4,6 +4,7 @@
 #include "SpriteComponent.h"
 #include "World.h"
 #include "SDLRenderManager.h"
+#include "Coordinates.h"
 
 void SpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -30,6 +31,6 @@ void SpriteRenderSystem::Render_Main()
 	{
 		TransformComponent& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		SpriteComponent& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
-		m_RenderMan->Draw(r.m_SpriteID, (int)t.m_Pos.x, (int)t.m_Pos.y);
+		m_RenderMan->Draw(r.m_SpriteID, WorldToScreen(t.m_Pos));
 	}
 }

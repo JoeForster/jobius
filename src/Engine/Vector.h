@@ -2,6 +2,7 @@
 
 #include <limits>
 
+// TODO: Templatised vector class
 struct Vector2f
 {
 	float x = 0.0f;
@@ -23,7 +24,6 @@ struct Vector2f
 		Vector2f v {x + other.x, y + other.y};
 		return v;
 	}
-
 
 	const Vector2f operator*(const Vector2f& other) const
 	{
@@ -155,6 +155,12 @@ struct Vector2i
 	int y = 0;
 
 	static const Vector2i ZERO;
+
+	const Vector2i operator+(const Vector2i& other) const
+	{
+		Vector2i v {x + other.x, y + other.y};
+		return v;
+	}
 };
 
 

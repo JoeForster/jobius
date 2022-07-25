@@ -112,7 +112,7 @@ void SDLRenderManager::RenderClear()
 	SDL_RenderClear(m_Renderer);
 }
 
-void SDLRenderManager::Draw(ResourceID imageID, int x, int y)
+void SDLRenderManager::Draw(ResourceID imageID, Vector2i screenCoords)
 {
 	// Basic checks (but assume vectors are same size, which is verified on load)
 	assert(imageID != ResourceID_Invalid);
@@ -125,8 +125,8 @@ void SDLRenderManager::Draw(ResourceID imageID, int x, int y)
 	SDL_Texture* imageTex = m_ImageTextures[imageID];
 	SDL_Rect* sizeRect = m_ImageSizeRects[imageID];
 	SDL_Rect posRect;
-	posRect.x = x;
-	posRect.y = y;
+	posRect.x = screenCoords.x;
+	posRect.y = screenCoords.y;
 	posRect.w = sizeRect->w;
 	posRect.h = sizeRect->h;
 
@@ -208,7 +208,7 @@ bool SDLRenderManager::PrepareText(const char* text, ResourceID& textResID, Reso
 	return true;
 }
 
-void SDLRenderManager::DrawText(ResourceID textID, int aX, int aY)
+void SDLRenderManager::DrawText(ResourceID textID, Vector2i screenCoords)
 {
 	// Basic checks - TODO might be something worth removing once everything is verified,
 	// since the caller should be responsible for passing valid IDs where required.
@@ -225,20 +225,20 @@ void SDLRenderManager::DrawText(ResourceID textID, int aX, int aY)
 	SDL_Rect* sizeRect = m_TextSizeRects[textID];
 
 	SDL_Rect posRect;
-	posRect.x = aX;
-	posRect.y = aY;
+	posRect.x = screenCoords.x;
+	posRect.y = screenCoords.y;
 	posRect.w = sizeRect->w;
 	posRect.h = sizeRect->h;
 
 	SDL_RenderCopy(m_Renderer, optimizedSurface, sizeRect, &posRect);
 }
 
-bool SDLRenderManager::DrawText(const char* text, ResourceID& textResID, int x, int y, ResourceID fontID)
+bool SDLRenderManager::DrawText(const char* text, ResourceID& textResID, Vector2i screenCoords, ResourceID fontID)
 {
 	bool result = PrepareText(text, textResID, fontID);
 	if (result)
 	{
-		DrawText(textResID, x, y);
+		DrawText(textResID, screenCoords);
 	}
 	return result;
 }
