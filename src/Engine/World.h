@@ -6,8 +6,6 @@
 #include "ComponentManager.h"
 #include "SystemManager.h"
 
-struct Rect2D;
-
 // Simplistic query: given a signature, return entities with at least those components
 // TODO: If the common case is "pre-query once and keep entity list, updating when entities are added",
 // then does it make sense to hold an entity list in here and act like SystemManager::OnEntitySignatureChanged?
@@ -64,6 +62,14 @@ public:
 	}
 
 	template<typename T>
+	void SetGlobalComponent(T component = {})
+	{
+		// A global component works just like a regular component of which there is one per world
+		assert(m_ComponentManager.GetComponentCount<T>() == 0 && "SetGlobalComponent called on component that already exists");
+		AddComponent<T>(0, component);
+	}
+
+	template<typename T>
 	void RemoveComponent(EntityID entity)
 	{
 		m_ComponentManager.RemoveComponent<T>(entity);
@@ -79,6 +85,15 @@ public:
 	T& GetComponent(EntityID entity)
 	{
 		return m_ComponentManager.GetComponent<T>(entity);
+	}
+
+	template<typename T>
+	T& GetGlobalComponent()
+	{
+		// Add a component to the array for an entity
+		assert(m_ComponentManager.GetComponentCount<T>() > 0 && "GetGlobalComponent called for unset component");
+		assert(m_ComponentManager.GetComponentCount<T>() == 1 && "GetGlobalComponent called for component with multiple entries");
+		return GetComponent<T>(0);
 	}
 
 	template<typename T>
@@ -120,9 +135,6 @@ public:
 	{
 		m_SystemManager.RenderAllSystems();
 	}
-
-	// World Settings
-	const Rect2D& GetBounds() const;
 
 private:
 	ComponentManager m_ComponentManager;

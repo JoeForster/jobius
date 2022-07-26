@@ -79,6 +79,8 @@ public:
 		}
 	}
 
+	size_t GetNumEntries() const { return m_NumEntries; }
+
 private:
 	T m_ComponentArray[MAX_ENTITIES];
 

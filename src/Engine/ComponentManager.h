@@ -32,6 +32,12 @@ public:
 	{
 		return (size_t)T::GetComponentType();
 	}
+	
+	template<typename T>
+	size_t GetComponentCount()
+	{
+		return GetComponentArray<T>()->GetNumEntries();
+	}
 
 	template<typename T>
 	void AddComponent(EntityID entity, T component)
@@ -53,6 +59,23 @@ public:
 		// Get a reference to a component from the array for an entity
 		return GetComponentArray<T>()->GetData(entity);
 	}
+	
+	//template<typename T>
+	//void AddGlobalComponent(T component)
+	//{
+	//	// A global component works just like a regular component of which there is one per world (component manager)
+	//	assert(GetComponentArray<T>()->GetNumComponents() == 0 && "AddGlobalComponent called on component that already exists");
+	//	GetComponentArray<T>()->InsertData(0, component);
+	//}
+	//
+	//template<typename T>
+	//void GetGlobalComponent(T component)
+	//{
+	//	// Add a component to the array for an entity
+	//	assert(GetComponentArray<T>()->GetNumComponents() > 0 && "GetGlobalComponent called for unset component");
+	//	assert(GetComponentArray<T>()->GetNumComponents() == 1 && "GetGlobalComponent called for component with multiple entries");
+	//	return GetComponentArray<T>()->GetData(0);
+	//}
 
 	void OnEntityDestroyed(EntityID entity)
 	{

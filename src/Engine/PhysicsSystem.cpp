@@ -7,6 +7,8 @@
 #include "RigidBodyComponent.h"
 #include "DebugTextComponent.h"
 #include "AABBComponent.h"
+#include "GridWorldComponent.h"
+
 #include "World.h"
 #include "SDLRenderManager.h"
 #include "Coordinates.h"
@@ -62,7 +64,7 @@ void PhysicsSystem::Update(float deltaSecs)
 		t.m_Pos.y += rb.m_Vel.y;
 	
 		// HACK TEST until we have a floor: wrap around.
-		const auto& bounds = m_ParentWorld->GetBounds();
+		const auto& bounds = m_ParentWorld->GetGlobalComponent<GridWorldComponent>().m_Bounds;
 		if (t.m_Pos.y > bounds.max.y)
 		{
 			t.m_Pos.y = bounds.min.y;

@@ -30,6 +30,7 @@
 #include "NPCBlackboardComponent.h"
 #include "PlayerComponent.h"
 #include "DebugTextComponent.h"
+#include "GridWorldComponent.h"
 
 int main(int argc, char* argv[])
 {
@@ -91,6 +92,7 @@ int main(int argc, char* argv[])
 	world->RegisterComponent<NPCBlackboardComponent>();
 	world->RegisterComponent<PlayerComponent>();
 	world->RegisterComponent<DebugTextComponent>();
+	world->RegisterComponent<GridWorldComponent>();
 
 	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
@@ -105,6 +107,10 @@ int main(int argc, char* argv[])
 	world->RegisterSystem<BoxCollisionSystem>()->Init(renderInit);
 	world->RegisterSystem<PlaneCollisionSystem>()->Init(renderInit);
 	world->RegisterSystem<SpriteRenderSystem>()->Init(renderInit);
+
+	// Create GLOBAL components
+
+	world->SetGlobalComponent<GridWorldComponent>(Rect2D{ Vector2f{0, 0}, Vector2f{1000, 700} });
 
 	// Create test world entities
 	auto createSprite = [](World& w, ResourceID resID, Vector3f pos)

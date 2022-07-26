@@ -3,6 +3,8 @@
 #include "TransformComponent.h"
 #include "RigidBodyComponent.h"
 #include "PlaneComponent.h"
+#include "GridWorldComponent.h"
+
 #include "World.h"
 #include "SDLRenderManager.h"
 
@@ -61,7 +63,7 @@ void PlaneCollisionSystem::Render_Debug()
 	// TODO_DEBUG_DRAW move this to World render
 	// TODO_DEBUG_DRAW support for colours
 	// TODO_DEBUG_DRAW world->screen coordinates
-	Rect2D bounds = m_ParentWorld->GetBounds();
+	Rect2D bounds = m_ParentWorld->GetGlobalComponent<GridWorldComponent>().m_Bounds;
 
 	m_RenderMan->DrawRect(bounds);
 
