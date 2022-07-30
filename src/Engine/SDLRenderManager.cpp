@@ -8,6 +8,11 @@
 
 #include <assert.h>
 
+static SDL_Color ToSDLColour(const Colour4i& c)
+{
+
+};
+
 std::shared_ptr<SDLRenderManager> SDLRenderManager::Create(SDL_Window* window, SDL_Renderer* renderer)
 {
 	auto drawer = std::make_shared<SDLRenderManager>(window, renderer);
@@ -243,15 +248,20 @@ bool SDLRenderManager::DrawText(const char* text, ResourceID& textResID, Vector2
 	return result;
 }
 
-void SDLRenderManager::DrawLine(int x0, int y0, int x1, int y1)
+void SDLRenderManager::DrawLine(int x0, int y0, int x1, int y1, Colour4i colour)
 {
-	SDL_SetRenderDrawColor(m_Renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
 	SDL_RenderDrawLine(m_Renderer, x0, y0, x1, y1);
 }
 
-void SDLRenderManager::DrawRect(const Rect2D& r)
+void SDLRenderManager::DrawLine(Vector2i from, Vector2i to, Colour4i colour)
 {
-	SDL_SetRenderDrawColor(m_Renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+	DrawLine(from.x, from.y, to.x, to.y, colour);
+}
+
+void SDLRenderManager::DrawRect(const Rect2D& r, Colour4i colour)
+{
+	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
 	SDL_RenderDrawLine(m_Renderer, (int)r.min.x, (int)r.min.y, (int)r.max.x, (int)r.min.y);
 	SDL_RenderDrawLine(m_Renderer, (int)r.max.x, (int)r.min.y, (int)r.max.x, (int)r.max.y);
 	SDL_RenderDrawLine(m_Renderer, (int)r.max.x, (int)r.max.y, (int)r.min.x, (int)r.max.y);

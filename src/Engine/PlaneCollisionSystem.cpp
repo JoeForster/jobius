@@ -6,6 +6,7 @@
 #include "GridWorldComponent.h"
 
 #include "World.h"
+#include "Coordinates.h"
 #include "SDLRenderManager.h"
 
 void PlaneCollisionSystem::Init(const SystemInitialiser& initialiser)
@@ -60,12 +61,29 @@ void PlaneCollisionSystem::Update(float deltaSecs)
 
 void PlaneCollisionSystem::Render_Debug()
 {
-	// TODO_DEBUG_DRAW move this to World render
+	// TODO_DEBUG_DRAW move this to a World system render (what system would that be though)?
 	// TODO_DEBUG_DRAW support for colours
 	// TODO_DEBUG_DRAW world->screen coordinates
-	Rect2D bounds = m_ParentWorld->GetGlobalComponent<GridWorldComponent>().m_Bounds;
+	auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
+	Rect2D bounds = gridWorld.m_Bounds;
 
 	m_RenderMan->DrawRect(bounds);
+
+	const Colour4i gridColour = { 127, 127, 127, 255 };
+
+	for (float y = bounds.min.y + gridWorld.m_GridSize; y < bounds.max.y; y += gridWorld.m_GridSize) 
+	{
+		Vector3f start (bounds.min.x, y, 0.0f);
+		Vector3f end (bounds.max.x, y, 0.0f);
+		m_RenderMan->DrawLine(WorldToScreen(start), WorldToScreen(end), gridColour);
+	}
+	
+	for (float x = bounds.min.x + gridWorld.m_GridSize; x < bounds.max.x; x += gridWorld.m_GridSize) 
+	{
+		Vector3f start (x, bounds.min.y, 0.0f);
+		Vector3f end (x, bounds.max.y, 0.0f);
+		m_RenderMan->DrawLine(WorldToScreen(start), WorldToScreen(end), gridColour);
+	}
 
 	for (EntityID e : mEntities)
 	{

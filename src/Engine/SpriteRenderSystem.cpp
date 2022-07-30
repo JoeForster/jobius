@@ -24,9 +24,6 @@ void SpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 
 void SpriteRenderSystem::Render_Main()
 {
-	// TODO if multiple systems do render, then the "clear" stuff needs to be separated out?
-	m_RenderMan->RenderClear();
-
 	for (EntityID e : mEntities)
 	{
 		TransformComponent& t = m_ParentWorld->GetComponent<TransformComponent>(e);

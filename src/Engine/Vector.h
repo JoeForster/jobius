@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <cstdint>
 
 // TODO: Templatised vector class
 struct Vector2f
@@ -173,6 +174,7 @@ struct Vector3f
 	static const Vector3f ZERO;
 };
 
+// TODO these don't belong in Vector.h
 
 struct Rect2D
 {
@@ -183,4 +185,12 @@ struct Rect2D
 	{
 		return (testPoint > min && testPoint < max);
 	}
+};
+
+struct Colour4i
+{
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
 };

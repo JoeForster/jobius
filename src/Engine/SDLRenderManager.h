@@ -24,6 +24,8 @@ struct Rect2D;
 class SDLRenderManager
 {
 public:
+	static constexpr Colour4i DEFAULT_LINE_COLOUR { 0, 255, 0, 255 };
+
 	static std::shared_ptr<SDLRenderManager> Create(SDL_Window* window, SDL_Renderer* renderer);
 
 	// TODO want to make this protected/private but it's awkward - could do with derived type
@@ -60,8 +62,9 @@ public:
 	bool DrawText(const char* text, ResourceID& textResID, Vector2i screenCoords = Vector2i::ZERO, ResourceID fontID = ResourceID_Invalid);
 
 	// Primitive drawing helpers
-	void DrawLine(int x0, int y0, int x1, int y1);
-	void DrawRect(const Rect2D& r); 
+	void DrawLine(int x0, int y0, int x1, int y1, Colour4i colour = DEFAULT_LINE_COLOUR);
+	void DrawLine(Vector2i from, Vector2i to, Colour4i colour = DEFAULT_LINE_COLOUR);
+	void DrawRect(const Rect2D& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
 
 private:
 	bool Init();

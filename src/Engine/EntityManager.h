@@ -8,6 +8,7 @@
 enum class ComponentType
 {
 	CT_TRANSFORM,
+	CT_GRIDTRANSFORM,
 	CT_SPRITE,
 	CT_RIGIDBODY,
 	CT_AABB,

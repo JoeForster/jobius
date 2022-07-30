@@ -84,7 +84,9 @@ void PhysicsSystem::Render_Debug()
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 		
-		const Vector2i gridCoords = WorldToGrid(t.m_Pos);
+		auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
+		const Vector2i gridCoords = gridWorld.WorldToGrid(t.m_Pos);
+
 		m_RenderMan->DrawText(
 			std::format("{:.2f}({}), {:.2f}({})", rb.m_Vel.x, gridCoords.x, rb.m_Vel.y, gridCoords.y).c_str(),
 			dt.m_ResID, WorldToScreen(t.m_Pos));
