@@ -62,9 +62,11 @@ public:
 		// Notify each system that an entity's signature changed
 		for (size_t systemIndex = 0; systemIndex < NUM_SYSTEM_TYPES; ++systemIndex)
 		{
-			//SystemType type = (SystemType)systemIndex;
 			std::shared_ptr<System> system = m_Systems[systemIndex];
-			assert(system != nullptr);
+			if (system == nullptr)
+			{
+				continue; // This particular system was not created, which is fine
+			}
 			const EntitySignature& systemSignature = m_Signatures[systemIndex];
 
 			// TODO use EntityQuery (or ultimately do away with signatures once we have a proper query system)

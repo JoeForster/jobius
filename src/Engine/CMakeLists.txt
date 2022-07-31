@@ -1,8 +1,26 @@
-﻿add_executable(Jobius "WinMain.cpp")
+﻿# TODO separate out the "shell" part from the "engine" part
+set (SHELL_PROJECT_NAME ${PROJECT_NAME}Shell)
+set (ENGINE_PROJECT_NAME ${PROJECT_NAME}Engine)
+
+
+
+add_compile_definitions(JOBIUS_SHELL_GAME)
+
+option(JOBIUS_SHELL_GAME_BLOCKO_LIFE "Blocko Life" ON)
+option(JOBIUS_SHELL_GAME_CHAOS_SPACE "Chaos Space" OFF)
+
+if(JOBIUS_SHELL_GAME_BLOCKO_LIFE)
+  add_compile_definitions(JOBIUS_SHELL_GAME BlockoLife)
+endif()
+if(JOBIUS_SHELL_GAME_CHAOS_SPACE)
+  add_compile_definitions(JOBIUS_SHELL_GAME ChaosSpace)
+endif()
+
+
+add_executable(${SHELL_PROJECT_NAME} "WinMain.cpp")
 
 # TODO tidy this path hack prefix repetition
 set(ENGINE_SOURCES
-	"${CMAKE_SOURCE_DIR}/src/Engine/WinMain.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/ComponentArray.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/EntityManager.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/Vector.cpp"
@@ -26,6 +44,7 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/Vector.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/Coordinates.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/World.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/WorldBuilder.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/EntityManager.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PhysicsSystem.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BoxCollisionSystem.h"
@@ -56,22 +75,45 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTreeBuilder.h"
 )
 
-target_sources(${PROJECT_NAME} PRIVATE ${ENGINE_SOURCES} ${ENGINE_HEADERS})
+add_library(${ENGINE_PROJECT_NAME} ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_IMAGE_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} PUBLIC ${SDL2_TTF_INCLUDE_DIR})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main)
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2_image)
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2_ttf)
+# TODO only one part (Engine or SDL specific lib?) should have this dep, remove it from the shell to avoid doubling up here
+
+target_include_directories(${ENGINE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
+
+target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE SDL2::SDL2)
+
+
+target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
+
+target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
+target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_IMAGE_INCLUDE_DIR})
+target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_TTF_INCLUDE_DIR})
+
+target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2)
+target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2main)
+target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2_image)
+target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2_ttf)
+
+
+# TODO: Tidy this so we build a game project using the engine as a library?
+
+target_link_libraries(${SHELL_PROJECT_NAME} PUBLIC BlockoLife)
+target_link_libraries(${SHELL_PROJECT_NAME} PUBLIC ChaosSpace)
+target_link_libraries(${SHELL_PROJECT_NAME} PUBLIC ${ENGINE_PROJECT_NAME})
+
+target_include_directories(
+	${SHELL_PROJECT_NAME} PUBLIC
+	"${PROJECT_SOURCE_DIR}/src/Games/BlockoLife"
+	"${PROJECT_SOURCE_DIR}/src/Games/ChaosSpace"
+)
 
 set (ASSETS_SRC_PATH "${CMAKE_SOURCE_DIR}/assets")
 #set (ASSETS_DST_PATH "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets")
 set (ASSETS_DST_PATH "${CMAKE_CURRENT_BINARY_DIR}/assets")
 add_custom_command(
-	TARGET ${PROJECT_NAME} POST_BUILD
+	TARGET ${SHELL_PROJECT_NAME} POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${ASSETS_SRC_PATH} ${ASSETS_DST_PATH}
 	DEPENDS ${ASSETS_DST_PATH}
 	COMMENT "Copy assets ${ASSETS_SRC_PATH} => ${ASSETS_DST_PATH}"
