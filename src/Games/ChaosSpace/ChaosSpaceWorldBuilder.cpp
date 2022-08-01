@@ -1,38 +1,30 @@
 #include "ChaosSpaceWorldBuilder.h"
 
 // FIXME proper include paths from game builders
-// FIXME remove unused includes
-#include <iostream>
-#include <assert.h>
 
-#include "..\..\Engine\EntityManager.h"
-#include "..\..\Engine\World.h"
+#include "../../Engine/World.h"
 
-#include "..\..\Engine\ComponentManager.h"
-#include "..\..\Engine\SDLRenderManager.h"
+#include "../../Engine/BoxCollisionSystem.h"
+#include "../../Engine/NPCControlSystem.h"
+#include "../../Engine/NPCSensorSystem.h"
+#include "../../Engine/PhysicsSystem.h"
+#include "../../Engine/PlaneCollisionSystem.h"
+#include "../../Engine/PlayerControlSystem.h"
+#include "../../Engine/SDLInputSystem.h"
+#include "../../Engine/SpriteRenderSystem.h"
 
-#include "..\..\Engine\SpriteRenderSystem.h"
-#include "..\..\Engine\GridSpriteRenderSystem.h"
-#include "..\..\Engine\SDLInputSystem.h"
-#include "..\..\Engine\PlayerControlSystem.h"
-#include "..\..\Engine\NPCControlSystem.h"
-#include "..\..\Engine\NPCSensorSystem.h"
-#include "..\..\Engine\PhysicsSystem.h"
-#include "..\..\Engine\BoxCollisionSystem.h"
-#include "..\..\Engine\PlaneCollisionSystem.h"
-
-#include "..\..\Engine\TransformComponent.h"
-#include "..\..\Engine\GridTransformComponent.h"
-#include "..\..\Engine\SpriteComponent.h"
-#include "..\..\Engine\RigidBodyComponent.h"
-#include "..\..\Engine\AABBComponent.h"
-#include "..\..\Engine\PlaneComponent.h"
-#include "..\..\Engine\KBInputComponent.h"
-#include "..\..\Engine\PadInputComponent.h"
-#include "..\..\Engine\NPCBlackboardComponent.h"
-#include "..\..\Engine\PlayerComponent.h"
-#include "..\..\Engine\DebugTextComponent.h"
-#include "..\..\Engine\GridWorldComponent.h"
+#include "../../Engine/AABBComponent.h"
+#include "../../Engine/DebugTextComponent.h"
+#include "../../Engine/GridTransformComponent.h"
+#include "../../Engine/GridWorldComponent.h"
+#include "../../Engine/KBInputComponent.h"
+#include "../../Engine/NPCBlackboardComponent.h"
+#include "../../Engine/PadInputComponent.h"
+#include "../../Engine/PlaneComponent.h"
+#include "../../Engine/PlayerComponent.h"
+#include "../../Engine/RigidBodyComponent.h"
+#include "../../Engine/SpriteComponent.h"
+#include "../../Engine/TransformComponent.h"
 
 std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {

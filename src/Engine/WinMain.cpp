@@ -1,41 +1,10 @@
 ﻿#include <iostream>
-#include <assert.h>
 
-#include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
-#include "EntityManager.h"
-#include "World.h"
-
-#include "ComponentManager.h"
 #include "SDLRenderManager.h"
-
-#include "SpriteRenderSystem.h"
-#include "GridSpriteRenderSystem.h"
-#include "SDLInputSystem.h"
-#include "PlayerControlSystem.h"
-#include "NPCControlSystem.h"
-#include "NPCSensorSystem.h"
-#include "PhysicsSystem.h"
-#include "BoxCollisionSystem.h"
-#include "PlaneCollisionSystem.h"
-
-#include "TransformComponent.h"
-#include "GridTransformComponent.h"
-#include "SpriteComponent.h"
-#include "RigidBodyComponent.h"
-#include "AABBComponent.h"
-#include "PlaneComponent.h"
-#include "KBInputComponent.h"
-#include "PadInputComponent.h"
-#include "NPCBlackboardComponent.h"
-#include "PlayerComponent.h"
-#include "DebugTextComponent.h"
-#include "GridWorldComponent.h"
-
-// TODO better compile time game switching, separate project?
-//#define JOBIUS_SHELL_GAME ChaosSpace
+#include "World.h"
 
 #if JOBIUS_SHELL_GAME == BlockoLife
 #	include "BlockoLifeWorldBuilder.h"

@@ -2,7 +2,9 @@
 
 // FIXME
 #include "..\..\Engine\WorldBuilder.h"
-
+#include "memory"                       // for shared_ptr
+class SDLRenderManager;
+class World;
 class BlockoLifeWorldBuilder : public WorldBuilder
 {
 public:
