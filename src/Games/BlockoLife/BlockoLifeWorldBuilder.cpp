@@ -28,7 +28,17 @@
 #include "../../Engine/TransformComponent.h"
 
 std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
-{
+{	
+	// LOAD RESOURCES
+	// TODO resource loading should be separate from world building
+	ResourceID resID_plant = renderMan->LoadTexture("assets/sprites/plant_32.png");
+	assert(resID_plant != ResourceID_Invalid);
+	ResourceID resID_herbivore = renderMan->LoadTexture("assets/sprites/herbivore_32.png");
+	assert(resID_herbivore != ResourceID_Invalid);
+	ResourceID resID_carnivore = renderMan->LoadTexture("assets/sprites/carnivore_32.png");
+	assert(resID_carnivore != ResourceID_Invalid);
+
+	// BUILD WORLD
 	std::shared_ptr<World> world = std::make_shared<World>();
 
 	// TODO Currently we get a crash if we add a component we forgot to register. Can we check at compile time?
@@ -73,10 +83,15 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 		return e;
 	};
 
-	// TODO resource loading should be separate from world building
-	ResourceID resID_plant = renderMan->LoadTexture("assets/sprites/plant_32.png");
-	assert(resID_plant != ResourceID_Invalid);
+
+	// Crwea
 	createGridSprite(*world, resID_plant, { 5, 5 });
+	createGridSprite(*world, resID_plant, { 6, 5 });
+	createGridSprite(*world, resID_plant, { 6, 6 });
+	createGridSprite(*world, resID_plant, { 5, 6 });
+	createGridSprite(*world, resID_herbivore, { 8, 8 });
+	createGridSprite(*world, resID_herbivore, { 8, 9 });
+	createGridSprite(*world, resID_carnivore, { 9, 2 });
 
 	return world;
 }
