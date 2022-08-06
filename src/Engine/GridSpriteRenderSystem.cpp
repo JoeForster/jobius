@@ -29,8 +29,8 @@ void GridSpriteRenderSystem::Render_Main()
 
 	for (EntityID e : mEntities)
 	{
-		GridTransformComponent& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
-		SpriteComponent& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
+		auto& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
+		auto& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
 		m_RenderMan->Draw(r.m_SpriteID, gridWorld.GridToScreen(t.m_Pos));
 	}
 }

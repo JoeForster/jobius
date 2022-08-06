@@ -18,6 +18,8 @@ enum class SystemType
 	ST_PLAYERCONTROL,
 	ST_NPCCONTROL,
 	ST_NPCSENSOR,
+	// TODO: Game-specific components below, requires a better system to keep them in game code
+	ST_BL_GAMEOFLIFE,
 	ST_MAX
 };
 

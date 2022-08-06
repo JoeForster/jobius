@@ -162,6 +162,24 @@ struct Vector2i
 		Vector2i v {x + other.x, y + other.y};
 		return v;
 	}
+
+	bool operator>(const Vector2i& rVec) const
+	{
+		return (x > rVec.x && y > rVec.y);
+	}
+	bool operator>=(const Vector2i& rVec) const
+	{
+		return (x >= rVec.x && y >= rVec.y);
+	}
+
+	bool operator<(const Vector2i& rVec) const
+	{
+		return (x < rVec.x && y < rVec.y);
+	}
+	bool operator<=(const Vector2i& rVec) const
+	{
+		return (x <= rVec.x && y <= rVec.y);
+	}
 };
 
 
@@ -176,12 +194,24 @@ struct Vector3f
 
 // TODO these don't belong in Vector.h
 
+// TODO rename to Rect2f
 struct Rect2D
 {
 	Vector2f min;
 	Vector2f max;
 
 	const bool IsInside(const Vector2f& testPoint)
+	{
+		return (testPoint > min && testPoint < max);
+	}
+};
+
+struct Rect2i
+{
+	Vector2i min;
+	Vector2i max;
+
+	const bool IsInside(const Vector2i& testPoint)
 	{
 		return (testPoint > min && testPoint < max);
 	}

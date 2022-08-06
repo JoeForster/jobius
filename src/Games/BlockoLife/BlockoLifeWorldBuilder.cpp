@@ -1,31 +1,35 @@
 #include "BlockoLifeWorldBuilder.h"
 
-// FIXME proper include paths from game builders
+// Engine includes
+#include "World.h"
 
-#include "../../Engine/World.h"
+#include "BoxCollisionSystem.h"
+#include "GridSpriteRenderSystem.h"
+#include "GridTransformComponent.h"
+#include "NPCControlSystem.h"
+#include "NPCSensorSystem.h"
+#include "PhysicsSystem.h"
+#include "PlaneCollisionSystem.h"
+#include "PlayerControlSystem.h"
+#include "SDLInputSystem.h"
+#include "SpriteRenderSystem.h"
 
-#include "../../Engine/BoxCollisionSystem.h"
-#include "../../Engine/GridSpriteRenderSystem.h"
-#include "../../Engine/GridTransformComponent.h"
-#include "../../Engine/NPCControlSystem.h"
-#include "../../Engine/NPCSensorSystem.h"
-#include "../../Engine/PhysicsSystem.h"
-#include "../../Engine/PlaneCollisionSystem.h"
-#include "../../Engine/PlayerControlSystem.h"
-#include "../../Engine/SDLInputSystem.h"
-#include "../../Engine/SpriteRenderSystem.h"
+#include "AABBComponent.h"
+#include "DebugTextComponent.h"
+#include "GridWorldComponent.h"
+#include "KBInputComponent.h"
+#include "NPCBlackboardComponent.h"
+#include "PadInputComponent.h"
+#include "PlaneComponent.h"
+#include "PlayerComponent.h"
+#include "RigidBodyComponent.h"
+#include "SpriteComponent.h"
+#include "TransformComponent.h"
 
-#include "../../Engine/AABBComponent.h"
-#include "../../Engine/DebugTextComponent.h"
-#include "../../Engine/GridWorldComponent.h"
-#include "../../Engine/KBInputComponent.h"
-#include "../../Engine/NPCBlackboardComponent.h"
-#include "../../Engine/PadInputComponent.h"
-#include "../../Engine/PlaneComponent.h"
-#include "../../Engine/PlayerComponent.h"
-#include "../../Engine/RigidBodyComponent.h"
-#include "../../Engine/SpriteComponent.h"
-#include "../../Engine/TransformComponent.h"
+// BlockoLife includes
+#include "Systems/GameOfLifeSystem.h"
+
+#include "Components/SpeciesComponent.h"
 
 std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {	
@@ -54,12 +58,14 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->RegisterComponent<PlayerComponent>();
 	world->RegisterComponent<DebugTextComponent>();
 	world->RegisterComponent<GridWorldComponent>();
+	world->RegisterComponent<SpeciesComponent>();
 
 	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
 	renderInit.m_RenderMan = renderMan;
 
 	// Init systems
+	// TODO remove unused
 	world->RegisterSystem<SDLInputSystem>()->Init();
 	world->RegisterSystem<PlayerControlSystem>()->Init(renderInit);
 	world->RegisterSystem<NPCControlSystem>()->Init();
@@ -69,29 +75,31 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->RegisterSystem<PlaneCollisionSystem>()->Init(renderInit);
 	world->RegisterSystem<SpriteRenderSystem>()->Init(renderInit);
 	world->RegisterSystem<GridSpriteRenderSystem>()->Init(renderInit);
+	world->RegisterSystem<GameOfLifeSystem>()->Init(renderInit);
 
 	// Create GLOBAL components
 	world->SetGlobalComponent<GridWorldComponent>( { Rect2D{ Vector2f{0, 0}, Vector2f{1000, 700} }, 32.0f } );
 
 	// Load resources and create test world entities
-	auto createGridSprite = [](World& w, ResourceID resID, Vector2i pos)
+	auto createGridSprite = [](World& w, ResourceID resID, Vector2i pos, Species species)
 	{
 		EntityID e = w.CreateEntity();
 		const GridTransformComponent t(pos);
 		w.AddComponent<GridTransformComponent>(e, t);
 		w.AddComponent<SpriteComponent>(e, resID);
+		w.AddComponent<SpeciesComponent>(e, species);
 		return e;
 	};
 
 
-	// Crwea
-	createGridSprite(*world, resID_plant, { 5, 5 });
-	createGridSprite(*world, resID_plant, { 6, 5 });
-	createGridSprite(*world, resID_plant, { 6, 6 });
-	createGridSprite(*world, resID_plant, { 5, 6 });
-	createGridSprite(*world, resID_herbivore, { 8, 8 });
-	createGridSprite(*world, resID_herbivore, { 8, 9 });
-	createGridSprite(*world, resID_carnivore, { 9, 2 });
+	// Create test sprites
+	createGridSprite(*world, resID_plant, { 5, 5 }, Species::PLANT);
+	createGridSprite(*world, resID_plant, { 6, 5 }, Species::PLANT);
+	createGridSprite(*world, resID_plant, { 6, 6 }, Species::PLANT);
+	createGridSprite(*world, resID_plant, { 5, 6 }, Species::PLANT);
+	createGridSprite(*world, resID_herbivore, { 8, 8 }, Species::HERBIVORE);
+	createGridSprite(*world, resID_herbivore, { 8, 9 }, Species::HERBIVORE);
+	createGridSprite(*world, resID_carnivore, { 9, 2 }, Species::CARNIVORE);
 
 	return world;
 }

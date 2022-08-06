@@ -1,10 +1,12 @@
 #pragma once
 
-// FIXME
-#include "..\..\Engine\WorldBuilder.h"
-#include "memory"                       // for shared_ptr
+#include <memory>
+
+#include "WorldBuilder.h"
+
 class SDLRenderManager;
 class World;
+
 class BlockoLifeWorldBuilder : public WorldBuilder
 {
 public:

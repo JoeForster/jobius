@@ -19,6 +19,8 @@ enum class ComponentType
 	CT_PLAYER,
 	CT_DEBUGTEXT,
 	CT_GRIDWORLD,
+	// TODO: Game-specific components below, requires a better system to keep them in game code
+	CT_BL_SPECIES,
 	CT_MAX
 };
 
