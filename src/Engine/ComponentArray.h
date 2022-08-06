@@ -14,6 +14,7 @@ public:
 	virtual void OnEntityDestroyed(EntityID entity) = 0;
 };
 
+static size_t INVALID_COMPONENT_INDEX = ~0u;
 
 template<class T>
 class ComponentArray : public IComponentArray
@@ -22,6 +23,9 @@ public:
 	ComponentArray()
 	{
 		static_assert(T::GetComponentType() < ComponentType::CT_MAX);
+
+		for (size_t& ix : m_EntityToIndexMap) ix = INVALID_COMPONENT_INDEX;
+		for (EntityID& e : m_IndexToEntityMap) e = INVALID_ENTITY_ID;
 	}
 
 	//static ComponentType GetComponentType() const override final { return T::GetComponentType(); }
@@ -73,7 +77,8 @@ public:
 	void OnEntityDestroyed(EntityID entity) override
 	{
 		// TODO_VALIDATION
-		//if (m_EntityToIndexMap.find(entity) != m_EntityToIndexMap.end())
+		// Quick fix just to allow removing an entity that doesn't have ALL components.. This whole thing needs a look for partial component lists
+		if (m_EntityToIndexMap[entity] != INVALID_COMPONENT_INDEX)
 		{
 			RemoveData(entity);
 		}

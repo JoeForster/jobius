@@ -93,10 +93,13 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 
 
 	// Create test sprites
+	createGridSprite(*world, resID_plant, { 5, 4 }, Species::PLANT);
 	createGridSprite(*world, resID_plant, { 5, 5 }, Species::PLANT);
 	createGridSprite(*world, resID_plant, { 6, 5 }, Species::PLANT);
 	createGridSprite(*world, resID_plant, { 6, 6 }, Species::PLANT);
 	createGridSprite(*world, resID_plant, { 5, 6 }, Species::PLANT);
+	createGridSprite(*world, resID_plant, { 6, 7 }, Species::PLANT);
+
 	createGridSprite(*world, resID_herbivore, { 8, 8 }, Species::HERBIVORE);
 	createGridSprite(*world, resID_herbivore, { 8, 9 }, Species::HERBIVORE);
 	createGridSprite(*world, resID_carnivore, { 9, 2 }, Species::CARNIVORE);
