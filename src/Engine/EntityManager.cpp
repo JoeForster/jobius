@@ -7,7 +7,7 @@
 EntityManager::EntityManager()
 : m_NumAvailableEntities(0)
 {
-	for (EntityID entityID = 0; entityID < MAX_ENTITIES; ++entityID)
+	for (EntityID entityID = MAX_ENTITIES-1; entityID != ~0u; --entityID)
 	{
 		m_AvailableEntities[m_NumAvailableEntities++] = entityID;
 	}
