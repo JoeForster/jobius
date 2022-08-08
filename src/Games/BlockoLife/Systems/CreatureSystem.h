@@ -2,12 +2,12 @@
 
 #include "System.h"
 
-class GameOfLifeSystem : public System
+class CreatureSystem : public System
 {
 public:
-	static constexpr SystemType GetSystemType() { return SystemType::ST_BL_GAMEOFLIFE; }
+	static constexpr SystemType GetSystemType() { return SystemType::ST_BL_CREATURE; }
 
-	GameOfLifeSystem(std::shared_ptr<World> parentWorld)
+	CreatureSystem(std::shared_ptr<World> parentWorld)
 		: System(parentWorld)
 	{
 	}

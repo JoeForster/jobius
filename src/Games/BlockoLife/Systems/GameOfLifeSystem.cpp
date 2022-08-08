@@ -2,6 +2,7 @@
 
 #include <string>
 #include <format>
+#include <algorithm>
 
 #include "Vector.h"
 
@@ -95,6 +96,22 @@ struct CreatureCache
 	uint8_t numNeighbours = 0;
 };
 
+enum GridDir
+{
+	N,
+	NE,
+	E,
+	SE,
+	S,
+	SW,
+	W,
+	NW,
+
+	COUNT
+};
+static_assert(GridDir::N == 0);
+static_assert(GridDir::COUNT == 8);
+
 // NAIVE implementation of Conway's Game of Life in ECS (but not really in ECS)
 // TODO needs heavy tidy-up
 void GameOfLifeSystem::Tick()
@@ -143,13 +160,13 @@ void GameOfLifeSystem::Tick()
 	//EntityID* cachedEntities = new EntityID[num_cells];
 	//for (int i = 0; i < num_cells; i++) cachedEntities[i] = INVALID_ENTITY_ID;
 
-	auto getSpeciesAt = [&](int x, int y, EntityID& entityIDIfValid) -> Species
+	auto getSpeciesAt = [&](int x, int y, EntityID& firstEntityFound) -> Species
 	{
 		CreatureCache& cache = cachedEntities.At(x, y);
 		EntityID e = cache.entityID;
 		if (e != INVALID_ENTITY_ID)
 		{
-			entityIDIfValid = e;
+			if (firstEntityFound == INVALID_ENTITY_ID) firstEntityFound = e;
 			return cache.species;
 		}
 		else
@@ -171,19 +188,19 @@ void GameOfLifeSystem::Tick()
 	}
 
 	// TODO parentSprite is HACK find better way! Ideally a basic archetype/creation system based on creature type
-	auto countNeighbours = [&](int x, int y, Species s, EntityID& parentEntity) {
+	auto countNeighbours = [&](int x, int y, Species s, EntityID& firstEntityFound) {
 		uint8_t n = 0;
 
-		if (getSpeciesAt(x-1, y-1, parentEntity) == s) ++n;
-		if (getSpeciesAt(x,   y-1, parentEntity) == s) ++n;
-		if (getSpeciesAt(x+1, y-1, parentEntity) == s) ++n;
+		if (getSpeciesAt(x-1, y-1, firstEntityFound) == s) ++n;
+		if (getSpeciesAt(x,   y-1, firstEntityFound) == s) ++n;
+		if (getSpeciesAt(x+1, y-1, firstEntityFound) == s) ++n;
 
-		if (getSpeciesAt(x-1, y  , parentEntity) == s) ++n;
-		if (getSpeciesAt(x+1, y  , parentEntity) == s) ++n;
+		if (getSpeciesAt(x-1, y  , firstEntityFound) == s) ++n;
+		if (getSpeciesAt(x+1, y  , firstEntityFound) == s) ++n;
 
-		if (getSpeciesAt(x-1, y+1, parentEntity) == s) ++n;
-		if (getSpeciesAt(x,   y+1, parentEntity) == s) ++n;
-		if (getSpeciesAt(x+1, y+1, parentEntity) == s) ++n;
+		if (getSpeciesAt(x-1, y+1, firstEntityFound) == s) ++n;
+		if (getSpeciesAt(x,   y+1, firstEntityFound) == s) ++n;
+		if (getSpeciesAt(x+1, y+1, firstEntityFound) == s) ++n;
 
 		return n;
 	};
@@ -212,6 +229,53 @@ void GameOfLifeSystem::Tick()
 			cache.parentEntityID = parentEntity;
 		}
 	}
+
+	// Move pass
+	for (int y = limits.min.y; y < limits.max.y; ++y)
+	{
+		for (int x = limits.min.x; x < limits.max.x; ++x)
+		{
+			CreatureCache& cache = cachedEntities.At(x, y);
+			if (cache.species == Species::HERBIVORE)
+			{
+				EntityID foundEntity = INVALID_ENTITY_ID;
+
+				// TODO improve this, only one loop needed, could use helper?
+				int plantScan[GridDir::COUNT];
+				plantScan[GridDir::N] = countNeighbours(x, y-1, Species::PLANT, foundEntity); 
+				plantScan[GridDir::NE] = countNeighbours(x+1, y-1, Species::PLANT, foundEntity); 
+				plantScan[GridDir::E] = countNeighbours(x+1, y, Species::PLANT, foundEntity); 
+				plantScan[GridDir::SE] = countNeighbours(x+1, y+1, Species::PLANT, foundEntity); 
+				plantScan[GridDir::S] = countNeighbours(x, y+1, Species::PLANT, foundEntity); 
+				plantScan[GridDir::SW] = countNeighbours(x-1, y+1, Species::PLANT, foundEntity); 
+				plantScan[GridDir::W] = countNeighbours(x-1, y, Species::PLANT, foundEntity); 
+				plantScan[GridDir::NW] = countNeighbours(x-1, y-1, Species::PLANT, foundEntity); 
+
+				int mostPlants = 0;
+				GridDir bestDir = (GridDir)0;
+				for (int d = 0; d < GridDir::COUNT; ++d)
+				{
+					int numPlants = plantScan[d];
+					if (numPlants > mostPlants)
+					{
+						mostPlants = numPlants;
+						bestDir = (GridDir)d;
+					}
+				}
+
+				if (mostPlants == 0)
+				{
+					bestDir = (GridDir)(rand() % GridDir::COUNT);
+					printf("Entity %d at (%d, %d) Pick random dir: %d\n", foundEntity, x, y, (int)bestDir);
+ 				}
+				else
+				{
+					printf("Entity %d at (%d, %d) Pick best dir %d\n", foundEntity, x, y, (int)bestDir);
+				}
+			}
+		}
+	}
+
 
 	// Reproduction pass
 	for (int y = limits.min.y; y < limits.max.y; ++y)
