@@ -72,7 +72,7 @@ public:
 
 	T& At(int x, int y)
 	{
-		size_t index = (y+m_OffsetY)*m_Height + (x+m_OffsetX);
+		size_t index = (y+m_OffsetY)*m_Width + (x+m_OffsetX);
 		assert(index < NumCells());
 		return m_Array[index];
 	}
@@ -94,6 +94,8 @@ struct CreatureCache
 	EntityID parentEntityID = INVALID_ENTITY_ID;
 	Species species = Species::SPECIES_COUNT;
 	uint8_t numNeighbours = 0;
+	// TODO this hack makes movement order-dependent, come up with better logic to resolve move/grow conflicts!
+	bool beingMovedInto = false;
 };
 
 enum GridDir
@@ -111,6 +113,17 @@ enum GridDir
 };
 static_assert(GridDir::N == 0);
 static_assert(GridDir::COUNT == 8);
+
+static constexpr Vector2i GridDirToVec[GridDir::COUNT] = {
+	{ 0, -1 },		// GridDir::N
+	{ 1, -1 },		// GridDir::NE
+	{ 1,  0 },		// GridDir::E
+	{ 1,  1 },		// GridDir::SE
+	{ 0,  1 },		// GridDir::S
+	{-1,  1 },		// GridDir::SW
+	{-1,  0 },		// GridDir::W
+	{-1, -1 },		// GridDir::NW
+};
 
 // NAIVE implementation of Conway's Game of Life in ECS (but not really in ECS)
 // TODO needs heavy tidy-up
@@ -151,6 +164,7 @@ void GameOfLifeSystem::Tick()
 	size_t num_rows = (size_t)(limits.max.y - limits.min.y) + 1;
 	size_t num_columns = (size_t)(limits.max.x - limits.min.x) + 1;
 	size_t num_cells = num_rows * num_columns;	
+	// TODO BUG HERE?
 	size_t x_offset = (size_t)(0 - limits.min.x);
 	size_t y_offset = (size_t)(0 - limits.min.y);
 
@@ -190,18 +204,14 @@ void GameOfLifeSystem::Tick()
 	// TODO parentSprite is HACK find better way! Ideally a basic archetype/creation system based on creature type
 	auto countNeighbours = [&](int x, int y, Species s, EntityID& firstEntityFound) {
 		uint8_t n = 0;
-
-		if (getSpeciesAt(x-1, y-1, firstEntityFound) == s) ++n;
-		if (getSpeciesAt(x,   y-1, firstEntityFound) == s) ++n;
-		if (getSpeciesAt(x+1, y-1, firstEntityFound) == s) ++n;
-
-		if (getSpeciesAt(x-1, y  , firstEntityFound) == s) ++n;
-		if (getSpeciesAt(x+1, y  , firstEntityFound) == s) ++n;
-
-		if (getSpeciesAt(x-1, y+1, firstEntityFound) == s) ++n;
-		if (getSpeciesAt(x,   y+1, firstEntityFound) == s) ++n;
-		if (getSpeciesAt(x+1, y+1, firstEntityFound) == s) ++n;
-
+		for (const Vector2i& dirVec : GridDirToVec)
+		{
+			const Vector2i checkPos = Vector2i(x, y) + dirVec;
+			if (getSpeciesAt(checkPos.x, checkPos.y, firstEntityFound) == s)
+			{
+				++n;
+			}
+		}
 		return n;
 	};
 
@@ -240,38 +250,59 @@ void GameOfLifeSystem::Tick()
 			{
 				EntityID foundEntity = INVALID_ENTITY_ID;
 
-				// TODO improve this, only one loop needed, could use helper?
-				int plantScan[GridDir::COUNT];
-				plantScan[GridDir::N] = countNeighbours(x, y-1, Species::PLANT, foundEntity); 
-				plantScan[GridDir::NE] = countNeighbours(x+1, y-1, Species::PLANT, foundEntity); 
-				plantScan[GridDir::E] = countNeighbours(x+1, y, Species::PLANT, foundEntity); 
-				plantScan[GridDir::SE] = countNeighbours(x+1, y+1, Species::PLANT, foundEntity); 
-				plantScan[GridDir::S] = countNeighbours(x, y+1, Species::PLANT, foundEntity); 
-				plantScan[GridDir::SW] = countNeighbours(x-1, y+1, Species::PLANT, foundEntity); 
-				plantScan[GridDir::W] = countNeighbours(x-1, y, Species::PLANT, foundEntity); 
-				plantScan[GridDir::NW] = countNeighbours(x-1, y-1, Species::PLANT, foundEntity); 
+				GridDir possibleDirs[GridDir::COUNT];
+				int numPossibleDirs = 0;
 
 				int mostPlants = 0;
 				GridDir bestDir = (GridDir)0;
-				for (int d = 0; d < GridDir::COUNT; ++d)
+				for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
 				{
-					int numPlants = plantScan[d];
-					if (numPlants > mostPlants)
+					const Vector2i checkPos = Vector2i(x, y) + GridDirToVec[dir];
+					EntityID blocker = INVALID_ENTITY_ID;
+					if (getSpeciesAt(checkPos.x, checkPos.y, blocker) != Species::SPECIES_COUNT)
 					{
-						mostPlants = numPlants;
-						bestDir = (GridDir)d;
+						// BLOCKED
+						// TODO eat if plant
+					}
+					else if (cachedEntities.At(checkPos.x, checkPos.y).beingMovedInto)
+					{
+						// BLOCKED by future move
+					}
+					else
+					{
+						possibleDirs[numPossibleDirs++] = dir;
+						int numPlants = countNeighbours(x, y-1, Species::PLANT, foundEntity);
+						if (numPlants > mostPlants)
+						{
+							mostPlants = numPlants;
+							bestDir = (GridDir)dir;
+						}
 					}
 				}
 
-				if (mostPlants == 0)
+				if (numPossibleDirs == 0)
 				{
-					bestDir = (GridDir)(rand() % GridDir::COUNT);
+					printf("Entity %d at (%d, %d) is BLOCKED!\n", foundEntity, x, y);
+					continue;
+				}
+				else if (mostPlants == 0)
+				{
+					const int bestDirIndex = rand() % numPossibleDirs;
+					bestDir = possibleDirs[bestDirIndex];
 					printf("Entity %d at (%d, %d) Pick random dir: %d\n", foundEntity, x, y, (int)bestDir);
  				}
 				else
 				{
 					printf("Entity %d at (%d, %d) Pick best dir %d\n", foundEntity, x, y, (int)bestDir);
 				}
+				
+				// TODO bug here - herbivores unexpectedly multiply (bad move?), and then cache position doesn't match!
+				auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(foundEntity);
+				assert(thisTransform.m_Pos.x == x && thisTransform.m_Pos.y == y);
+				const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDir];
+				assert(!cachedEntities.At(moveIntoPos.x, moveIntoPos.y).beingMovedInto);
+				cachedEntities.At(moveIntoPos.x, moveIntoPos.y).beingMovedInto = true;
+				thisTransform.m_Pos = moveIntoPos;
 			}
 		}
 	}

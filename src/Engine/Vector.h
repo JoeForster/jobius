@@ -180,6 +180,14 @@ struct Vector2i
 	{
 		return (x <= rVec.x && y <= rVec.y);
 	}
+
+	Vector2i& operator+=(const Vector2i& other)
+	{
+		x = x + other.x;
+		y = y + other.y;
+
+		return *this;
+	}
 };
 
 

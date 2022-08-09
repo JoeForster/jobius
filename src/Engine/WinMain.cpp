@@ -57,6 +57,9 @@ int main(int argc, char* argv[])
 #	error "Unrecognised JOBIUS_SHELL_GAME"
 #endif
 
+	// TODO better randomness
+	srand(0);
+
 	std::shared_ptr<World> world = builder.BuildWorld(renderMan);
 
 	// SDL: Run the main game loop.

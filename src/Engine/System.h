@@ -20,6 +20,7 @@ enum class SystemType
 	ST_NPCSENSOR,
 	// TODO: Game-specific components below, requires a better system to keep them in game code
 	ST_BL_GAMEOFLIFE,
+	ST_BL_CREATURE,
 	ST_MAX
 };
 
