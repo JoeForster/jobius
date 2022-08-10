@@ -70,11 +70,15 @@ public:
     Array2D(Array2D&&) = delete;
     Array2D& operator=(Array2D&&) = delete;
 
-	T& At(int x, int y)
+	inline T& At(int x, int y)
 	{
 		size_t index = (y+m_OffsetY)*m_Width + (x+m_OffsetX);
 		assert(index < NumCells());
 		return m_Array[index];
+	}
+	inline T& At(const Vector2i& p)
+	{
+		return At(p.x, p.y);
 	}
 
 private:
@@ -95,7 +99,7 @@ struct CreatureCache
 	Species species = Species::SPECIES_COUNT;
 	uint8_t numNeighbours = 0;
 	// TODO this hack makes movement order-dependent, come up with better logic to resolve move/grow conflicts!
-	bool beingMovedInto = false;
+	//bool beingMovedInto = false;
 };
 
 enum GridDir
@@ -134,9 +138,11 @@ void GameOfLifeSystem::Tick()
 	// (we'd like to be able to index into components, or adjacent ones, I guess?)
 	Rect2i limits ( {0, 0}, {0, 0} );
 
+	printf("\n\nTICK\n\n");
+
 	if (mEntities.empty())
 	{
-		printf("TICK no entities!");
+		printf("TICK no entities!\n");
 	}
 
 	for (EntityID e : mEntities)
@@ -168,19 +174,17 @@ void GameOfLifeSystem::Tick()
 	size_t x_offset = (size_t)(0 - limits.min.x);
 	size_t y_offset = (size_t)(0 - limits.min.y);
 
-	// TODO 2D array type or cache grid class here depending on what we do with component structure
+	// TODO we're kind of bypassing the ECS here with custom storage - we need a way of storing components
+	// in the right order OR so we can index into adjacent cells!
 	auto cachedEntities = Array2D<CreatureCache>(num_columns, num_rows, x_offset, y_offset);
-	
-	//EntityID* cachedEntities = new EntityID[num_cells];
-	//for (int i = 0; i < num_cells; i++) cachedEntities[i] = INVALID_ENTITY_ID;
 
-	auto getSpeciesAt = [&](int x, int y, EntityID& firstEntityFound) -> Species
+
+	auto getSpeciesAt = [&](int x, int y) -> Species
 	{
 		CreatureCache& cache = cachedEntities.At(x, y);
 		EntityID e = cache.entityID;
 		if (e != INVALID_ENTITY_ID)
 		{
-			if (firstEntityFound == INVALID_ENTITY_ID) firstEntityFound = e;
 			return cache.species;
 		}
 		else
@@ -207,48 +211,36 @@ void GameOfLifeSystem::Tick()
 		for (const Vector2i& dirVec : GridDirToVec)
 		{
 			const Vector2i checkPos = Vector2i(x, y) + dirVec;
-			if (getSpeciesAt(checkPos.x, checkPos.y, firstEntityFound) == s)
+			CreatureCache& cacheAt = cachedEntities.At(checkPos);
+			if (cacheAt.species == s)
 			{
+				if (firstEntityFound == INVALID_ENTITY_ID)
+				{
+					firstEntityFound = cacheAt.entityID;
+				}
 				++n;
 			}
 		}
 		return n;
 	};
 
-	//auto neighbourCounts = Array2D<uint8_t>(num_columns, num_rows, x_offset, y_offset, 0);
-	// NOTE we leave out the "border areas" here as they have been added above and are blank.. This could be clearer.
-	for (int y = limits.min.y+1; y < limits.max.y-1; ++y)
-	{
-		for (int x = limits.min.x+1; x < limits.max.x-1; ++x)
-		{
-			EntityID thisEntity = INVALID_ENTITY_ID;
-			Species creature = getSpeciesAt(x, y, thisEntity);
-			// HACK TODO filter by tag or different component type for animals that don't uset his logic?
-			if (thisEntity != INVALID_ENTITY_ID && creature != Species::PLANT)
-			{
-				continue; 
-			}
 
-			EntityID parentEntity = INVALID_ENTITY_ID;
-			uint8_t numNeighbours = countNeighbours(x, y, Species::PLANT, parentEntity);
-			printf("neighbours at (%d, %d): %d\n", x, y, numNeighbours);
-			
-			CreatureCache& cache = cachedEntities.At(x, y);
-			cache.species = creature;
-			cache.numNeighbours = numNeighbours;
-			cache.parentEntityID = parentEntity;
-		}
-	}
 
 	// Move pass
-	for (int y = limits.min.y; y < limits.max.y; ++y)
+
+	//for (int y = limits.min.y; y < limits.max.y; ++y)
 	{
-		for (int x = limits.min.x; x < limits.max.x; ++x)
+		//for (int x = limits.min.x; x < limits.max.x; ++x)
+		for (EntityID movingEntity : mEntities)
 		{
+			printf("Move entity %d\n", movingEntity);
+			auto& originTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
+			const int x = originTransform.m_Pos.x;
+			const int y = originTransform.m_Pos.y;
 			CreatureCache& cache = cachedEntities.At(x, y);
+			assert(cache.entityID == movingEntity);
 			if (cache.species == Species::HERBIVORE)
 			{
-				EntityID foundEntity = INVALID_ENTITY_ID;
 
 				GridDir possibleDirs[GridDir::COUNT];
 				int numPossibleDirs = 0;
@@ -258,19 +250,19 @@ void GameOfLifeSystem::Tick()
 				for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
 				{
 					const Vector2i checkPos = Vector2i(x, y) + GridDirToVec[dir];
-					EntityID blocker = INVALID_ENTITY_ID;
-					if (getSpeciesAt(checkPos.x, checkPos.y, blocker) != Species::SPECIES_COUNT)
+					if (getSpeciesAt(checkPos.x, checkPos.y) != Species::SPECIES_COUNT)
 					{
 						// BLOCKED
-						// TODO eat if plant
+						// TODO eat if plants
 					}
-					else if (cachedEntities.At(checkPos.x, checkPos.y).beingMovedInto)
-					{
-						// BLOCKED by future move
-					}
+					//else if (cachedEntities.At(checkPos.x, checkPos.y).beingMovedInto)
+					//{
+					//	// BLOCKED by future move
+					//}
 					else
 					{
 						possibleDirs[numPossibleDirs++] = dir;
+						EntityID foundEntity = INVALID_ENTITY_ID;
 						int numPlants = countNeighbours(x, y-1, Species::PLANT, foundEntity);
 						if (numPlants > mostPlants)
 						{
@@ -282,26 +274,37 @@ void GameOfLifeSystem::Tick()
 
 				if (numPossibleDirs == 0)
 				{
-					printf("Entity %d at (%d, %d) is BLOCKED!\n", foundEntity, x, y);
+					printf("Entity %d at (%d, %d) is BLOCKED!\n", movingEntity, x, y);
 					continue;
 				}
 				else if (mostPlants == 0)
 				{
 					const int bestDirIndex = rand() % numPossibleDirs;
 					bestDir = possibleDirs[bestDirIndex];
-					printf("Entity %d at (%d, %d) Pick random dir: %d\n", foundEntity, x, y, (int)bestDir);
+					printf("Entity %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, (int)bestDir);
  				}
 				else
 				{
-					printf("Entity %d at (%d, %d) Pick best dir %d\n", foundEntity, x, y, (int)bestDir);
+					printf("Entity %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, (int)bestDir);
 				}
 				
 				// TODO bug here - herbivores unexpectedly multiply (bad move?), and then cache position doesn't match!
-				auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(foundEntity);
-				assert(thisTransform.m_Pos.x == x && thisTransform.m_Pos.y == y);
+				auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
+				if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
+				{
+					printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
+						movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
+					assert(false);
+				}
 				const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDir];
-				assert(!cachedEntities.At(moveIntoPos.x, moveIntoPos.y).beingMovedInto);
-				cachedEntities.At(moveIntoPos.x, moveIntoPos.y).beingMovedInto = true;
+
+				auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
+
+				// UGH we have two places wheret his info lives due to the cache - this can be better
+				// once we use the actual component storage rather than separate cache.
+				//assert(!target.beingMovedInto);
+				target = cache;
+				cache = CreatureCache();
 				thisTransform.m_Pos = moveIntoPos;
 			}
 		}
@@ -309,6 +312,31 @@ void GameOfLifeSystem::Tick()
 
 
 	// Reproduction pass
+	// First count adjacency to see what will grow/die
+	// NOTE we leave out the "border areas" here as they have been added above and are blank.. This could be clearer.
+	for (int y = limits.min.y+1; y < limits.max.y-1; ++y)
+	{
+		for (int x = limits.min.x+1; x < limits.max.x-1; ++x)
+		{
+			CreatureCache& creature = cachedEntities.At(x, y);
+			EntityID thisEntity = creature.entityID;
+
+			// HACK TODO filter by tag or different component type for animals that don't use this logic?
+			if (thisEntity != INVALID_ENTITY_ID && creature.species != Species::PLANT)
+			{
+				continue; 
+			}
+
+			EntityID parentEntity = INVALID_ENTITY_ID;
+			uint8_t numNeighbours = countNeighbours(x, y, Species::PLANT, parentEntity);
+			//printf("neighbours at (%d, %d): %d\n", x, y, numNeighbours);
+
+			creature.numNeighbours = numNeighbours;
+			creature.parentEntityID = parentEntity;
+		}
+	}
+
+	// Then do the grow/die pass
 	for (int y = limits.min.y; y < limits.max.y; ++y)
 	{
 		for (int x = limits.min.x; x < limits.max.x; ++x)
@@ -322,13 +350,19 @@ void GameOfLifeSystem::Tick()
 				{
 					// TODO this duplicates creation logic in BlockoLifeWorldBuilder.cpp
 					assert(cache.parentEntityID != INVALID_ENTITY_ID);
-					ResourceID parentSprite = m_ParentWorld->GetComponent<SpriteComponent>(cache.parentEntityID).m_SpriteID;
-					assert(parentSprite != ResourceID_Invalid);
-					Species parentSpecies = m_ParentWorld->GetComponent<SpeciesComponent>(cache.parentEntityID).m_Species;
-
+					EntityID parent = cache.parentEntityID;
+					const Vector2i& parentPos = m_ParentWorld->GetComponent<GridTransformComponent>(parent).m_Pos;
+					ResourceID parentSprite = m_ParentWorld->GetComponent<SpriteComponent>(parent).m_SpriteID;
+					Species parentSpecies = m_ParentWorld->GetComponent<SpeciesComponent>(parent).m_Species;
 					EntityID newborn = m_ParentWorld->CreateEntity();
+
 					const GridTransformComponent t(Vector2i(x, y));
-					printf("Create at (%d, %d) -> entityID %u\n", x, y, newborn);
+
+					printf("Entity %u (species=%d sprite=%zu) at (%d, %d) birthing new entity %u at (%d, %d)\n",
+						parent, parentSpecies, parentSprite, parentPos.x, parentPos.y, newborn, x, y);
+					assert(parentSprite != ResourceID_Invalid);
+					assert(parentSpecies == Species::PLANT);
+
 					m_ParentWorld->AddComponent<GridTransformComponent>(newborn, t);
 					m_ParentWorld->AddComponent<SpriteComponent>(newborn, parentSprite);
 					m_ParentWorld->AddComponent<SpeciesComponent>(newborn, parentSpecies);
