@@ -2,17 +2,10 @@
 
 // Engine includes
 #include "World.h"
+#include "SDLRenderManager.h"
 
-#include "BoxCollisionSystem.h"
 #include "GridSpriteRenderSystem.h"
 #include "GridTransformComponent.h"
-#include "NPCControlSystem.h"
-#include "NPCSensorSystem.h"
-#include "PhysicsSystem.h"
-#include "PlaneCollisionSystem.h"
-#include "PlayerControlSystem.h"
-#include "SDLInputSystem.h"
-#include "SpriteRenderSystem.h"
 
 #include "AABBComponent.h"
 #include "DebugTextComponent.h"
@@ -46,6 +39,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	std::shared_ptr<World> world = std::make_shared<World>();
 
 	// TODO Currently we get a crash if we add a component we forgot to register. Can we check at compile time?
+	// TODO don't register components we don't need
 	world->RegisterComponent<TransformComponent>();
 	world->RegisterComponent<GridTransformComponent>();
 	world->RegisterComponent<SpriteComponent>();
@@ -65,15 +59,6 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	renderInit.m_RenderMan = renderMan;
 
 	// Init systems
-	// TODO remove unused
-	world->RegisterSystem<SDLInputSystem>()->Init();
-	world->RegisterSystem<PlayerControlSystem>()->Init(renderInit);
-	world->RegisterSystem<NPCControlSystem>()->Init();
-	world->RegisterSystem<NPCSensorSystem>()->Init();
-	world->RegisterSystem<PhysicsSystem>()->Init(renderInit);
-	world->RegisterSystem<BoxCollisionSystem>()->Init(renderInit);
-	world->RegisterSystem<PlaneCollisionSystem>()->Init(renderInit);
-	world->RegisterSystem<SpriteRenderSystem>()->Init(renderInit);
 	world->RegisterSystem<GridSpriteRenderSystem>()->Init(renderInit);
 	world->RegisterSystem<GameOfLifeSystem>()->Init(renderInit);
 

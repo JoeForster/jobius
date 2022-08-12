@@ -15,7 +15,6 @@ public:
 	void Init(const SystemInitialiser&) override;
 
 	void Update(float deltaSecs) final override;
-	void Render_Debug() final override;
 
 private:
 	std::shared_ptr<SDLRenderManager> m_RenderMan;

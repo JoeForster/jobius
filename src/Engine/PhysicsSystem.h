@@ -1,7 +1,8 @@
 #pragma once
 
 #include "System.h"
-#include "SDLRenderManager.h"
+
+class SDLRenderManager;
 
 class PhysicsSystem : public System
 {

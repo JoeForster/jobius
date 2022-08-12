@@ -1,8 +1,7 @@
 #include "catch.hpp"
 
-// FIXME includes
-#include "../Engine/BehaviourTree.h"
-#include "../Engine/BehaviourTreeBuilder.h"
+#include "BehaviourTree.h"
+#include "BehaviourTreeBuilder.h"
 
 // MOCK TYPES
 // TODO likely to go into their own new header/cpp once this file gets too massive...

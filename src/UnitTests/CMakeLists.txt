@@ -13,4 +13,6 @@ set(TESTS_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTreeBuilder.h"
 )
 
+target_include_directories(${PROJECT_NAME}UnitTests PUBLIC "${CMAKE_SOURCE_DIR}/src/Engine")
+
 target_sources(${PROJECT_NAME}UnitTests PRIVATE ${TESTS_SOURCES} ${TESTS_HEADERS})
