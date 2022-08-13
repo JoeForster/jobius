@@ -29,7 +29,7 @@ void PlayerControlSystem::Init(const SystemInitialiser& initialiser)
 	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);
 	m_RenderMan = renderInit.m_RenderMan;
 
-	assert(m_RenderMan != nullptr && "BoxCollisionSystem Init MISSING render manager!");
+	assert(m_RenderMan != nullptr && "PlayerControlSystem Init MISSING render manager!");
 }
 
 

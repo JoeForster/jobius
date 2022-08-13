@@ -54,6 +54,8 @@ public:
 
 	// Render clear, generally at frame start
 	void RenderClear();
+	void SetOffset(const Vector2f& offset);
+	void SetZoom(float zoom);
 
 	// Draw image based on its ID returned by LoadImage
 	void Draw(ResourceID imageID, Vector2i screenCoords = Vector2i::ZERO);
@@ -85,4 +87,5 @@ private:
 	std::vector<SDL_Rect*> m_TextSizeRects;
 	std::vector<std::string> m_TextValues;
 
+	Vector2f m_Offset = Vector2f::ZERO;
 };

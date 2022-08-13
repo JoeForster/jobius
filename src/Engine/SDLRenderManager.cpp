@@ -117,6 +117,16 @@ void SDLRenderManager::RenderClear()
 	SDL_RenderClear(m_Renderer);
 }
 
+void SDLRenderManager::SetOffset(const Vector2f& offset)
+{
+	m_Offset = offset;
+}
+
+void SDLRenderManager::SetZoom(float zoom)
+{
+	SDL_RenderSetScale(m_Renderer, zoom, zoom);
+}
+
 void SDLRenderManager::Draw(ResourceID imageID, Vector2i screenCoords)
 {
 	// Basic checks (but assume vectors are same size, which is verified on load)
@@ -126,6 +136,9 @@ void SDLRenderManager::Draw(ResourceID imageID, Vector2i screenCoords)
 	assert(imageID < m_ImageTextures.size());
 	if (imageID >= m_ImageTextures.size())
 		return; // Invalid ID passed
+
+	screenCoords.x -= (int)m_Offset.x;
+	screenCoords.y -= (int)m_Offset.y;
 
 	SDL_Texture* imageTex = m_ImageTextures[imageID];
 	SDL_Rect* sizeRect = m_ImageSizeRects[imageID];
@@ -228,6 +241,9 @@ void SDLRenderManager::DrawText(ResourceID textID, Vector2i screenCoords)
 	SDL_Color fg = { 255,0,0,255 };
 	SDL_Texture* optimizedSurface = m_TextTextures[textID];
 	SDL_Rect* sizeRect = m_TextSizeRects[textID];
+
+	screenCoords.x -= (int)m_Offset.x;
+	screenCoords.y -= (int)m_Offset.y;
 
 	SDL_Rect posRect;
 	posRect.x = screenCoords.x;

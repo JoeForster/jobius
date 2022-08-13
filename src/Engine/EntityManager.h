@@ -19,6 +19,7 @@ enum class ComponentType
 	CT_PLAYER,
 	CT_DEBUGTEXT,
 	CT_GRIDWORLD,
+	CT_CAMERA_2D,
 	// TODO: Game-specific components below, requires a better system to keep them in game code
 	CT_BL_SPECIES,
 	CT_MAX
@@ -29,7 +30,7 @@ constexpr size_t NUM_COMPONENT_TYPES = (size_t)ComponentType::CT_MAX;
 using EntityID = std::uint32_t;
 using EntitySignature = std::bitset<NUM_COMPONENT_TYPES>;
 
-constexpr size_t MAX_ENTITIES = 20;
+constexpr size_t MAX_ENTITIES = 1000;
 constexpr EntityID INVALID_ENTITY_ID = MAX_ENTITIES;
 
 class EntityQuery;

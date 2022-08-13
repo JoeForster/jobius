@@ -87,9 +87,45 @@ void SDLInputSystem::Update(float deltaSecs)
 		const Uint8* keystate = SDL_GetKeyboardState(NULL);
 		auto& kbControl = m_ParentWorld->GetComponent<KBInputComponent>(e);
 
-		kbControl.m_State.set((size_t)KB_KEY::KEY_UP, (bool)keystate[SDL_SCANCODE_UP]);
-		kbControl.m_State.set((size_t)KB_KEY::KEY_DOWN, (bool)keystate[SDL_SCANCODE_DOWN]);
-		kbControl.m_State.set((size_t)KB_KEY::KEY_LEFT, (bool)keystate[SDL_SCANCODE_LEFT]);
-		kbControl.m_State.set((size_t)KB_KEY::KEY_RIGHT, (bool)keystate[SDL_SCANCODE_RIGHT]);
+		static constexpr SDL_Scancode KB_KEY_TO_SDL_SCANCODE[] =
+		{
+			SDL_SCANCODE_UP,		// KEY_UP
+			SDL_SCANCODE_DOWN,		// KEY_DOWN
+			SDL_SCANCODE_LEFT,		// KEY_LEFT
+			SDL_SCANCODE_RIGHT,		// KEY_RIGHT
+			SDL_SCANCODE_SPACE,		// KEY_SPACE
+
+			SDL_SCANCODE_A,			// KEY_A
+			SDL_SCANCODE_B,			// KEY_B
+			SDL_SCANCODE_C,			// KEY_C
+			SDL_SCANCODE_D,			// KEY_D
+			SDL_SCANCODE_E,			// KEY_E
+			SDL_SCANCODE_F,			// KEY_F
+			SDL_SCANCODE_G,			// KEY_G
+			SDL_SCANCODE_H,			// KEY_H
+			SDL_SCANCODE_I,			// KEY_I
+			SDL_SCANCODE_J,			// KEY_J
+			SDL_SCANCODE_K,			// KEY_K
+			SDL_SCANCODE_L,			// KEY_L
+			SDL_SCANCODE_M,			// KEY_M
+			SDL_SCANCODE_N,			// KEY_N
+			SDL_SCANCODE_O,			// KEY_O
+			SDL_SCANCODE_P,			// KEY_P
+			SDL_SCANCODE_Q,			// KEY_Q
+			SDL_SCANCODE_R,			// KEY_R
+			SDL_SCANCODE_S,			// KEY_S
+			SDL_SCANCODE_T,			// KEY_T
+			SDL_SCANCODE_U,			// KEY_U
+			SDL_SCANCODE_V,			// KEY_V
+			SDL_SCANCODE_W,			// KEY_W
+			SDL_SCANCODE_X,			// KEY_X
+			SDL_SCANCODE_Y,			// KEY_Y
+			SDL_SCANCODE_Z,			// KEY_Z
+		};
+
+		for (size_t key = 0; key < (size_t)KB_KEY::KEY_MAX; ++key)
+		{
+			kbControl.m_State.set((size_t)key, (bool)keystate[KB_KEY_TO_SDL_SCANCODE[key]]);
+		}
 	}
 }

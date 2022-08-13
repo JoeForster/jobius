@@ -63,6 +63,15 @@ struct Vector2f
 
 		return *this;
 	}
+	
+	bool operator==(const Vector2f& rVec) const
+	{
+		return (x == rVec.x && y == rVec.y);
+	}
+	bool operator!=(const Vector2f& rVec) const
+	{
+		return (x != rVec.x || y != rVec.y);
+	}
 
 	bool operator>(const Vector2f& rVec) const
 	{
@@ -81,6 +90,7 @@ struct Vector2f
 	{
 		return (x <= rVec.x && y <= rVec.y);
 	}
+
 
 	bool IsZero() const
 	{

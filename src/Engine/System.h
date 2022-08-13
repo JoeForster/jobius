@@ -16,6 +16,7 @@ enum class SystemType
 	ST_PHYSICS,
 	ST_INPUT,
 	ST_PLAYERCONTROL,
+	ST_CAMERA_2D,
 	ST_NPCCONTROL,
 	ST_NPCSENSOR,
 	// TODO: Game-specific components below, requires a better system to keep them in game code
