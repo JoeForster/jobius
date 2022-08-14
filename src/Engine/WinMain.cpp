@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 #endif
 
 	// TODO better randomness
-	srand(0);
+	srand((unsigned int)time(nullptr));
 
 	std::shared_ptr<World> world = builder.BuildWorld(renderMan);
 
