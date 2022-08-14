@@ -78,6 +78,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->SetGlobalComponent<GridWorldComponent>( { Rect2D{ Vector2f{0, 0}, Vector2f{1000, 700} }, 32.0f } );
 
 	// Load resources and create test world entities
+	// NOTE duplicated logic in birth code in GameOfLifeSystem!
 	auto createGridSprite = [](World& w, ResourceID resID, Vector2i pos, Species species)
 	{
 		EntityID e = w.CreateEntity();

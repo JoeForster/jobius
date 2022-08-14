@@ -162,7 +162,7 @@ void GameOfLifeSystem::Tick()
 		limits.max.y += 1;
 	}
 
-	printf("TICK limits min(%d %d) max(%d %d)\n", limits.min.x, limits.min.y, limits.max.x, limits.max.y);
+	printf("TICK entities(%zu) limits min(%d %d) max(%d %d)\n", mEntities.size(), limits.min.x, limits.min.y, limits.max.x, limits.max.y);
 
 	assert(limits.max.y > limits.min.y);
 	assert(limits.max.x > limits.min.x);
@@ -211,104 +211,93 @@ void GameOfLifeSystem::Tick()
 		return n;
 	};
 
-
-
 	// Move pass
-
-	//for (int y = limits.min.y; y < limits.max.y; ++y)
+	for (EntityID movingEntity : mEntities)
 	{
-		//for (int x = limits.min.x; x < limits.max.x; ++x)
-		for (EntityID movingEntity : mEntities)
+		auto& originTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
+		const int x = originTransform.m_Pos.x;
+		const int y = originTransform.m_Pos.y;
+		CreatureCache& cache = cachedEntities.At(x, y);
+		assert(cache.entityID == movingEntity);
+
+		// HACK herbivore behaviour should be in its own system
+		if (cache.species == Species::HERBIVORE)
 		{
 			printf("Move entity %d\n", movingEntity);
-			auto& originTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
 			auto& health = m_ParentWorld->GetComponent<HealthComponent>(movingEntity);
-			const int x = originTransform.m_Pos.x;
-			const int y = originTransform.m_Pos.y;
-			CreatureCache& cache = cachedEntities.At(x, y);
-			assert(cache.entityID == movingEntity);
 
-			// HACK herbivore behaviour should be in its own system
-			if (cache.species == Species::HERBIVORE)
+			GridDir possibleDirs[GridDir::COUNT];
+			int numPossibleDirs = 0;
+
+			int mostPlants = 0;
+			GridDir bestDir = (GridDir)0;
+			for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
 			{
+				const Vector2i checkPos = Vector2i(x, y) + GridDirToVec[dir];
 
-				GridDir possibleDirs[GridDir::COUNT];
-				int numPossibleDirs = 0;
-
-				int mostPlants = 0;
-				GridDir bestDir = (GridDir)0;
-				for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
+				CreatureCache& adjacentCreature = cachedEntities.At(checkPos.x, checkPos.y);
+				if (adjacentCreature.entityID != INVALID_ENTITY_ID)
 				{
-					const Vector2i checkPos = Vector2i(x, y) + GridDirToVec[dir];
-
-					CreatureCache& adjacentCreature = cachedEntities.At(checkPos.x, checkPos.y);
-					if (adjacentCreature.entityID != INVALID_ENTITY_ID)
+					// BLOCKED
+					if (adjacentCreature.species == Species::PLANT)
 					{
-						// BLOCKED
-						if (adjacentCreature.species == Species::PLANT)
-						{
-							// EAT if plant
-							constexpr int healthGain = 10;
-							printf("Entity %d at (%d, %d) eat plant at (%d, %d)! Health %d -> %d\n", movingEntity, x, y, checkPos.x, checkPos.y, health.m_Health, health.m_Health + healthGain);
-							m_ParentWorld->DestroyEntity(adjacentCreature.entityID);
-							adjacentCreature = CreatureCache();
-							health.m_Health += healthGain;
-						}
-
+						// EAT if plant
+						constexpr int healthGain = 10;
+						printf("Entity %d at (%d, %d) eat plant at (%d, %d)! Health %d -> %d\n", movingEntity, x, y, checkPos.x, checkPos.y, health.m_Health, health.m_Health + healthGain);
+						m_ParentWorld->DestroyEntity(adjacentCreature.entityID);
+						adjacentCreature = CreatureCache();
+						health.m_Health += healthGain;
 					}
-					//else if (cachedEntities.At(checkPos.x, checkPos.y).beingMovedInto)
-					//{
-					//	// BLOCKED by future move
-					//}
-					else
-					{
-						possibleDirs[numPossibleDirs++] = dir;
-						EntityID foundEntity = INVALID_ENTITY_ID;
-						int numPlants = countNeighbours(x, y-1, Species::PLANT, foundEntity);
-						if (numPlants > mostPlants)
-						{
-							mostPlants = numPlants;
-							bestDir = (GridDir)dir;
-						}
-					}
-				}
 
-				if (numPossibleDirs == 0)
-				{
-					printf("Entity %d at (%d, %d) is BLOCKED!\n", movingEntity, x, y);
-					continue;
 				}
-				else if (mostPlants == 0)
-				{
-					const int bestDirIndex = rand() % numPossibleDirs;
-					bestDir = possibleDirs[bestDirIndex];
-					printf("Entity %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, (int)bestDir);
- 				}
 				else
 				{
-					printf("Entity %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, (int)bestDir);
+					possibleDirs[numPossibleDirs++] = dir;
+					EntityID foundEntity = INVALID_ENTITY_ID;
+					int numPlants = countNeighbours(x, y-1, Species::PLANT, foundEntity);
+					if (numPlants > mostPlants)
+					{
+						mostPlants = numPlants;
+						bestDir = (GridDir)dir;
+					}
 				}
-				
-				// TODO bug here - herbivores unexpectedly multiply (bad move?), and then cache position doesn't match!
-				auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
-				if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
-				{
-					printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
-						movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
-					assert(false);
-				}
-				const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDir];
-
-				auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
-
-				// UGH we have two places wheret his info lives due to the cache - this can be better
-				// once we use the actual component storage rather than separate cache.
-				//assert(!target.beingMovedInto);
-				target = cache;
-				cache = CreatureCache();
-				thisTransform.m_Pos = moveIntoPos;
-
 			}
+
+			if (numPossibleDirs == 0)
+			{
+				printf("Entity %d at (%d, %d) is BLOCKED!\n", movingEntity, x, y);
+				continue;
+			}
+			else if (mostPlants == 0)
+			{
+				const int bestDirIndex = rand() % numPossibleDirs;
+				bestDir = possibleDirs[bestDirIndex];
+				printf("Entity %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, (int)bestDir);
+ 			}
+			else
+			{
+				printf("Entity %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, (int)bestDir);
+			}
+				
+			// TODO bug here - herbivores unexpectedly multiply (bad move?), and then cache position doesn't match!
+			auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
+			if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
+			{
+				printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
+					movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
+				assert(false);
+			}
+			const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDir];
+
+			auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
+
+			// UGH we have two places wheret his info lives due to the cache - this can be better
+			// once we use the actual component storage rather than separate cache.
+			//assert(!target.beingMovedInto);
+			target = cache;
+			cache = CreatureCache();
+			thisTransform.m_Pos = moveIntoPos;
+
 		}
 	}
 
@@ -368,6 +357,7 @@ void GameOfLifeSystem::Tick()
 					m_ParentWorld->AddComponent<GridTransformComponent>(newborn, t);
 					m_ParentWorld->AddComponent<SpriteComponent>(newborn, parentSprite);
 					m_ParentWorld->AddComponent<SpeciesComponent>(newborn, parentSpecies);
+					m_ParentWorld->AddComponent<HealthComponent>(newborn, { 1 });
 				}
 			}
 		}
