@@ -31,7 +31,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 {	
 	// LOAD RESOURCES
 	// TODO resource loading should be separate from world building
-	ResourceID resID_plant = renderMan->LoadTexture("assets/sprites/plant_32.png");
+	ResourceID resID_plant = renderMan->LoadTexture("assets/sprites/plant_block_32.png");
 	assert(resID_plant != ResourceID_Invalid);
 	ResourceID resID_herbivore = renderMan->LoadTexture("assets/sprites/herbivore_32.png");
 	assert(resID_herbivore != ResourceID_Invalid);
