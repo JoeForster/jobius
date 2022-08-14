@@ -26,6 +26,7 @@
 #include "Systems/GameOfLifeSystem.h"
 
 #include "Components/SpeciesComponent.h"
+#include "Components/HealthComponent.h"
 
 std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {	
@@ -56,6 +57,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->RegisterComponent<DebugTextComponent>();
 	world->RegisterComponent<GridWorldComponent>();
 	world->RegisterComponent<SpeciesComponent>();
+	world->RegisterComponent<HealthComponent>();
 	world->RegisterComponent<Camera2DComponent>();
 
 	// Initialiser for systems that render
@@ -83,6 +85,25 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 		w.AddComponent<GridTransformComponent>(e, t);
 		w.AddComponent<SpriteComponent>(e, resID);
 		w.AddComponent<SpeciesComponent>(e, species);
+
+		int initialHealth;
+		switch (species)
+		{
+		case Species::PLANT:
+			initialHealth = 1;
+			break;
+		case Species::HERBIVORE:
+			initialHealth = 10;
+			break;
+		case Species::CARNIVORE:
+			initialHealth = 20;
+			break;
+		default:
+			assert(false);
+			initialHealth = 1;
+		}
+
+		w.AddComponent<HealthComponent>(e, { initialHealth });
 		return e;
 	};
 

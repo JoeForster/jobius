@@ -20,6 +20,7 @@ void CreatureSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
 	sysSignature.set((size_t)ComponentType::CT_SPRITE);
 	sysSignature.set((size_t)ComponentType::CT_BL_SPECIES);
+	sysSignature.set((size_t)ComponentType::CT_BL_HEALTH);
 	m_ParentWorld->SetSystemSignature<CreatureSystem>(sysSignature);
 	m_ParentWorld->SetSystemDebugSignature<CreatureSystem>(sysSignature);
 }

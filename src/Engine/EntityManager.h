@@ -22,6 +22,7 @@ enum class ComponentType
 	CT_CAMERA_2D,
 	// TODO: Game-specific components below, requires a better system to keep them in game code
 	CT_BL_SPECIES,
+	CT_BL_HEALTH,
 	CT_MAX
 };
 

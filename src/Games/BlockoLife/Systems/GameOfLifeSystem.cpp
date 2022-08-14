@@ -9,6 +9,7 @@
 #include "SpriteComponent.h"
 #include "GridTransformComponent.h"
 #include "Components/SpeciesComponent.h"
+#include "Components/HealthComponent.h"
 
 #include "World.h"
 #include "SDLRenderManager.h"
@@ -22,6 +23,7 @@ void GameOfLifeSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
 	sysSignature.set((size_t)ComponentType::CT_SPRITE);
 	sysSignature.set((size_t)ComponentType::CT_BL_SPECIES);
+	sysSignature.set((size_t)ComponentType::CT_BL_HEALTH);
 	m_ParentWorld->SetSystemSignature<GameOfLifeSystem>(sysSignature);
 	m_ParentWorld->SetSystemDebugSignature<GameOfLifeSystem>(sysSignature);
 }
@@ -178,21 +180,6 @@ void GameOfLifeSystem::Tick()
 	// in the right order OR so we can index into adjacent cells!
 	auto cachedEntities = Array2D<CreatureCache>(num_columns, num_rows, x_offset, y_offset);
 
-
-	auto getSpeciesAt = [&](int x, int y) -> Species
-	{
-		CreatureCache& cache = cachedEntities.At(x, y);
-		EntityID e = cache.entityID;
-		if (e != INVALID_ENTITY_ID)
-		{
-			return cache.species;
-		}
-		else
-		{
-			return Species::SPECIES_COUNT;
-		}
-	};
-
 	for (EntityID e : mEntities)
 	{
 		auto& transform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
@@ -235,10 +222,13 @@ void GameOfLifeSystem::Tick()
 		{
 			printf("Move entity %d\n", movingEntity);
 			auto& originTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
+			auto& health = m_ParentWorld->GetComponent<HealthComponent>(movingEntity);
 			const int x = originTransform.m_Pos.x;
 			const int y = originTransform.m_Pos.y;
 			CreatureCache& cache = cachedEntities.At(x, y);
 			assert(cache.entityID == movingEntity);
+
+			// HACK herbivore behaviour should be in its own system
 			if (cache.species == Species::HERBIVORE)
 			{
 
@@ -250,10 +240,21 @@ void GameOfLifeSystem::Tick()
 				for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
 				{
 					const Vector2i checkPos = Vector2i(x, y) + GridDirToVec[dir];
-					if (getSpeciesAt(checkPos.x, checkPos.y) != Species::SPECIES_COUNT)
+
+					CreatureCache& adjacentCreature = cachedEntities.At(checkPos.x, checkPos.y);
+					if (adjacentCreature.entityID != INVALID_ENTITY_ID)
 					{
 						// BLOCKED
-						// TODO eat if plants
+						if (adjacentCreature.species == Species::PLANT)
+						{
+							// EAT if plant
+							constexpr int healthGain = 10;
+							printf("Entity %d at (%d, %d) eat plant at (%d, %d)! Health %d -> %d\n", movingEntity, x, y, checkPos.x, checkPos.y, health.m_Health, health.m_Health + healthGain);
+							m_ParentWorld->DestroyEntity(adjacentCreature.entityID);
+							adjacentCreature = CreatureCache();
+							health.m_Health += healthGain;
+						}
+
 					}
 					//else if (cachedEntities.At(checkPos.x, checkPos.y).beingMovedInto)
 					//{
@@ -306,6 +307,7 @@ void GameOfLifeSystem::Tick()
 				target = cache;
 				cache = CreatureCache();
 				thisTransform.m_Pos = moveIntoPos;
+
 			}
 		}
 	}
