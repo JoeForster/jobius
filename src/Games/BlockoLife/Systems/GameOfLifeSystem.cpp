@@ -97,9 +97,10 @@ private:
 struct CreatureCache
 {
 	EntityID entityID = INVALID_ENTITY_ID;
-	EntityID parentEntityID = INVALID_ENTITY_ID;
 	Species species = Species::SPECIES_COUNT;
-	uint8_t numNeighbours = 0;
+	int health = 0;
+	uint8_t neighbourHealthTotals[(size_t)Species::SPECIES_COUNT] = { 0 };
+	EntityID parentEntityIDs[(size_t)Species::SPECIES_COUNT] = { INVALID_ENTITY_ID }; // hacky, it's just the first entity found of each species if any
 	// TODO this hack makes movement order-dependent, come up with better logic to resolve move/grow conflicts!
 	//bool beingMovedInto = false;
 };
@@ -184,12 +185,14 @@ void GameOfLifeSystem::Tick()
 	{
 		auto& transform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		auto& species = m_ParentWorld->GetComponent<SpeciesComponent>(e);
+		auto& health = m_ParentWorld->GetComponent<HealthComponent>(e);
 
 		size_t index = transform.m_Pos.y*num_rows + transform.m_Pos.x;
 		CreatureCache& cache = cachedEntities.At(transform.m_Pos.x, transform.m_Pos.y);
 		assert(cache.entityID == INVALID_ENTITY_ID);
 		cache.entityID = e;
 		cache.species = species.m_Species;
+		cache.health = health.m_Health;;
 	}
 
 	// TODO parentSprite is HACK find better way! Ideally a basic archetype/creation system based on creature type
@@ -302,7 +305,7 @@ void GameOfLifeSystem::Tick()
 	}
 
 
-	// Reproduction pass
+	// Reproduction scan pass
 	// First count adjacency to see what will grow/die
 	// NOTE we leave out the "border areas" here as they have been added above and are blank.. This could be clearer.
 	for (int y = limits.min.y+1; y < limits.max.y-1; ++y)
@@ -319,11 +322,22 @@ void GameOfLifeSystem::Tick()
 			}
 
 			EntityID parentEntity = INVALID_ENTITY_ID;
-			uint8_t numNeighbours = countNeighbours(x, y, Species::PLANT, parentEntity);
+			uint8_t numPlantNeighbours = countNeighbours(x, y, Species::PLANT, parentEntity);
 			//printf("neighbours at (%d, %d): %d\n", x, y, numNeighbours);
-
-			creature.numNeighbours = numNeighbours;
-			creature.parentEntityID = parentEntity;
+			// Scan neighbour species for reproduction 
+			for (const Vector2i& dirVec : GridDirToVec)
+			{
+				const Vector2i checkPos = Vector2i(x, y) + dirVec;
+				CreatureCache& cacheAt = cachedEntities.At(checkPos);
+				if (cacheAt.entityID != INVALID_ENTITY_ID)
+				{
+					creature.neighbourHealthTotals[(int)cacheAt.species] += cacheAt.health;
+					if (creature.parentEntityIDs[(int)cacheAt.species] == INVALID_ENTITY_ID)
+					{
+						creature.parentEntityIDs[(int)cacheAt.species] = cacheAt.entityID;
+					}
+				}
+			}
 		}
 	}
 
@@ -337,11 +351,11 @@ void GameOfLifeSystem::Tick()
 			if (!isAlive)
 			{
 				assert(cache.species == Species::SPECIES_COUNT);
-				if (cache.numNeighbours == 3)
+				if (cache.neighbourHealthTotals[(int)Species::PLANT] == 3)
 				{
 					// TODO this duplicates creation logic in BlockoLifeWorldBuilder.cpp
-					assert(cache.parentEntityID != INVALID_ENTITY_ID);
-					EntityID parent = cache.parentEntityID;
+					EntityID parent = cache.parentEntityIDs[(int)Species::PLANT];
+					assert(parent != INVALID_ENTITY_ID);
 					const Vector2i& parentPos = m_ParentWorld->GetComponent<GridTransformComponent>(parent).m_Pos;
 					ResourceID parentSprite = m_ParentWorld->GetComponent<SpriteComponent>(parent).m_SpriteID;
 					Species parentSpecies = m_ParentWorld->GetComponent<SpeciesComponent>(parent).m_Species;
@@ -360,6 +374,11 @@ void GameOfLifeSystem::Tick()
 					m_ParentWorld->AddComponent<HealthComponent>(newborn, { 1 });
 				}
 			}
+			// Alive - 
+			else
+			{
+
+			}
 		}
 	}
 
@@ -373,11 +392,11 @@ void GameOfLifeSystem::Tick()
 			if (isAlive && cache.species == Species::PLANT)
 			{
 				assert(cache.species < Species::SPECIES_COUNT);
-				if (cache.numNeighbours < 2)
+				if (cache.neighbourHealthTotals[(int)Species::PLANT] < 2)
 				{
 					m_ParentWorld->DestroyEntity(cache.entityID);
 				}
-				else if (cache.numNeighbours > 3)
+				else if (cache.neighbourHealthTotals[(int)Species::PLANT] > 3)
 				{
 					m_ParentWorld->DestroyEntity(cache.entityID);
 				}

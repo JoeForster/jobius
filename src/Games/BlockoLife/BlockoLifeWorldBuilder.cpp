@@ -142,8 +142,8 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 		createGridSprite(*world, resID_plant, { 6, 7 }, Species::PLANT);
 	}
 
-	createGridSprite(*world, resID_herbivore, { 5, 22 }, Species::HERBIVORE);
-	createGridSprite(*world, resID_herbivore, { 8, 24 }, Species::HERBIVORE);
+	createGridSprite(*world, resID_herbivore, { 5, 21 }, Species::HERBIVORE);
+	createGridSprite(*world, resID_herbivore, { 8, 21 }, Species::HERBIVORE);
 
 	createGridSprite(*world, resID_carnivore, { 20, 22 }, Species::CARNIVORE);
 
