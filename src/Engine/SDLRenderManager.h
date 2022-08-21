@@ -18,7 +18,7 @@ struct SDL_Rect;
 struct _TTF_Font;
 typedef struct _TTF_Font TTF_Font;
 
-struct Rect2D;
+struct Rect2f;
 
 // TODO_RESOURCE_MANAGEMENT separate concept of resources from SDL-specific
 class SDLRenderManager
@@ -66,7 +66,10 @@ public:
 	// Primitive drawing helpers
 	void DrawLine(int x0, int y0, int x1, int y1, Colour4i colour = DEFAULT_LINE_COLOUR);
 	void DrawLine(Vector2i from, Vector2i to, Colour4i colour = DEFAULT_LINE_COLOUR);
-	void DrawRect(const Rect2D& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
+	void DrawRect(const Rect2f& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
+	void DrawRect(const Rect2i& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
+	void DrawFillRect(const Rect2f& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
+	void DrawFillRect(const Rect2i& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
 
 private:
 	bool Init();

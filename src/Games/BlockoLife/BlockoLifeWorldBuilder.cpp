@@ -24,6 +24,7 @@
 
 // BlockoLife includes
 #include "Systems/GameOfLifeSystem.h"
+#include "Systems/CreatureSystem.h"
 
 #include "Components/SpeciesComponent.h"
 #include "Components/HealthComponent.h"
@@ -67,6 +68,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	// Init systems
 	world->RegisterSystem<GridSpriteRenderSystem>()->Init(renderInit);
 	world->RegisterSystem<GameOfLifeSystem>()->Init(renderInit);
+	world->RegisterSystem<CreatureSystem>()->Init(renderInit);
 	world->RegisterSystem<SDLInputSystem>()->Init();
 	world->RegisterSystem<Camera2DSystem>()->Init(renderInit);
 
@@ -75,7 +77,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	EntityID globalHack = world->CreateEntity();
 	assert(globalHack == 0);
 	world->SetGlobalComponent<Camera2DComponent>();
-	world->SetGlobalComponent<GridWorldComponent>( { Rect2D{ Vector2f{0, 0}, Vector2f{1000, 700} }, 32.0f } );
+	world->SetGlobalComponent<GridWorldComponent>( { Rect2f{ Vector2f{0, 0}, Vector2f{1000, 700} }, 32 } );
 
 	// Load resources and create test world entities
 	// NOTE duplicated logic in birth code in GameOfLifeSystem!

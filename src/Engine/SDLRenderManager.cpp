@@ -275,11 +275,36 @@ void SDLRenderManager::DrawLine(Vector2i from, Vector2i to, Colour4i colour)
 	DrawLine(from.x, from.y, to.x, to.y, colour);
 }
 
-void SDLRenderManager::DrawRect(const Rect2D& r, Colour4i colour)
+void SDLRenderManager::DrawRect(const Rect2f& r, Colour4i colour)
 {
 	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
-	SDL_RenderDrawLine(m_Renderer, (int)r.min.x, (int)r.min.y, (int)r.max.x, (int)r.min.y);
-	SDL_RenderDrawLine(m_Renderer, (int)r.max.x, (int)r.min.y, (int)r.max.x, (int)r.max.y);
-	SDL_RenderDrawLine(m_Renderer, (int)r.max.x, (int)r.max.y, (int)r.min.x, (int)r.max.y);
-	SDL_RenderDrawLine(m_Renderer, (int)r.min.x, (int)r.max.y, (int)r.min.x, (int)r.min.y);
+
+	SDL_FRect rect (r.min.x, r.min.y, r.GetWidth(), r.GetHeight());
+	SDL_RenderDrawRectF(m_Renderer, &rect);
+}
+
+
+void SDLRenderManager::DrawRect(const Rect2i& r, Colour4i colour)
+{
+	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
+
+	SDL_Rect rect (r.min.x, r.min.y, r.GetWidth(), r.GetHeight());
+	SDL_RenderDrawRect(m_Renderer, &rect);
+}
+
+void SDLRenderManager::DrawFillRect(const Rect2f& r, Colour4i colour)
+{
+	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
+
+	SDL_FRect rect (r.min.x, r.min.y, r.GetWidth(), r.GetHeight());
+	SDL_RenderFillRectF(m_Renderer, &rect);
+}
+
+
+void SDLRenderManager::DrawFillRect(const Rect2i& r, Colour4i colour)
+{
+	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
+
+	SDL_Rect rect (r.min.x, r.min.y, r.GetWidth(), r.GetHeight());
+	SDL_RenderFillRect(m_Renderer, &rect);
 }

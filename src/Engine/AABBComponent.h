@@ -14,7 +14,7 @@ struct AABBComponent
 	AABBComponent(Vector2f box, Vector2f offset)
 		: m_Box(box), m_Offset(offset) {}
 
-	// TODO replace with Rect2D
+	// TODO replace with Rect2f
 	Vector2f m_Box = Vector2f::ZERO;
 	Vector2f m_Offset = Vector2f::ZERO;
 };

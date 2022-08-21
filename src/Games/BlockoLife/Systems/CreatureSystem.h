@@ -12,10 +12,13 @@ public:
 	{
 	}
 	
-	void Init(const SystemInitialiser& = s_EmptyInitialiser) override;
+	void Init(const SystemInitialiser&) override;
+	void Render_Main() final override;
 
 	void Update(float deltaSecs) final override;
 
 private:
+	std::shared_ptr<SDLRenderManager> m_RenderMan;
+
 	void Tick();
 };

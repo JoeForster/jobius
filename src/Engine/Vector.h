@@ -167,6 +167,12 @@ struct Vector2i
 
 	static const Vector2i ZERO;
 
+	const Vector2i operator-(const Vector2i& other) const
+	{
+		Vector2i v {x - other.x, y - other.y};
+		return v;
+	}
+
 	const Vector2i operator+(const Vector2i& other) const
 	{
 		Vector2i v {x + other.x, y + other.y};
@@ -213,10 +219,13 @@ struct Vector3f
 // TODO these don't belong in Vector.h
 
 // TODO rename to Rect2f
-struct Rect2D
+struct Rect2f
 {
 	Vector2f min;
 	Vector2f max;
+
+	float GetWidth() const { return max.x-min.x; }
+	float GetHeight() const { return max.y-min.y; }
 
 	const bool IsInside(const Vector2f& testPoint)
 	{
@@ -228,6 +237,9 @@ struct Rect2i
 {
 	Vector2i min;
 	Vector2i max;
+
+	int GetWidth() const { return max.x-min.x; }
+	int GetHeight() const { return max.y-min.y; }
 
 	const bool IsInside(const Vector2i& testPoint)
 	{

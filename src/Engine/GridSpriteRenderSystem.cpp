@@ -41,7 +41,7 @@ void GridSpriteRenderSystem::Render_Debug()
 {
 #if DEBUG_DRAW_GRID_ENABLED
 	auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
-	Rect2D bounds = gridWorld.m_Bounds;
+	Rect2f bounds = gridWorld.m_Bounds;
 
 	m_RenderMan->DrawRect(bounds);
 

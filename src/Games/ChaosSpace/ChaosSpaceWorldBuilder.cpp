@@ -68,7 +68,7 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	// TODO FIXME HACK worakround for bug when removing entity 0 since the global components are stored in the same place!
 	EntityID globalHack = world->CreateEntity();
 	assert(globalHack == 0);
-	world->SetGlobalComponent<GridWorldComponent>( { Rect2D{ Vector2f{0, 0}, Vector2f{1000, 700} }, 32.0f } );
+	world->SetGlobalComponent<GridWorldComponent>( { Rect2f{ Vector2f{0, 0}, Vector2f{1000, 700} }, 32 } );
 
 	// Create test world entities
 	auto createSprite = [](World& w, ResourceID resID, Vector3f pos)

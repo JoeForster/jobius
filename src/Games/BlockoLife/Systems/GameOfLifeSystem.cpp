@@ -232,6 +232,8 @@ void GameOfLifeSystem::Tick()
 			GridDir possibleDirs[GridDir::COUNT];
 			int numPossibleDirs = 0;
 
+			bool didEat = false;
+
 			int mostPlants = 0;
 			GridDir bestDir = (GridDir)0;
 			for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
@@ -246,12 +248,15 @@ void GameOfLifeSystem::Tick()
 					{
 						// EAT if plant
 						constexpr int healthGain = 10;
-						printf("Entity %d at (%d, %d) eat plant at (%d, %d)! Health %d -> %d\n", movingEntity, x, y, checkPos.x, checkPos.y, health.m_Health, health.m_Health + healthGain);
 						m_ParentWorld->DestroyEntity(adjacentCreature.entityID);
 						adjacentCreature = CreatureCache();
-						health.m_Health += healthGain;
+						const int healthBefore = health.m_Health;
+						health.ModHealth(healthGain);
+						const int healthAfter = health.m_Health;
+						printf("Entity %d at (%d, %d) eat plant at (%d, %d)! Health %d -> %d\n",
+							movingEntity, x, y, checkPos.x, checkPos.y, healthBefore, healthAfter);
+						didEat = true;
 					}
-
 				}
 				else
 				{
@@ -263,6 +268,24 @@ void GameOfLifeSystem::Tick()
 						mostPlants = numPlants;
 						bestDir = (GridDir)dir;
 					}
+				}
+			}
+
+			if (!didEat)
+			{
+				constexpr int healthLoss = -1;
+				const int healthBefore = health.m_Health;
+				health.ModHealth(healthLoss);
+				const int healthAfter = health.m_Health;
+				printf("Entity %d at (%d, %d) didn't eat - Health %d -> %d\n",
+					movingEntity, x, y, healthBefore, healthAfter);
+				if (healthAfter == 0)
+				{
+					printf("Entity %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
+						movingEntity, x, y);
+					cache = CreatureCache();
+					m_ParentWorld->DestroyEntity(movingEntity);
+					continue;
 				}
 			}
 
@@ -374,15 +397,11 @@ void GameOfLifeSystem::Tick()
 					m_ParentWorld->AddComponent<HealthComponent>(newborn, { 1 });
 				}
 			}
-			// Alive - 
-			else
-			{
-
-			}
 		}
 	}
 
 	// Death pass (separate for now, TODO could avoid this extra pass by just putting the info needed in the cache above)
+	// TODO death from not eating already done above! Should be done in same pass but before move?
 	for (int y = limits.min.y; y < limits.max.y; ++y)
 	{
 		for (int x = limits.min.x; x < limits.max.x; ++x)
