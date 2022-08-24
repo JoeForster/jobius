@@ -1,5 +1,6 @@
 #include "GameOfLifeSystem.h"
 
+#include <vector>
 #include <string>
 #include <format>
 #include <algorithm>
@@ -101,8 +102,8 @@ struct CreatureCache
 	int health = 0;
 	uint8_t neighbourHealthTotals[(size_t)Species::SPECIES_COUNT] = { 0 };
 	EntityID parentEntityIDs[(size_t)Species::SPECIES_COUNT] = { INVALID_ENTITY_ID }; // hacky, it's just the first entity found of each species if any
-	// TODO this hack makes movement order-dependent, come up with better logic to resolve move/grow conflicts!
-	//bool beingMovedInto = false;
+
+	bool IsAlive() const { return entityID != INVALID_ENTITY_ID && health > 0; }
 };
 
 enum GridDir
@@ -214,14 +215,22 @@ void GameOfLifeSystem::Tick()
 		return n;
 	};
 
+	std::set<EntityID> entitiesToRemove;
+
 	// Move pass
 	for (EntityID movingEntity : mEntities)
 	{
+		if (entitiesToRemove.contains(movingEntity))
+		{
+			continue;
+		}
+
 		auto& originTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
 		const int x = originTransform.m_Pos.x;
 		const int y = originTransform.m_Pos.y;
 		CreatureCache& cache = cachedEntities.At(x, y);
 		assert(cache.entityID == movingEntity);
+		assert(cache.IsAlive()); // No living entities should have been left between ticks!
 
 		// HACK herbivore behaviour should be in its own system
 		if (cache.species == Species::HERBIVORE)
@@ -248,13 +257,16 @@ void GameOfLifeSystem::Tick()
 					{
 						// EAT if plant
 						constexpr int healthGain = 10;
-						m_ParentWorld->DestroyEntity(adjacentCreature.entityID);
-						adjacentCreature = CreatureCache();
 						const int healthBefore = health.m_Health;
 						health.ModHealth(healthGain);
 						const int healthAfter = health.m_Health;
-						printf("Entity %d at (%d, %d) eat plant at (%d, %d)! Health %d -> %d\n",
-							movingEntity, x, y, checkPos.x, checkPos.y, healthBefore, healthAfter);
+
+						printf("Entity %d at (%d, %d) eat plant %d at (%d, %d)! Health %d -> %d\n",
+							movingEntity, x, y, adjacentCreature.entityID, checkPos.x, checkPos.y, healthBefore, healthAfter);
+
+						entitiesToRemove.insert(adjacentCreature.entityID);
+						adjacentCreature = CreatureCache();
+
 						didEat = true;
 					}
 				}
@@ -283,8 +295,8 @@ void GameOfLifeSystem::Tick()
 				{
 					printf("Entity %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
 						movingEntity, x, y);
+					entitiesToRemove.insert(movingEntity);
 					cache = CreatureCache();
-					m_ParentWorld->DestroyEntity(movingEntity);
 					continue;
 				}
 			}
@@ -317,7 +329,7 @@ void GameOfLifeSystem::Tick()
 
 			auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
 
-			// UGH we have two places wheret his info lives due to the cache - this can be better
+			// UGH we have two places where this info lives due to the cache - this can be better
 			// once we use the actual component storage rather than separate cache.
 			//assert(!target.beingMovedInto);
 			target = cache;
@@ -337,13 +349,6 @@ void GameOfLifeSystem::Tick()
 		{
 			CreatureCache& creature = cachedEntities.At(x, y);
 			EntityID thisEntity = creature.entityID;
-
-			// HACK TODO filter by tag or different component type for animals that don't use this logic?
-			if (thisEntity != INVALID_ENTITY_ID && creature.species != Species::PLANT)
-			{
-				continue; 
-			}
-
 			EntityID parentEntity = INVALID_ENTITY_ID;
 			uint8_t numPlantNeighbours = countNeighbours(x, y, Species::PLANT, parentEntity);
 			//printf("neighbours at (%d, %d): %d\n", x, y, numNeighbours);
@@ -370,8 +375,7 @@ void GameOfLifeSystem::Tick()
 		for (int x = limits.min.x; x < limits.max.x; ++x)
 		{
 			CreatureCache& cache = cachedEntities.At(x, y);
-			bool isAlive = cache.entityID != INVALID_ENTITY_ID;
-			if (!isAlive)
+			if (!cache.IsAlive())
 			{
 				assert(cache.species == Species::SPECIES_COUNT);
 				if (cache.neighbourHealthTotals[(int)Species::PLANT] == 3)
@@ -407,19 +411,21 @@ void GameOfLifeSystem::Tick()
 		for (int x = limits.min.x; x < limits.max.x; ++x)
 		{
 			CreatureCache& cache = cachedEntities.At(x, y);
-			bool isAlive = cache.entityID != INVALID_ENTITY_ID;
-			if (isAlive && cache.species == Species::PLANT)
+			if (cache.IsAlive() && cache.species == Species::PLANT)
 			{
 				assert(cache.species < Species::SPECIES_COUNT);
-				if (cache.neighbourHealthTotals[(int)Species::PLANT] < 2)
+				if (cache.neighbourHealthTotals[(int)Species::PLANT] < 2 ||
+					cache.neighbourHealthTotals[(int)Species::PLANT] > 3)
 				{
-					m_ParentWorld->DestroyEntity(cache.entityID);
-				}
-				else if (cache.neighbourHealthTotals[(int)Species::PLANT] > 3)
-				{
-					m_ParentWorld->DestroyEntity(cache.entityID);
+					entitiesToRemove.insert(cache.entityID);
+					cache = CreatureCache();
 				}
 			}
 		}
+	}
+
+	for (EntityID e : entitiesToRemove)
+	{
+		m_ParentWorld->DestroyEntity(e);
 	}
 }
