@@ -16,6 +16,8 @@
 #include "SDLRenderManager.h"
 #include "Coordinates.h"
 
+constexpr bool DESTROY_PLANT_ON_EATEN = false;
+
 void GameOfLifeSystem::Init(const SystemInitialiser& initialiser)
 {
 	System::Init(initialiser);
@@ -100,7 +102,7 @@ struct CreatureCache
 	EntityID entityID = INVALID_ENTITY_ID;
 	Species species = Species::SPECIES_COUNT;
 	int health = 0;
-	uint8_t neighbourHealthTotals[(size_t)Species::SPECIES_COUNT] = { 0 };
+	uint8_t neighbourHealthTotals[SpeciesCount] = { 0 };
 	EntityID parentEntityIDs[(size_t)Species::SPECIES_COUNT] = { INVALID_ENTITY_ID }; // hacky, it's just the first entity found of each species if any
 
 	bool IsAlive() const { return entityID != INVALID_ENTITY_ID && health > 0; }
@@ -264,8 +266,11 @@ void GameOfLifeSystem::Tick()
 						printf("Entity %d at (%d, %d) eat plant %d at (%d, %d)! Health %d -> %d\n",
 							movingEntity, x, y, adjacentCreature.entityID, checkPos.x, checkPos.y, healthBefore, healthAfter);
 
-						entitiesToRemove.insert(adjacentCreature.entityID);
-						adjacentCreature = CreatureCache();
+						if (DESTROY_PLANT_ON_EATEN)
+						{
+							entitiesToRemove.insert(adjacentCreature.entityID);
+							adjacentCreature = CreatureCache();
+						}						
 
 						didEat = true;
 					}

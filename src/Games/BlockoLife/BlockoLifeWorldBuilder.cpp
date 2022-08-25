@@ -29,16 +29,96 @@
 #include "Components/SpeciesComponent.h"
 #include "Components/HealthComponent.h"
 
+class IEntityBuilder
+{
+public:
+	virtual void LoadResources(SDLRenderManager& renderMan) = 0;
+	virtual EntityID Build(World& world, Vector2i pos) = 0;
+};
+
+// TODO trying out some metaprogramming here; not final (templatise the class instead and create resource here?)
+template<class T>
+class EntityBuilder : IEntityBuilder
+{
+public:
+
+	void LoadResources(SDLRenderManager& renderMan) final
+	{
+		static constexpr const char* resourcePaths[SpeciesCount] {
+			"assets/sprites/plant_block_32.png",
+			"assets/sprites/herbivore_32.png",
+			"assets/sprites/carnivore_32.png"
+		};
+
+		m_ResourceID = renderMan.LoadTexture(resourcePaths[to_underlying(T::value)]);
+		assert(m_ResourceID != ResourceID_Invalid);
+	}
+
+	EntityID Build(World& world, Vector2i pos) final { return BuildImpl(world, pos); }
+
+private:
+	EntityID BuildImpl(World& world, Vector2i pos) { return INVALID_ENTITY_ID; }
+
+	EntityID BuildCommon(World& world, Vector2i pos, const int initialHealth, const int maxHealth)
+	{
+		assert(m_ResourceID != ResourceID_Invalid);
+
+		EntityID e = world.CreateEntity();
+		const GridTransformComponent t(pos);
+		world.AddComponent<GridTransformComponent>(e, t);
+		world.AddComponent<SpriteComponent>(e, m_ResourceID);
+		world.AddComponent<SpeciesComponent>(e, T::value);
+		world.AddComponent<HealthComponent>(e, { initialHealth, maxHealth });
+
+		return e;
+	}
+
+	ResourceID m_ResourceID = ResourceID_Invalid;
+
+};
+
+EntityID EntityBuilder<SpeciesIdentity<Species::PLANT>>::BuildImpl(World& world, Vector2i pos)
+{
+	constexpr int initialHealth = 1;
+	constexpr int maxHealth = 1;
+
+	return BuildCommon(world, pos, initialHealth, maxHealth);
+}
+
+EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& world, Vector2i pos)
+{
+	constexpr int initialHealth = 10;
+	constexpr int maxHealth = 20;
+
+	return BuildCommon(world, pos, initialHealth, maxHealth);
+}
+	
+EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& world, Vector2i pos)
+{
+	constexpr int initialHealth = 20;
+	constexpr int maxHealth = 20;
+
+	return BuildCommon(world, pos, initialHealth, maxHealth);
+}
+
 std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {	
 	// LOAD RESOURCES
-	// TODO resource loading should be separate from world building
-	ResourceID resID_plant = renderMan->LoadTexture("assets/sprites/plant_block_32.png");
-	assert(resID_plant != ResourceID_Invalid);
-	ResourceID resID_herbivore = renderMan->LoadTexture("assets/sprites/herbivore_32.png");
-	assert(resID_herbivore != ResourceID_Invalid);
-	ResourceID resID_carnivore = renderMan->LoadTexture("assets/sprites/carnivore_32.png");
-	assert(resID_carnivore != ResourceID_Invalid);
+	// TODO resource loader system should load separately, but we'd need to take the res IDs into the entity builders via metadata?
+
+	// TODO something like this would be nice but requires very clunky pointer casts; maybe consider
+	// if making entity builder system part of the engine?
+	//std::unique_ptr<IEntityBuilder> builders[SpeciesCount];
+	//builders[to_underlying(Species::PLANT)] = std::make_unique(EntityBuilder<SpeciesIdentity<Species::PLANT>>());
+	
+	EntityBuilder<SpeciesIdentity<Species::PLANT>> plantBuilder;
+	EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> herbivoreBuilder;
+	EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> carnivoreBuilder;
+	
+	// TODO RESOURCE MANAGER register with to automate this?
+	plantBuilder.LoadResources(*renderMan);
+	herbivoreBuilder.LoadResources(*renderMan);
+	carnivoreBuilder.LoadResources(*renderMan);
 
 	// BUILD WORLD
 	std::shared_ptr<World> world = std::make_shared<World>();
@@ -79,38 +159,9 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->SetGlobalComponent<Camera2DComponent>();
 	world->SetGlobalComponent<GridWorldComponent>( { Rect2f{ Vector2f{0, 0}, Vector2f{1000, 700} }, 32 } );
 
-	// Load resources and create test world entities
-	// NOTE duplicated logic in birth code in GameOfLifeSystem!
-	auto createGridSprite = [](World& w, ResourceID resID, Vector2i pos, Species species)
-	{
-		EntityID e = w.CreateEntity();
-		const GridTransformComponent t(pos);
-		w.AddComponent<GridTransformComponent>(e, t);
-		w.AddComponent<SpriteComponent>(e, resID);
-		w.AddComponent<SpeciesComponent>(e, species);
-
-		int initialHealth;
-		switch (species)
-		{
-		case Species::PLANT:
-			initialHealth = 1;
-			break;
-		case Species::HERBIVORE:
-			initialHealth = 10;
-			break;
-		case Species::CARNIVORE:
-			initialHealth = 20;
-			break;
-		default:
-			assert(false);
-			initialHealth = 1;
-		}
-
-		w.AddComponent<HealthComponent>(e, { initialHealth });
-		return e;
-	};
 
 	// Create player (just for camera for now)
+	// TODO use EntityBuilder
 	EntityID playerEntity = world->CreateEntity();
 	world->AddComponent<KBInputComponent>(playerEntity);
 	world->AddComponent<PadInputComponent>(playerEntity);
@@ -129,25 +180,26 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 				int spawnRoll = rand() % 100;
 				if (spawnRoll < RANDOM_PLANTS_PROBABILITY_PERCENT)
 				{
-					createGridSprite(*world, resID_plant, { x, y }, Species::PLANT);
+					//createGridSprite(*world, resID_plant, { x, y }, Species::PLANT);
+					plantBuilder.Build(*world, { x, y });
 				}
 			}
 		}
 	}
 	else
 	{
-		createGridSprite(*world, resID_plant, { 5, 4 }, Species::PLANT);
-		createGridSprite(*world, resID_plant, { 5, 5 }, Species::PLANT);
-		createGridSprite(*world, resID_plant, { 6, 5 }, Species::PLANT);
-		createGridSprite(*world, resID_plant, { 6, 6 }, Species::PLANT);
-		createGridSprite(*world, resID_plant, { 5, 6 }, Species::PLANT);
-		createGridSprite(*world, resID_plant, { 6, 7 }, Species::PLANT);
+		plantBuilder.Build(*world, { 5, 4 });
+		plantBuilder.Build(*world, { 5, 5 });
+		plantBuilder.Build(*world, { 6, 5 });
+		plantBuilder.Build(*world, { 6, 6 });
+		plantBuilder.Build(*world, { 5, 6 });
+		plantBuilder.Build(*world, { 6, 7 });
 	}
 
-	createGridSprite(*world, resID_herbivore, { 5, 21 }, Species::HERBIVORE);
-	createGridSprite(*world, resID_herbivore, { 8, 21 }, Species::HERBIVORE);
+	herbivoreBuilder.Build(*world, { 5, 21 });
+	herbivoreBuilder.Build(*world, { 8, 21 });
 
-	createGridSprite(*world, resID_carnivore, { 20, 22 }, Species::CARNIVORE);
+	carnivoreBuilder.Build(*world, { 20, 22 });
 
 	return world;
 }
