@@ -29,93 +29,15 @@
 #include "Components/SpeciesComponent.h"
 #include "Components/HealthComponent.h"
 
-class IEntityBuilder
-{
-public:
-	virtual void LoadResources(SDLRenderManager& renderMan) = 0;
-	virtual EntityID Build(World& world, Vector2i pos) = 0;
-};
-
-// TODO trying out some metaprogramming here; not final (templatise the class instead and create resource here?)
-template<class T>
-class EntityBuilder : IEntityBuilder
-{
-public:
-
-	void LoadResources(SDLRenderManager& renderMan) final
-	{
-		static constexpr const char* resourcePaths[SpeciesCount] {
-			"assets/sprites/plant_block_32.png",
-			"assets/sprites/herbivore_32.png",
-			"assets/sprites/carnivore_32.png"
-		};
-
-		m_ResourceID = renderMan.LoadTexture(resourcePaths[to_underlying(T::value)]);
-		assert(m_ResourceID != ResourceID_Invalid);
-	}
-
-	EntityID Build(World& world, Vector2i pos) final { return BuildImpl(world, pos); }
-
-private:
-	EntityID BuildImpl(World& world, Vector2i pos) { return INVALID_ENTITY_ID; }
-
-	EntityID BuildCommon(World& world, Vector2i pos, const int initialHealth, const int maxHealth)
-	{
-		assert(m_ResourceID != ResourceID_Invalid);
-
-		EntityID e = world.CreateEntity();
-		const GridTransformComponent t(pos);
-		world.AddComponent<GridTransformComponent>(e, t);
-		world.AddComponent<SpriteComponent>(e, m_ResourceID);
-		world.AddComponent<SpeciesComponent>(e, T::value);
-		world.AddComponent<HealthComponent>(e, { initialHealth, maxHealth });
-
-		return e;
-	}
-
-	ResourceID m_ResourceID = ResourceID_Invalid;
-
-};
-
-EntityID EntityBuilder<SpeciesIdentity<Species::PLANT>>::BuildImpl(World& world, Vector2i pos)
-{
-	constexpr int initialHealth = 1;
-	constexpr int maxHealth = 1;
-
-	return BuildCommon(world, pos, initialHealth, maxHealth);
-}
-
-EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& world, Vector2i pos)
-{
-	constexpr int initialHealth = 10;
-	constexpr int maxHealth = 20;
-
-	return BuildCommon(world, pos, initialHealth, maxHealth);
-}
-	
-EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& world, Vector2i pos)
-{
-	constexpr int initialHealth = 20;
-	constexpr int maxHealth = 20;
-
-	return BuildCommon(world, pos, initialHealth, maxHealth);
-}
+EntityBuilder<SpeciesIdentity<Species::PLANT>> BlockoLifeWorldBuilder::plantBuilder;
+EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> BlockoLifeWorldBuilder::herbivoreBuilder;
+EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> BlockoLifeWorldBuilder::carnivoreBuilder;
 
 std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {	
 	// LOAD RESOURCES
-	// TODO resource loader system should load separately, but we'd need to take the res IDs into the entity builders via metadata?
-
-	// TODO something like this would be nice but requires very clunky pointer casts; maybe consider
-	// if making entity builder system part of the engine?
-	//std::unique_ptr<IEntityBuilder> builders[SpeciesCount];
-	//builders[to_underlying(Species::PLANT)] = std::make_unique(EntityBuilder<SpeciesIdentity<Species::PLANT>>());
-	
-	EntityBuilder<SpeciesIdentity<Species::PLANT>> plantBuilder;
-	EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> herbivoreBuilder;
-	EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> carnivoreBuilder;
-	
-	// TODO RESOURCE MANAGER register with to automate this?
+	// TODO resource loader system should load separately and more automated,
+	// but we'd need to take the res IDs into the entity builders via metadata?
 	plantBuilder.LoadResources(*renderMan);
 	herbivoreBuilder.LoadResources(*renderMan);
 	carnivoreBuilder.LoadResources(*renderMan);
