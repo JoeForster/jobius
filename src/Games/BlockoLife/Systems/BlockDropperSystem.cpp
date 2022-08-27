@@ -39,7 +39,7 @@ void BlockDropperSystem::Update(float deltaSecs)
 	{
 		auto& kbInput = m_ParentWorld->GetComponent<KBInputComponent>(e);
 		auto& padInput = m_ParentWorld->GetComponent<PadInputComponent>(e);
-		auto& transform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
+		auto& dropTransform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		auto& dropper = m_ParentWorld->GetComponent<BlockDropperComponent>(e);
 
 		// Move cursor
@@ -58,14 +58,37 @@ void BlockDropperSystem::Update(float deltaSecs)
 			if (padInput.WasJustPressed(GAMEPAD_BTN::BTN_DPAD_RIGHT)) delta.x += 1;
 		}
 
-		transform.m_Pos += delta;
+		dropTransform.m_Pos += delta;
 
 		// Drop a block if button clicked
-		// TODO centralise spawning in one step to avoid conflicts/complication with multiple systems doing spawning!
-		if (kbInput.WasJustReleased(KB_KEY::KEY_SPACE) || padInput.WasJustReleased(GAMEPAD_BTN::BTN_FACE_A))
+		// TODO_SPAWNING needs refactor - probably an EVENT SYSTEM? Submit spawn requests from anywhere to one place,
+		// all of them processed and checked against each other by one system like GameOfLifeSystem
+		if (kbInput.IsPressed(KB_KEY::KEY_SPACE) || padInput.IsPressed(GAMEPAD_BTN::BTN_FACE_A))
 		{
-			// TODO need to prevent dropping in occupied square here
-			BlockoLifeWorldBuilder::BuildEntity(*m_ParentWorld, dropper.m_Species, transform.m_Pos);
+			bool spaceOccupied = false;
+
+			EntitySignature querySignature;
+			querySignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
+			querySignature.set((size_t)ComponentType::CT_BL_SPECIES);
+			EntityQuery q (querySignature);
+			std::set<EntityID> creatures;
+
+			m_ParentWorld->ExecuteQuery(q, creatures);
+			for (EntityID e : creatures)
+			{
+				auto& checkTransform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
+				auto& species = m_ParentWorld->GetComponent<SpeciesComponent>(e);
+				if (dropTransform.m_Pos == checkTransform.m_Pos)
+				{
+					assert(species.m_Species < Species::SPECIES_COUNT);
+					spaceOccupied = true;
+				}
+			}
+
+			if (!spaceOccupied)
+			{
+				BlockoLifeWorldBuilder::BuildEntity(*m_ParentWorld, dropper.m_Species, dropTransform.m_Pos);
+			}
 		}
 	}
 }
