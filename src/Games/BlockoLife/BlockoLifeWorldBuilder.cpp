@@ -25,22 +25,24 @@
 // BlockoLife includes
 #include "Systems/GameOfLifeSystem.h"
 #include "Systems/CreatureSystem.h"
+#include "Systems/BlockDropperSystem.h"
 
 #include "Components/SpeciesComponent.h"
 #include "Components/HealthComponent.h"
+#include "Components/BlockDropperComponent.h"
 
-EntityBuilder<SpeciesIdentity<Species::PLANT>> BlockoLifeWorldBuilder::plantBuilder;
-EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> BlockoLifeWorldBuilder::herbivoreBuilder;
-EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> BlockoLifeWorldBuilder::carnivoreBuilder;
+EntityBuilder<SpeciesIdentity<Species::PLANT>> BlockoLifeWorldBuilder::m_PlantBuilder;
+EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> BlockoLifeWorldBuilder::m_HerbivoreBuilder;
+EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> BlockoLifeWorldBuilder::m_CarnivoreBuilder;
 
 std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {	
 	// LOAD RESOURCES
 	// TODO resource loader system should load separately and more automated,
 	// but we'd need to take the res IDs into the entity builders via metadata?
-	plantBuilder.LoadResources(*renderMan);
-	herbivoreBuilder.LoadResources(*renderMan);
-	carnivoreBuilder.LoadResources(*renderMan);
+	m_PlantBuilder.LoadResources(*renderMan);
+	m_HerbivoreBuilder.LoadResources(*renderMan);
+	m_CarnivoreBuilder.LoadResources(*renderMan);
 
 	// BUILD WORLD
 	std::shared_ptr<World> world = std::make_shared<World>();
@@ -62,6 +64,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->RegisterComponent<SpeciesComponent>();
 	world->RegisterComponent<HealthComponent>();
 	world->RegisterComponent<Camera2DComponent>();
+	world->RegisterComponent<BlockDropperComponent>();
 
 	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
@@ -73,6 +76,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->RegisterSystem<CreatureSystem>()->Init(renderInit);
 	world->RegisterSystem<SDLInputSystem>()->Init();
 	world->RegisterSystem<Camera2DSystem>()->Init(renderInit);
+	world->RegisterSystem<BlockDropperSystem>()->Init(renderInit);
 
 	// Create GLOBAL components
 	// TODO FIXME HACK worakround for bug when removing entity 0 since the global components are stored in the same place!
@@ -87,6 +91,8 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	EntityID playerEntity = world->CreateEntity();
 	world->AddComponent<KBInputComponent>(playerEntity);
 	world->AddComponent<PadInputComponent>(playerEntity);
+	world->AddComponent<GridTransformComponent>(playerEntity, {{0, 0}});
+	world->AddComponent<BlockDropperComponent>(playerEntity);
 
 	// Create creature sprites
 	static constexpr bool RANDOM_PLANTS = true;
@@ -103,25 +109,25 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 				if (spawnRoll < RANDOM_PLANTS_PROBABILITY_PERCENT)
 				{
 					//createGridSprite(*world, resID_plant, { x, y }, Species::PLANT);
-					plantBuilder.Build(*world, { x, y });
+					m_PlantBuilder.Build(*world, { x, y });
 				}
 			}
 		}
 	}
 	else
 	{
-		plantBuilder.Build(*world, { 5, 4 });
-		plantBuilder.Build(*world, { 5, 5 });
-		plantBuilder.Build(*world, { 6, 5 });
-		plantBuilder.Build(*world, { 6, 6 });
-		plantBuilder.Build(*world, { 5, 6 });
-		plantBuilder.Build(*world, { 6, 7 });
+		m_PlantBuilder.Build(*world, { 5, 4 });
+		m_PlantBuilder.Build(*world, { 5, 5 });
+		m_PlantBuilder.Build(*world, { 6, 5 });
+		m_PlantBuilder.Build(*world, { 6, 6 });
+		m_PlantBuilder.Build(*world, { 5, 6 });
+		m_PlantBuilder.Build(*world, { 6, 7 });
 	}
 
-	herbivoreBuilder.Build(*world, { 5, 21 });
-	herbivoreBuilder.Build(*world, { 8, 21 });
+	m_HerbivoreBuilder.Build(*world, { 5, 21 });
+	m_HerbivoreBuilder.Build(*world, { 8, 21 });
 
-	carnivoreBuilder.Build(*world, { 20, 22 });
+	m_CarnivoreBuilder.Build(*world, { 20, 22 });
 
 	return world;
 }

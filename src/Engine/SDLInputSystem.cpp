@@ -66,16 +66,19 @@ void SDLInputSystem::Update(float deltaSecs)
 		}
 		if (pad != nullptr)
 		{
+		
+			padControl.m_PrevBtnState = padControl.m_CurrBtnState;
+			padControl.m_CurrBtnState.reset();
 
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_UP, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_DOWN, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_LEFT, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_RIGHT, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
+			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_UP, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_UP));
+			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_DOWN, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_DOWN));
+			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_LEFT, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT));
+			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_DPAD_RIGHT, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT));
 
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_A, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_B, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_X, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X));
-			padControl.m_BtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_Y, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y));
+			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_A, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_A));
+			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_B, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_B));
+			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_X, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X));
+			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_Y, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y));
 
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_X] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_Y] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);
@@ -123,9 +126,11 @@ void SDLInputSystem::Update(float deltaSecs)
 			SDL_SCANCODE_Z,			// KEY_Z
 		};
 
+		kbControl.m_PrevState = kbControl.m_CurrState;
+
 		for (size_t key = 0; key < (size_t)KB_KEY::KEY_MAX; ++key)
 		{
-			kbControl.m_State.set((size_t)key, (bool)keystate[KB_KEY_TO_SDL_SCANCODE[key]]);
+			kbControl.m_CurrState.set((size_t)key, (bool)keystate[KB_KEY_TO_SDL_SCANCODE[key]]);
 		}
 	}
 }

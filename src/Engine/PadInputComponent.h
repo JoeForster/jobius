@@ -44,10 +44,17 @@ struct PadInputComponent
 	PadInputComponent(int padIndex): m_PadIndex(padIndex) {}
 
 	int m_PadIndex = -1;
-	std::bitset<NUM_GAMEPAD_BTNS> m_BtnState;
+	std::bitset<NUM_GAMEPAD_BTNS> m_PrevBtnState;
+	std::bitset<NUM_GAMEPAD_BTNS> m_CurrBtnState;
 	float m_AxisState [NUM_GAMEPAD_AXES] = {};
 
 	bool IsValid() const { return (m_PadIndex >= 0); }
-	bool IsPressed(GAMEPAD_BTN btn) const { assert(btn < GAMEPAD_BTN::BTN_MAX); return m_BtnState[(size_t)btn]; }
+	bool WasJustPressed(GAMEPAD_BTN btn) const { assert(btn < GAMEPAD_BTN::BTN_MAX); return m_CurrBtnState[(size_t)btn] && !m_PrevBtnState[(size_t)btn]; }
+	bool WasJustReleased(GAMEPAD_BTN btn) const { assert(btn < GAMEPAD_BTN::BTN_MAX); return !m_CurrBtnState[(size_t)btn] && m_PrevBtnState[(size_t)btn]; }
+	bool IsPressed(GAMEPAD_BTN btn) const { assert(btn < GAMEPAD_BTN::BTN_MAX); return m_CurrBtnState[(size_t)btn]; }
 	float GetAxis(GAMEPAD_AXIS axis) const { assert(axis < GAMEPAD_AXIS::AXIS_MAX); return m_AxisState[(size_t)axis]; }
+
+	bool WasJustPressed(KB_KEY key) const { assert(key < KB_KEY::KEY_MAX); return m_CurrBtnState[(size_t)key] && !m_PrevBtnState[(size_t)key]; }
+	bool WasJustReleased(KB_KEY key) const { assert(key < KB_KEY::KEY_MAX); return !m_CurrBtnState[(size_t)key] && m_PrevBtnState[(size_t)key]; }
+	bool IsPressed(KB_KEY key) const { assert(key < KB_KEY::KEY_MAX); return m_CurrBtnState[(size_t)key]; }
 };

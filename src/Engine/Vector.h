@@ -178,6 +178,15 @@ struct Vector2i
 		Vector2i v {x + other.x, y + other.y};
 		return v;
 	}
+	
+	bool operator==(const Vector2i& rVec) const
+	{
+		return (x == rVec.x && y == rVec.y);
+	}
+	bool operator!=(const Vector2i& rVec) const
+	{
+		return (x != rVec.x || y != rVec.y);
+	}
 
 	bool operator>(const Vector2i& rVec) const
 	{
@@ -249,8 +258,14 @@ struct Rect2i
 
 struct Colour4i
 {
+
 	uint8_t r;
 	uint8_t g;
 	uint8_t b;
 	uint8_t a;
 };
+
+static constexpr Colour4i RED = { 255, 0, 0, 255 };
+static constexpr Colour4i GREEN = { 0, 255, 0, 255 };
+static constexpr Colour4i BLUE = { 0, 0, 255, 255 };
+static constexpr Colour4i WHITE = { 255, 255, 255, 255 };

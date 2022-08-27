@@ -23,6 +23,7 @@ enum class ComponentType
 	// TODO: Game-specific components below, requires a better system to keep them in game code
 	CT_BL_SPECIES,
 	CT_BL_HEALTH,
+	CT_BL_DROPPER,
 	CT_MAX
 };
 

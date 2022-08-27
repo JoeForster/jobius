@@ -24,7 +24,7 @@ struct Rect2f;
 class SDLRenderManager
 {
 public:
-	static constexpr Colour4i DEFAULT_LINE_COLOUR { 0, 255, 0, 255 };
+	static constexpr Colour4i DEFAULT_LINE_COLOUR = GREEN;
 
 	static std::shared_ptr<SDLRenderManager> Create(SDL_Window* window, SDL_Renderer* renderer);
 

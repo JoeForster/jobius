@@ -22,6 +22,7 @@ enum class SystemType
 	// TODO: Game-specific components below, requires a better system to keep them in game code
 	ST_BL_GAMEOFLIFE,
 	ST_BL_CREATURE,
+	ST_BL_BLOCKDROPPER,
 	ST_MAX
 };
 

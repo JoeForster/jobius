@@ -48,7 +48,10 @@ struct KBInputComponent
 
 	KBInputComponent() {}
 
-	std::bitset<NUM_KB_KEYS> m_State;
+	std::bitset<NUM_KB_KEYS> m_PrevState;
+	std::bitset<NUM_KB_KEYS> m_CurrState;
 
-	bool IsPressed(KB_KEY key) const { assert(key < KB_KEY::KEY_MAX); return m_State[(size_t)key]; }
+	bool WasJustPressed(KB_KEY key) const { assert(key < KB_KEY::KEY_MAX); return m_CurrState[(size_t)key] && !m_PrevState[(size_t)key]; }
+	bool WasJustReleased(KB_KEY key) const { assert(key < KB_KEY::KEY_MAX); return !m_CurrState[(size_t)key] && m_PrevState[(size_t)key]; }
+	bool IsPressed(KB_KEY key) const { assert(key < KB_KEY::KEY_MAX); return m_CurrState[(size_t)key]; }
 };

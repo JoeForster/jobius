@@ -7,7 +7,6 @@
 
 #include "Vector.h"
 
-#include "SpriteComponent.h"
 #include "GridTransformComponent.h"
 #include "Components/SpeciesComponent.h"
 #include "Components/HealthComponent.h"
@@ -15,6 +14,8 @@
 #include "World.h"
 #include "SDLRenderManager.h"
 #include "Coordinates.h"
+
+#include "BlockoLifeWorldBuilder.h"
 
 constexpr bool DESTROY_PLANT_ON_EATEN = false;
 
@@ -385,25 +386,17 @@ void GameOfLifeSystem::Tick()
 				assert(cache.species == Species::SPECIES_COUNT);
 				if (cache.neighbourHealthTotals[(int)Species::PLANT] == 3)
 				{
-					// TODO this duplicates creation logic in BlockoLifeWorldBuilder.cpp
 					EntityID parent = cache.parentEntityIDs[(int)Species::PLANT];
 					assert(parent != INVALID_ENTITY_ID);
 					const Vector2i& parentPos = m_ParentWorld->GetComponent<GridTransformComponent>(parent).m_Pos;
-					ResourceID parentSprite = m_ParentWorld->GetComponent<SpriteComponent>(parent).m_SpriteID;
 					Species parentSpecies = m_ParentWorld->GetComponent<SpeciesComponent>(parent).m_Species;
-					EntityID newborn = m_ParentWorld->CreateEntity();
-
-					const GridTransformComponent t(Vector2i(x, y));
-
-					printf("Entity %u (species=%d sprite=%zu) at (%d, %d) birthing new entity %u at (%d, %d)\n",
-						parent, parentSpecies, parentSprite, parentPos.x, parentPos.y, newborn, x, y);
-					assert(parentSprite != ResourceID_Invalid);
 					assert(parentSpecies == Species::PLANT);
 
-					m_ParentWorld->AddComponent<GridTransformComponent>(newborn, t);
-					m_ParentWorld->AddComponent<SpriteComponent>(newborn, parentSprite);
-					m_ParentWorld->AddComponent<SpeciesComponent>(newborn, parentSpecies);
-					m_ParentWorld->AddComponent<HealthComponent>(newborn, { 1 });
+					const EntityID newborn = BlockoLifeWorldBuilder::BuildEntity(*m_ParentWorld, parentSpecies, {x, y});
+					assert(newborn != INVALID_ENTITY_ID);
+
+					printf("Entity %u (species=%d) at (%d, %d) birthed new entity %u at (%d, %d)\n",
+						parent, parentSpecies, parentPos.x, parentPos.y, newborn, x, y);
 				}
 			}
 		}
