@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "System.h"
 
 class SpriteRenderSystem : public System
