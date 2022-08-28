@@ -5,7 +5,6 @@
 #include "GridTransformComponent.h"
 #include "SpriteComponent.h"
 #include "SDLRenderManager.h"
-#include "Coordinates.h"
 
 #define DEBUG_DRAW_GRID_ENABLED 0
 
@@ -33,7 +32,8 @@ void GridSpriteRenderSystem::Render_Main()
 	{
 		auto& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		auto& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
-		m_RenderMan->DrawSprite(r.m_SpriteID, r.m_TextureAlpha, gridWorld.GridToScreen(t.m_Pos));
+		const auto spritePos = gridWorld.GridToScreen(*m_ParentWorld, t.m_Pos);
+		m_RenderMan->DrawSprite(r.m_SpriteID, r.m_TextureAlpha, spritePos);
 	}
 }
 

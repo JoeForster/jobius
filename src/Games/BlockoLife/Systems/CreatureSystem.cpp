@@ -6,7 +6,6 @@
 #include "Vector.h"
 #include "SDLRenderManager.h"
 #include "World.h"
-#include "Coordinates.h"
 
 #include "GridWorldComponent.h"
 #include "GridTransformComponent.h"
@@ -71,7 +70,7 @@ void CreatureSystem::Render_Main()
 
 		//auto& health = m_ParentWorld->GetComponent<HealthComponent>(e);
 		// TODO placeholder doesn't scale yet and needs render support for the filled rect call
-		Vector2i screenPos = gridWorld.GridToScreen(transform.m_Pos);
+		Vector2i screenPos = gridWorld.GridToScreen(*m_ParentWorld, transform.m_Pos);
 		const int width = (int)(gridWorld.m_GridSize * health.GetHealthProportion());
 		const Vector2i topLeft { screenPos.x, screenPos.y };
 		const Vector2i bottomRight { screenPos.x+width, screenPos.y+4 };

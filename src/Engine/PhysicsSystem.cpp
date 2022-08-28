@@ -11,7 +11,6 @@
 
 #include "World.h"
 #include "SDLRenderManager.h"
-#include "Coordinates.h"
 
 void PhysicsSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -89,6 +88,6 @@ void PhysicsSystem::Render_Debug()
 
 		m_RenderMan->DrawText(
 			std::format("{:.2f}({}), {:.2f}({})", rb.m_Vel.x, gridCoords.x, rb.m_Vel.y, gridCoords.y).c_str(),
-			dt.m_ResID, WorldToScreen(t.m_Pos));
+			dt.m_ResID, gridWorld.WorldToScreen(*m_ParentWorld, t.m_Pos));
 	}
 }

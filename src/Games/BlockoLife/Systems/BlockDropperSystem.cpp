@@ -102,7 +102,7 @@ void BlockDropperSystem::Render_Main()
 		auto& transform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 
 		// TODO support for thicker selection box, or transparent graphic?
-		Vector2i screenPos = gridWorld.GridToScreen(transform.m_Pos);
+		Vector2i screenPos = gridWorld.GridToScreen(*m_ParentWorld, transform.m_Pos);
 		const int width = gridWorld.m_GridSize;
 		const Vector2i topLeft { screenPos.x, screenPos.y };
 		const Vector2i bottomRight { screenPos.x+gridWorld.m_GridSize, screenPos.y+gridWorld.m_GridSize };

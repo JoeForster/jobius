@@ -6,7 +6,6 @@
 #include "GridWorldComponent.h"
 
 #include "World.h"
-#include "Coordinates.h"
 #include "SDLRenderManager.h"
 
 void PlaneCollisionSystem::Init(const SystemInitialiser& initialiser)

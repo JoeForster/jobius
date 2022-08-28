@@ -4,13 +4,10 @@
 #include <string>
 
 #include "KBInputComponent.h"
-//#include "PadInputComponent.h"
 #include "Camera2DComponent.h"
-//#include "DebugTextComponent.h"
 
 #include "World.h"
 #include "SDLRenderManager.h"
-#include "Coordinates.h"
 
 void Camera2DSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -85,6 +82,6 @@ void Camera2DSystem::Render_Main()
 {
 	auto& cameraComp = m_ParentWorld->GetGlobalComponent<Camera2DComponent>();
 
-	m_RenderMan->SetOffset(cameraComp.m_CameraPos);
+	//m_RenderMan->SetOffset(cameraComp.m_CameraPos);
 	m_RenderMan->SetZoom(cameraComp.m_CameraZoom);
 }

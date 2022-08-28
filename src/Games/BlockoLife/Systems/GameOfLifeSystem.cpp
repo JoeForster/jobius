@@ -13,7 +13,6 @@
 
 #include "World.h"
 #include "SDLRenderManager.h"
-#include "Coordinates.h"
 
 #include "BlockoLifeWorldBuilder.h"
 

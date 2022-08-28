@@ -8,10 +8,10 @@
 #include "PadInputComponent.h"
 #include "RigidBodyComponent.h"
 #include "DebugTextComponent.h"
+#include "GridWorldComponent.h"
 
 #include "World.h"
 #include "SDLRenderManager.h"
-#include "Coordinates.h"
 
 void PlayerControlSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -77,6 +77,8 @@ void PlayerControlSystem::Update(float deltaSecs)
 
 void PlayerControlSystem::Render_Debug()
 {
+	auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
+
 	for (EntityID e : mEntities)
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
@@ -84,12 +86,13 @@ void PlayerControlSystem::Render_Debug()
 		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 
 		static Vector2i offset (0, 20); 
+		const auto drawPos = gridWorld.WorldToScreen(*m_ParentWorld, t.m_Pos);
 		m_RenderMan->DrawText(
 			std::format("{:.2f}, {:.2f}, {:.2f}, {:.2f}",
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_LS_X),
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y),
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_RS_X),
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_RS_Y)).c_str(),
-			dt.m_ResID, WorldToScreen(t.m_Pos) + offset);
+			dt.m_ResID, drawPos + offset);
 	}
 }

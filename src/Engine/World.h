@@ -90,7 +90,6 @@ public:
 	template<typename T>
 	T& GetGlobalComponent()
 	{
-		// Add a component to the array for an entity
 		assert(m_ComponentManager.GetComponentCount<T>() > 0 && "GetGlobalComponent called for unset component");
 		assert(m_ComponentManager.GetComponentCount<T>() == 1 && "GetGlobalComponent called for component with multiple entries");
 		return GetComponent<T>(0);
