@@ -33,7 +33,7 @@ void GridSpriteRenderSystem::Render_Main()
 	{
 		auto& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		auto& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
-		m_RenderMan->Draw(r.m_SpriteID, gridWorld.GridToScreen(t.m_Pos));
+		m_RenderMan->DrawSprite(r.m_SpriteID, r.m_TextureAlpha, gridWorld.GridToScreen(t.m_Pos));
 	}
 }
 

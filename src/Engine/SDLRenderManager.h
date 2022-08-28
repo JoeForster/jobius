@@ -58,7 +58,7 @@ public:
 	void SetZoom(float zoom);
 
 	// Draw image based on its ID returned by LoadImage
-	void Draw(ResourceID imageID, Vector2i screenCoords = Vector2i::ZERO);
+	void DrawSprite(ResourceID imageID, uint8_t alpha = 255, Vector2i screenCoords = Vector2i::ZERO);
 	void DrawText(ResourceID textID, Vector2i screenCoords = Vector2i::ZERO);
 	// Helper to both prepare and draw text in one
 	bool DrawText(const char* text, ResourceID& textResID, Vector2i screenCoords = Vector2i::ZERO, ResourceID fontID = ResourceID_Invalid);

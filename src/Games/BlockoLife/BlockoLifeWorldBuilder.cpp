@@ -40,9 +40,11 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	// LOAD RESOURCES
 	// TODO resource loader system should load separately and more automated,
 	// but we'd need to take the res IDs into the entity builders via metadata?
-	m_PlantBuilder.LoadResources(*renderMan);
-	m_HerbivoreBuilder.LoadResources(*renderMan);
-	m_CarnivoreBuilder.LoadResources(*renderMan);
+	ResourceID creatureSprites[SpeciesCount]{};
+	creatureSprites[to_underlying(Species::PLANT)] = m_PlantBuilder.LoadResources(*renderMan);
+	creatureSprites[to_underlying(Species::HERBIVORE)] = m_HerbivoreBuilder.LoadResources(*renderMan);
+	creatureSprites[to_underlying(Species::CARNIVORE)] = m_CarnivoreBuilder.LoadResources(*renderMan);
+	static_assert(SpeciesCount == 3, "Needs updating");
 
 	// BUILD WORLD
 	std::shared_ptr<World> world = std::make_shared<World>();
@@ -88,11 +90,18 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 
 	// Create player (just for camera for now)
 	// TODO use EntityBuilder
+	const Species dropperSpecies = Species::PLANT;
+
 	EntityID playerEntity = world->CreateEntity();
 	world->AddComponent<KBInputComponent>(playerEntity);
 	world->AddComponent<PadInputComponent>(playerEntity);
 	world->AddComponent<GridTransformComponent>(playerEntity, {{0, 0}});
-	world->AddComponent<BlockDropperComponent>(playerEntity);
+	world->AddComponent<BlockDropperComponent>(playerEntity, {dropperSpecies});
+	// TODO test hack - needs to be switchable
+	const SpriteComponent dropperSprite (
+		creatureSprites[to_underlying(dropperSpecies)],
+		100);
+	world->AddComponent<SpriteComponent>(playerEntity, dropperSprite);
 
 	// Create creature sprites
 	static constexpr bool RANDOM_PLANTS = true;
@@ -108,7 +117,6 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 				int spawnRoll = rand() % 100;
 				if (spawnRoll < RANDOM_PLANTS_PROBABILITY_PERCENT)
 				{
-					//createGridSprite(*world, resID_plant, { x, y }, Species::PLANT);
 					m_PlantBuilder.Build(*world, { x, y });
 				}
 			}

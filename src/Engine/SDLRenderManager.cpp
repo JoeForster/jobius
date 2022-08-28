@@ -127,7 +127,7 @@ void SDLRenderManager::SetZoom(float zoom)
 	SDL_RenderSetScale(m_Renderer, zoom, zoom);
 }
 
-void SDLRenderManager::Draw(ResourceID imageID, Vector2i screenCoords)
+void SDLRenderManager::DrawSprite(ResourceID imageID, uint8_t alpha, Vector2i screenCoords)
 {
 	// Basic checks (but assume vectors are same size, which is verified on load)
 	assert(imageID != ResourceID_Invalid);
@@ -148,6 +148,8 @@ void SDLRenderManager::Draw(ResourceID imageID, Vector2i screenCoords)
 	posRect.w = sizeRect->w;
 	posRect.h = sizeRect->h;
 
+
+	SDL_SetTextureAlphaMod(imageTex, alpha);
 	SDL_RenderCopy(m_Renderer, imageTex, sizeRect, &posRect);
 }
 

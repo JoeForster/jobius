@@ -10,7 +10,7 @@
 class IEntityBuilder : public std::enable_shared_from_this<World>
 {
 public:
-	virtual void LoadResources(SDLRenderManager& renderMan) = 0;
+	virtual ResourceID LoadResources(SDLRenderManager& renderMan) = 0;
 	virtual EntityID Build(World& world, Vector2i pos) = 0;
 };
 
@@ -19,7 +19,7 @@ template<class T>
 class EntityBuilder : public IEntityBuilder
 {
 public:
-	void LoadResources(SDLRenderManager& renderMan) final
+	static ResourceID LoadCreatureSprite(SDLRenderManager& renderMan, Species species)
 	{
 		static constexpr const char* resourcePaths[SpeciesCount] {
 			"assets/sprites/plant_block_32.png",
@@ -27,8 +27,14 @@ public:
 			"assets/sprites/carnivore_32.png"
 		};
 
-		m_ResourceID = renderMan.LoadTexture(resourcePaths[to_underlying(T::value)]);
+		return renderMan.LoadTexture(resourcePaths[to_underlying(species)]);
+	}
+
+	ResourceID LoadResources(SDLRenderManager& renderMan) final
+	{
+		m_ResourceID = LoadCreatureSprite(renderMan, T::value);
 		assert(m_ResourceID != ResourceID_Invalid);
+		return m_ResourceID;
 	}
 	
 	EntityID Build(World& world, Vector2i pos) final { return BuildImpl(world, pos); }

@@ -28,6 +28,6 @@ void SpriteRenderSystem::Render_Main()
 	{
 		TransformComponent& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		SpriteComponent& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
-		m_RenderMan->Draw(r.m_SpriteID, WorldToScreen(t.m_Pos));
+		m_RenderMan->DrawSprite(r.m_SpriteID, r.m_TextureAlpha, WorldToScreen(t.m_Pos));
 	}
 }
