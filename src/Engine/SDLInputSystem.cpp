@@ -1,10 +1,14 @@
 #include "SDLInputSystem.h"
 
-#include "KBInputComponent.h"
-#include "PadInputComponent.h"
+#include <array>
+#include "SDL.h"
+
+#include "Enum.h"
 #include "World.h"
 
-#include "SDL.h"
+#include "KBInputComponent.h"
+#include "PadInputComponent.h"
+
 
 
 void SDLInputSystem::Init(const SystemInitialiser& initialiser)
@@ -90,13 +94,14 @@ void SDLInputSystem::Update(float deltaSecs)
 		const Uint8* keystate = SDL_GetKeyboardState(NULL);
 		auto& kbControl = m_ParentWorld->GetComponent<KBInputComponent>(e);
 
-		static constexpr SDL_Scancode KB_KEY_TO_SDL_SCANCODE[] =
+		static constexpr auto KB_KEY_TO_SDL_SCANCODE = std::to_array<SDL_Scancode>(
 		{
 			SDL_SCANCODE_UP,		// KEY_UP
 			SDL_SCANCODE_DOWN,		// KEY_DOWN
 			SDL_SCANCODE_LEFT,		// KEY_LEFT
 			SDL_SCANCODE_RIGHT,		// KEY_RIGHT
 			SDL_SCANCODE_SPACE,		// KEY_SPACE
+			SDL_SCANCODE_RETURN,	// KEY_RETURN
 
 			SDL_SCANCODE_A,			// KEY_A
 			SDL_SCANCODE_B,			// KEY_B
@@ -124,7 +129,8 @@ void SDLInputSystem::Update(float deltaSecs)
 			SDL_SCANCODE_X,			// KEY_X
 			SDL_SCANCODE_Y,			// KEY_Y
 			SDL_SCANCODE_Z,			// KEY_Z
-		};
+		});
+		static_assert(KB_KEY_TO_SDL_SCANCODE.size() == NUM_KB_KEYS, "KB_KEY_TO_SDL_SCANCODE needs updating!");
 
 		kbControl.m_PrevState = kbControl.m_CurrState;
 

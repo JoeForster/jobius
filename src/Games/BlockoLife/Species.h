@@ -1,13 +1,8 @@
 #pragma once
 
-// Get ready for some C++ enum clunk...
+#include "Enum.h"
 
-// TODO ENUM HELPERS make separate
-template <typename E>
-constexpr auto to_underlying(E e) noexcept
-{
-    return static_cast<std::underlying_type_t<E>>(e);
-}
+// Get ready for some C++ enum clunk...
 
 enum class Species
 {

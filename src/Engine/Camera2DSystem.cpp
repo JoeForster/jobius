@@ -42,7 +42,7 @@ void Camera2DSystem::Update(float deltaSecs)
 		
 		auto& cameraComp = m_ParentWorld->GetGlobalComponent<Camera2DComponent>();
 		
-		if (kbInput.IsPressed(KB_KEY::KEY_SPACE))
+		if (kbInput.IsPressed(KB_KEY::KEY_RETURN))
 		{
 			cameraComp.m_CameraPos = Vector2f::ZERO;
 			cameraComp.m_CameraZoom = 1.0f;

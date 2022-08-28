@@ -9,6 +9,7 @@ enum class KB_KEY
 	KEY_LEFT,
 	KEY_RIGHT,
 	KEY_SPACE,
+	KEY_RETURN,
 
 	KEY_A,
 	KEY_B,
