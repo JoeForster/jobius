@@ -61,7 +61,7 @@ struct CreatureCache
 	bool IsAlive() const { return entityID != INVALID_ENTITY_ID && health > 0; }
 };
 
-enum GridDir
+enum class GridDir
 {
 	N,
 	NE,
@@ -74,10 +74,11 @@ enum GridDir
 
 	COUNT
 };
-static_assert(GridDir::N == 0);
-static_assert(GridDir::COUNT == 8);
+constexpr size_t GridDirCount = to_underlying(GridDir::COUNT);
+static_assert(to_underlying(GridDir::N) == 0);
+static_assert(GridDirCount == 8);
 
-static constexpr Vector2i GridDirToVec[GridDir::COUNT] = {
+static constexpr Vector2i GridDirToVec[GridDirCount] = {
 	{ 0, -1 },		// GridDir::N
 	{ 1, -1 },		// GridDir::NE
 	{ 1,  0 },		// GridDir::E
@@ -88,9 +89,33 @@ static constexpr Vector2i GridDirToVec[GridDir::COUNT] = {
 	{-1, -1 },		// GridDir::NW
 };
 
-uint8_t GameOfLifeSystem::CountNeighbours(Array2D<CreatureCache>& cachedEntities, int x, int y, Species s, EntityID& firstEntityFound)
+static GridDir VecToGridDir(const Vector2i& dirVec)
 {
-	// TODO parentSprite is HACK find better way! Ideally a basic archetype/creation system based on creature type
+	if (dirVec.x < 0)
+	{
+		if (dirVec.y < 0) return GridDir::NW;
+		else if (dirVec.y > 0) return GridDir::SW;
+		else return GridDir::W;
+	}
+	else if (dirVec.x > 0)
+	{
+		if (dirVec.y < 0) return GridDir::NE;
+		else if (dirVec.y > 0) return GridDir::SE;
+		else return GridDir::E;
+	}
+	else// if (dirVec.x == 0)
+	{
+		assert(dirVec.x == 0);
+		if (dirVec.y < 0) return GridDir::N;
+		else if (dirVec.y > 0) return GridDir::S;
+	}
+
+	assert(dirVec == Vector2i::ZERO);
+	return GridDir::COUNT; // COUNT indicates same position
+}
+
+uint8_t GameOfLifeSystem::CountNeighbours(Array2D<CreatureCache>& cachedEntities, int x, int y, Species s)
+{
 	uint8_t n = 0;
 	for (const Vector2i& dirVec : GridDirToVec)
 	{
@@ -98,10 +123,6 @@ uint8_t GameOfLifeSystem::CountNeighbours(Array2D<CreatureCache>& cachedEntities
 		CreatureCache& cacheAt = cachedEntities.At(checkPos);
 		if (cacheAt.species == s)
 		{
-			if (firstEntityFound == INVALID_ENTITY_ID)
-			{
-				firstEntityFound = cacheAt.entityID;
-			}
 			++n;
 		}
 	}
@@ -109,21 +130,25 @@ uint8_t GameOfLifeSystem::CountNeighbours(Array2D<CreatureCache>& cachedEntities
 };
 
 // TODO temp splitting into these functions - needs better structure
-void GameOfLifeSystem::Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove)
+// Lots of duplication and ideally each should be a separate system that just sets a "move intent"
+// and central place does the actual moving to resolve blockage etc?
+
+void GameOfLifeSystem::Tick_Move_Herbivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove)
 {
 	const EntityID movingEntity = cache.entityID;
+	assert(cache.species == Species::HERBIVORE);
 
-	printf("Move entity %d\n", movingEntity);
+	printf("Move HERBIVORE %d\n", movingEntity);
 	auto& health = m_ParentWorld->GetComponent<HealthComponent>(movingEntity);
 
-	GridDir possibleDirs[GridDir::COUNT];
+	GridDir possibleDirs[GridDirCount];
 	int numPossibleDirs = 0;
 
 	bool didEat = false;
 
 	int mostPlants = 0;
-	GridDir bestDir = (GridDir)0;
-	for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
+	int bestDirIndex = 0;
+	for (int dir = 0; dir < GridDirCount; ++dir)
 	{
 		const Vector2i checkPos = Vector2i(x, y) + GridDirToVec[dir];
 
@@ -139,7 +164,7 @@ void GameOfLifeSystem::Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, Cr
 				health.ModHealth(healthGain);
 				const int healthAfter = health.m_Health;
 
-				printf("Entity %d at (%d, %d) eat plant %d at (%d, %d)! Health %d -> %d\n",
+				printf("Entity[HERBIVORE] %d at (%d, %d) eat plant %d at (%d, %d)! Health %d -> %d\n",
 					movingEntity, x, y, adjacentCreature.entityID, checkPos.x, checkPos.y, healthBefore, healthAfter);
 
 				if (DESTROY_PLANT_ON_EATEN)
@@ -153,13 +178,12 @@ void GameOfLifeSystem::Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, Cr
 		}
 		else
 		{
-			possibleDirs[numPossibleDirs++] = dir;
-			EntityID foundEntity = INVALID_ENTITY_ID;
-			int numPlants = CountNeighbours(cachedEntities, x, y-1, Species::PLANT, foundEntity);
+			possibleDirs[numPossibleDirs++] = (GridDir)dir;
+			int numPlants = CountNeighbours(cachedEntities, x, y-1, Species::PLANT);
 			if (numPlants > mostPlants)
 			{
 				mostPlants = numPlants;
-				bestDir = (GridDir)dir;
+				bestDirIndex = dir;
 			}
 		}
 	}
@@ -170,11 +194,11 @@ void GameOfLifeSystem::Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, Cr
 		const int healthBefore = health.m_Health;
 		health.ModHealth(healthLoss);
 		const int healthAfter = health.m_Health;
-		printf("Entity %d at (%d, %d) didn't eat - Health %d -> %d\n",
+		printf("Entity[HERBIVORE] %d at (%d, %d) didn't eat - Health %d -> %d\n",
 			movingEntity, x, y, healthBefore, healthAfter);
 		if (healthAfter == 0)
 		{
-			printf("Entity %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
+			printf("Entity[HERBIVORE] %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
 				movingEntity, x, y);
 			entitiesToRemove.insert(movingEntity);
 			cache = CreatureCache();
@@ -189,16 +213,15 @@ void GameOfLifeSystem::Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, Cr
 	}
 	else if (mostPlants == 0)
 	{
-		const int bestDirIndex = rand() % numPossibleDirs;
-		bestDir = possibleDirs[bestDirIndex];
-		printf("Entity %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, (int)bestDir);
+		const int randomDirIndex = rand() % numPossibleDirs;
+		bestDirIndex = to_underlying(possibleDirs[randomDirIndex]);
+		printf("Entity[HERBIVORE] %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, bestDirIndex);
  	}
 	else
 	{
-		printf("Entity %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, (int)bestDir);
+		printf("Entity[HERBIVORE] %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, bestDirIndex);
 	}
-				
-	// TODO bug here - herbivores unexpectedly multiply (bad move?), and then cache position doesn't match!
+
 	auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
 	if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
 	{
@@ -206,7 +229,7 @@ void GameOfLifeSystem::Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, Cr
 			movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
 		assert(false);
 	}
-	const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDir];
+	const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDirIndex];
 
 	auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
 
@@ -216,6 +239,130 @@ void GameOfLifeSystem::Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, Cr
 	target = cache;
 	cache = CreatureCache();
 	thisTransform.m_Pos = moveIntoPos;
+}
+
+void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove)
+{
+	const EntityID movingEntity = cache.entityID;
+	assert(cache.species == Species::CARNIVORE);
+
+	printf("Move CARNIVORE %d\n", movingEntity);
+	auto& health = m_ParentWorld->GetComponent<HealthComponent>(movingEntity);
+
+	bool didEat = false;
+
+	// TODO more interesting logic for carnivore here - e.g. following trails,
+	// resting when health over threshold, hunting grounds... Good candidate to test behaviour tree?
+
+	// Scan for closest herbivore to eat if health is low enough
+	int closestTargetDist = -1;
+	Vector2i targetPos;
+	if (health.m_Health < health.m_MaxHealth/2)
+	{
+		for (EntityID e : mEntities)
+		{
+			auto& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
+			auto& s = m_ParentWorld->GetComponent<SpeciesComponent>(e);
+			if (s.m_Species == Species::HERBIVORE)
+			{
+				const int thisDist = abs(t.m_Pos.x - x) + abs(t.m_Pos.y - y);
+				if (closestTargetDist == -1 || thisDist < closestTargetDist)
+				{
+					closestTargetDist = thisDist;
+					targetPos = t.m_Pos;
+				}
+			}
+		}
+	}
+
+
+
+
+	// Eat target if close enough
+	GridDir moveDir = GridDir::COUNT;
+	if (closestTargetDist >= 0)
+	{
+		Vector2i posToTarget = targetPos;
+		posToTarget.x -= x;
+		posToTarget.y -= y;
+
+		if (abs(posToTarget.x) <= 1 && abs(posToTarget.y) <= 1)
+		{
+			CreatureCache& adjacentCreature = cachedEntities.At(targetPos.x, targetPos.y);
+			assert (adjacentCreature.species == Species::HERBIVORE);
+			assert (adjacentCreature.entityID != INVALID_ENTITY_ID);
+
+			// EAT if herbivore
+			constexpr int healthGain = 20;
+			const int healthBefore = health.m_Health;
+			health.ModHealth(healthGain);
+			const int healthAfter = health.m_Health;
+
+			printf("Entity[CARNIVORE] %d at (%d, %d) eat HERBIVORE %d at (%d, %d)! Health %d -> %d\n",
+				movingEntity, x, y, adjacentCreature.entityID, targetPos.x, targetPos.y, healthBefore, healthAfter);
+
+			entitiesToRemove.insert(adjacentCreature.entityID);
+			adjacentCreature = CreatureCache();
+
+			didEat = true;
+		}
+		// Otherwise try to move towards the target
+		else
+		{
+			moveDir = VecToGridDir(posToTarget);
+		}
+	}
+
+	if (!didEat)
+	{
+		constexpr int healthLoss = -1;
+		const int healthBefore = health.m_Health;
+		health.ModHealth(healthLoss);
+		const int healthAfter = health.m_Health;
+		printf("Entity[CARNIVORE] %d at (%d, %d) didn't eat - Health %d -> %d\n",
+			movingEntity, x, y, healthBefore, healthAfter);
+		if (healthAfter == 0)
+		{
+			printf("Entity[CARNIVORE] %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
+				movingEntity, x, y);
+			entitiesToRemove.insert(movingEntity);
+			cache = CreatureCache();
+			return; // TODO smelly late early return
+		}
+	}
+
+	if (moveDir == GridDir::COUNT)
+	{
+		printf("Entity[CARNIVORE] %d at (%d, %d) not moving\n", movingEntity, x, y);
+	}
+	else
+	{
+		printf("Entity[CARNIVORE] %d at (%d, %d) Move dir %d\n", movingEntity, x, y, moveDir);
+
+		auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
+		if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
+		{
+			printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
+				movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
+			assert(false);
+		}
+		const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[(int)moveDir];
+
+		auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
+		if (target.entityID == INVALID_ENTITY_ID)
+		{
+			// UGH we have two places where this info lives due to the cache - this can be better
+			// once we use the actual component storage rather than separate cache.
+			//assert(!target.beingMovedInto);
+			target = cache;
+			cache = CreatureCache();
+			thisTransform.m_Pos = moveIntoPos;
+		}
+		else
+		{
+			printf("Entity[CARNIVORE] %d at (%d, %d) BLOCKED moving into (%d, %d)\n", movingEntity, x, y, moveIntoPos.x, moveIntoPos.y);
+		}
+	}
 }
 
 // NAIVE implementation of Conway's Game of Life in ECS (but not really in ECS)
@@ -259,7 +406,6 @@ void GameOfLifeSystem::Tick()
 	size_t num_rows = (size_t)(limits.max.y - limits.min.y) + 1;
 	size_t num_columns = (size_t)(limits.max.x - limits.min.x) + 1;
 	size_t num_cells = num_rows * num_columns;	
-	// TODO BUG HERE?
 	size_t x_offset = (size_t)(0 - limits.min.x);
 	size_t y_offset = (size_t)(0 - limits.min.y);
 
@@ -298,10 +444,17 @@ void GameOfLifeSystem::Tick()
 		assert(cache.entityID == movingEntity);
 		assert(cache.IsAlive()); // No living entities should have been left between ticks!
 
-		// HACK herbivore behaviour should be in its own system
-		if (cache.species == Species::HERBIVORE)
+		// HACK species-specific behaviour should be in its own system
+		switch (cache.species)
 		{
-			Tick_Herbivore(cachedEntities, cache, x, y, entitiesToRemove);
+			case Species::HERBIVORE:
+				Tick_Move_Herbivore(cachedEntities, cache, x, y, entitiesToRemove);
+				break;
+			case Species::CARNIVORE:
+				Tick_Move_Carnivore(cachedEntities, cache, x, y, entitiesToRemove);
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -315,8 +468,7 @@ void GameOfLifeSystem::Tick()
 		{
 			CreatureCache& creature = cachedEntities.At(x, y);
 			EntityID thisEntity = creature.entityID;
-			EntityID parentEntity = INVALID_ENTITY_ID;
-			uint8_t numPlantNeighbours = CountNeighbours(cachedEntities, x, y, Species::PLANT, parentEntity);
+			uint8_t numPlantNeighbours = CountNeighbours(cachedEntities, x, y, Species::PLANT);
 			//printf("neighbours at (%d, %d): %d\n", x, y, numNeighbours);
 			// Scan neighbour species for reproduction 
 			for (const Vector2i& dirVec : GridDirToVec)

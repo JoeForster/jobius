@@ -71,8 +71,12 @@ private:
 
 	};
 
-	uint8_t CountNeighbours(Array2D<CreatureCache>& cachedEntities, int x, int y, Species s, EntityID& firstEntityFound);
-	void Tick();
-	void Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove);
+	uint8_t CountNeighbours(Array2D<CreatureCache>& cachedEntities, int x, int y, Species s);
 	
+	void Tick_Move_Herbivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove);
+	void Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove);
+	
+	void Tick();
+
+
 };

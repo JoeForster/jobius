@@ -134,8 +134,9 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 
 	m_HerbivoreBuilder.Build(*world, { 5, 21 });
 	m_HerbivoreBuilder.Build(*world, { 8, 21 });
+	m_HerbivoreBuilder.Build(*world, { 9, 22 });
 
-	m_CarnivoreBuilder.Build(*world, { 20, 22 });
+	m_CarnivoreBuilder.Build(*world, { 12, 21 });
 
 	return world;
 }
