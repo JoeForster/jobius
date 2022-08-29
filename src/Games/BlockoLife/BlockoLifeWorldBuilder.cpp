@@ -95,7 +95,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	EntityID playerEntity = world->CreateEntity();
 	world->AddComponent<KBInputComponent>(playerEntity);
 	world->AddComponent<PadInputComponent>(playerEntity);
-	world->AddComponent<GridTransformComponent>(playerEntity, {{0, 0}});
+	world->AddComponent<GridTransformComponent>(playerEntity, {{14, 10}});
 	world->AddComponent<BlockDropperComponent>(playerEntity, {dropperSpecies});
 	// TODO test hack - needs to be switchable
 	const SpriteComponent dropperSprite (

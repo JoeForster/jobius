@@ -48,54 +48,7 @@ void GameOfLifeSystem::Update(float deltaSecs)
 	
 }
 
-// TEMP-ish structure until we decide properly how this data should be stored/cached.
-template<typename T>
-class Array2D
-{
-public:
-	Array2D(size_t width, size_t height, size_t offsetX, size_t offsetY)//, const T& defaultVal)
-	: m_Width(width)
-	, m_Height(height)
-	, m_OffsetX(offsetX)
-	, m_OffsetY(offsetY)
-	{
-		assert(width > 0);
-		assert(height > 0);
-		// TODO: Compiler warning makes no sense?!
-		m_Array = new T[NumCells()];
-		//for (size_t i = 0; i < NumCells(); ++i) m_Array[i] = defaultVal;
-	}
-	~Array2D()
-	{
-		delete[] m_Array;
-	}
 
-    Array2D(const Array2D&) = delete;
-    Array2D& operator=(const Array2D&) = delete;
-    Array2D(Array2D&&) = delete;
-    Array2D& operator=(Array2D&&) = delete;
-
-	inline T& At(int x, int y)
-	{
-		size_t index = (y+m_OffsetY)*m_Width + (x+m_OffsetX);
-		assert(index < NumCells());
-		return m_Array[index];
-	}
-	inline T& At(const Vector2i& p)
-	{
-		return At(p.x, p.y);
-	}
-
-private:
-	inline size_t NumCells() const { return m_Width * m_Height; }
-
-	T* m_Array;
-	size_t m_Width;
-	size_t m_Height;
-	size_t m_OffsetX;
-	size_t m_OffsetY;
-
-};
 
 struct CreatureCache
 {
@@ -134,6 +87,136 @@ static constexpr Vector2i GridDirToVec[GridDir::COUNT] = {
 	{-1,  0 },		// GridDir::W
 	{-1, -1 },		// GridDir::NW
 };
+
+uint8_t GameOfLifeSystem::CountNeighbours(Array2D<CreatureCache>& cachedEntities, int x, int y, Species s, EntityID& firstEntityFound)
+{
+	// TODO parentSprite is HACK find better way! Ideally a basic archetype/creation system based on creature type
+	uint8_t n = 0;
+	for (const Vector2i& dirVec : GridDirToVec)
+	{
+		const Vector2i checkPos = Vector2i(x, y) + dirVec;
+		CreatureCache& cacheAt = cachedEntities.At(checkPos);
+		if (cacheAt.species == s)
+		{
+			if (firstEntityFound == INVALID_ENTITY_ID)
+			{
+				firstEntityFound = cacheAt.entityID;
+			}
+			++n;
+		}
+	}
+	return n;
+};
+
+// TODO temp splitting into these functions - needs better structure
+void GameOfLifeSystem::Tick_Herbivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove)
+{
+	const EntityID movingEntity = cache.entityID;
+
+	printf("Move entity %d\n", movingEntity);
+	auto& health = m_ParentWorld->GetComponent<HealthComponent>(movingEntity);
+
+	GridDir possibleDirs[GridDir::COUNT];
+	int numPossibleDirs = 0;
+
+	bool didEat = false;
+
+	int mostPlants = 0;
+	GridDir bestDir = (GridDir)0;
+	for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
+	{
+		const Vector2i checkPos = Vector2i(x, y) + GridDirToVec[dir];
+
+		CreatureCache& adjacentCreature = cachedEntities.At(checkPos.x, checkPos.y);
+		if (adjacentCreature.entityID != INVALID_ENTITY_ID)
+		{
+			// BLOCKED
+			if (adjacentCreature.species == Species::PLANT)
+			{
+				// EAT if plant
+				constexpr int healthGain = 10;
+				const int healthBefore = health.m_Health;
+				health.ModHealth(healthGain);
+				const int healthAfter = health.m_Health;
+
+				printf("Entity %d at (%d, %d) eat plant %d at (%d, %d)! Health %d -> %d\n",
+					movingEntity, x, y, adjacentCreature.entityID, checkPos.x, checkPos.y, healthBefore, healthAfter);
+
+				if (DESTROY_PLANT_ON_EATEN)
+				{
+					entitiesToRemove.insert(adjacentCreature.entityID);
+					adjacentCreature = CreatureCache();
+				}						
+
+				didEat = true;
+			}
+		}
+		else
+		{
+			possibleDirs[numPossibleDirs++] = dir;
+			EntityID foundEntity = INVALID_ENTITY_ID;
+			int numPlants = CountNeighbours(cachedEntities, x, y-1, Species::PLANT, foundEntity);
+			if (numPlants > mostPlants)
+			{
+				mostPlants = numPlants;
+				bestDir = (GridDir)dir;
+			}
+		}
+	}
+
+	if (!didEat)
+	{
+		constexpr int healthLoss = -1;
+		const int healthBefore = health.m_Health;
+		health.ModHealth(healthLoss);
+		const int healthAfter = health.m_Health;
+		printf("Entity %d at (%d, %d) didn't eat - Health %d -> %d\n",
+			movingEntity, x, y, healthBefore, healthAfter);
+		if (healthAfter == 0)
+		{
+			printf("Entity %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
+				movingEntity, x, y);
+			entitiesToRemove.insert(movingEntity);
+			cache = CreatureCache();
+			return; // TODO smelly late early return
+		}
+	}
+
+	if (numPossibleDirs == 0)
+	{
+		printf("Entity %d at (%d, %d) is BLOCKED!\n", movingEntity, x, y);
+		return; // TODO smelly late early return
+	}
+	else if (mostPlants == 0)
+	{
+		const int bestDirIndex = rand() % numPossibleDirs;
+		bestDir = possibleDirs[bestDirIndex];
+		printf("Entity %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, (int)bestDir);
+ 	}
+	else
+	{
+		printf("Entity %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, (int)bestDir);
+	}
+				
+	// TODO bug here - herbivores unexpectedly multiply (bad move?), and then cache position doesn't match!
+	auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
+	if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
+	{
+		printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
+			movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
+		assert(false);
+	}
+	const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDir];
+
+	auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
+
+	// UGH we have two places where this info lives due to the cache - this can be better
+	// once we use the actual component storage rather than separate cache.
+	//assert(!target.beingMovedInto);
+	target = cache;
+	cache = CreatureCache();
+	thisTransform.m_Pos = moveIntoPos;
+}
 
 // NAIVE implementation of Conway's Game of Life in ECS (but not really in ECS)
 // TODO needs heavy tidy-up
@@ -198,25 +281,6 @@ void GameOfLifeSystem::Tick()
 		cache.health = health.m_Health;;
 	}
 
-	// TODO parentSprite is HACK find better way! Ideally a basic archetype/creation system based on creature type
-	auto countNeighbours = [&](int x, int y, Species s, EntityID& firstEntityFound) {
-		uint8_t n = 0;
-		for (const Vector2i& dirVec : GridDirToVec)
-		{
-			const Vector2i checkPos = Vector2i(x, y) + dirVec;
-			CreatureCache& cacheAt = cachedEntities.At(checkPos);
-			if (cacheAt.species == s)
-			{
-				if (firstEntityFound == INVALID_ENTITY_ID)
-				{
-					firstEntityFound = cacheAt.entityID;
-				}
-				++n;
-			}
-		}
-		return n;
-	};
-
 	std::set<EntityID> entitiesToRemove;
 
 	// Move pass
@@ -237,110 +301,7 @@ void GameOfLifeSystem::Tick()
 		// HACK herbivore behaviour should be in its own system
 		if (cache.species == Species::HERBIVORE)
 		{
-			printf("Move entity %d\n", movingEntity);
-			auto& health = m_ParentWorld->GetComponent<HealthComponent>(movingEntity);
-
-			GridDir possibleDirs[GridDir::COUNT];
-			int numPossibleDirs = 0;
-
-			bool didEat = false;
-
-			int mostPlants = 0;
-			GridDir bestDir = (GridDir)0;
-			for (GridDir dir = (GridDir)0; dir < GridDir::COUNT; dir = (GridDir)( (int)dir+1 ))
-			{
-				const Vector2i checkPos = Vector2i(x, y) + GridDirToVec[dir];
-
-				CreatureCache& adjacentCreature = cachedEntities.At(checkPos.x, checkPos.y);
-				if (adjacentCreature.entityID != INVALID_ENTITY_ID)
-				{
-					// BLOCKED
-					if (adjacentCreature.species == Species::PLANT)
-					{
-						// EAT if plant
-						constexpr int healthGain = 10;
-						const int healthBefore = health.m_Health;
-						health.ModHealth(healthGain);
-						const int healthAfter = health.m_Health;
-
-						printf("Entity %d at (%d, %d) eat plant %d at (%d, %d)! Health %d -> %d\n",
-							movingEntity, x, y, adjacentCreature.entityID, checkPos.x, checkPos.y, healthBefore, healthAfter);
-
-						if (DESTROY_PLANT_ON_EATEN)
-						{
-							entitiesToRemove.insert(adjacentCreature.entityID);
-							adjacentCreature = CreatureCache();
-						}						
-
-						didEat = true;
-					}
-				}
-				else
-				{
-					possibleDirs[numPossibleDirs++] = dir;
-					EntityID foundEntity = INVALID_ENTITY_ID;
-					int numPlants = countNeighbours(x, y-1, Species::PLANT, foundEntity);
-					if (numPlants > mostPlants)
-					{
-						mostPlants = numPlants;
-						bestDir = (GridDir)dir;
-					}
-				}
-			}
-
-			if (!didEat)
-			{
-				constexpr int healthLoss = -1;
-				const int healthBefore = health.m_Health;
-				health.ModHealth(healthLoss);
-				const int healthAfter = health.m_Health;
-				printf("Entity %d at (%d, %d) didn't eat - Health %d -> %d\n",
-					movingEntity, x, y, healthBefore, healthAfter);
-				if (healthAfter == 0)
-				{
-					printf("Entity %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
-						movingEntity, x, y);
-					entitiesToRemove.insert(movingEntity);
-					cache = CreatureCache();
-					continue;
-				}
-			}
-
-			if (numPossibleDirs == 0)
-			{
-				printf("Entity %d at (%d, %d) is BLOCKED!\n", movingEntity, x, y);
-				continue;
-			}
-			else if (mostPlants == 0)
-			{
-				const int bestDirIndex = rand() % numPossibleDirs;
-				bestDir = possibleDirs[bestDirIndex];
-				printf("Entity %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, (int)bestDir);
- 			}
-			else
-			{
-				printf("Entity %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, (int)bestDir);
-			}
-				
-			// TODO bug here - herbivores unexpectedly multiply (bad move?), and then cache position doesn't match!
-			auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
-			if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
-			{
-				printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
-					movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
-				assert(false);
-			}
-			const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDir];
-
-			auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
-
-			// UGH we have two places where this info lives due to the cache - this can be better
-			// once we use the actual component storage rather than separate cache.
-			//assert(!target.beingMovedInto);
-			target = cache;
-			cache = CreatureCache();
-			thisTransform.m_Pos = moveIntoPos;
-
+			Tick_Herbivore(cachedEntities, cache, x, y, entitiesToRemove);
 		}
 	}
 
@@ -355,7 +316,7 @@ void GameOfLifeSystem::Tick()
 			CreatureCache& creature = cachedEntities.At(x, y);
 			EntityID thisEntity = creature.entityID;
 			EntityID parentEntity = INVALID_ENTITY_ID;
-			uint8_t numPlantNeighbours = countNeighbours(x, y, Species::PLANT, parentEntity);
+			uint8_t numPlantNeighbours = CountNeighbours(cachedEntities, x, y, Species::PLANT, parentEntity);
 			//printf("neighbours at (%d, %d): %d\n", x, y, numNeighbours);
 			// Scan neighbour species for reproduction 
 			for (const Vector2i& dirVec : GridDirToVec)
