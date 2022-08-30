@@ -11,8 +11,9 @@ Next steps at the ECS level are to add ways to query components and schedule upd
 (untested on any machine not mine!)
 
 1. Install CMake at least version 3.8
-2. Run CMake on the folder and configure paths to SDL libraries
-3. Generate project files and build
+2. Run CMake on the folder and configure paths to SDL libraries (provided in lib folder, but you may need to fix up the paths)
+4. Generate project files and build
+5. If in VS, set the start-up project to `JobiusShell`
 
 ## Games
 
