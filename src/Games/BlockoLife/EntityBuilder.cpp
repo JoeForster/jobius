@@ -41,8 +41,8 @@ EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& wo
 	
 EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& world, Vector2i pos)
 {
-	constexpr int initialHealth = 20;
-	constexpr int maxHealth = 20;
+	constexpr int initialHealth = 30;
+	constexpr int maxHealth = 40;
 
 	return BuildCommon(world, pos, initialHealth, maxHealth);
 }

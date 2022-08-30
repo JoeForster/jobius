@@ -289,22 +289,27 @@ void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntitie
 		if (abs(posToTarget.x) <= 1 && abs(posToTarget.y) <= 1)
 		{
 			CreatureCache& adjacentCreature = cachedEntities.At(targetPos.x, targetPos.y);
-			assert (adjacentCreature.species == Species::HERBIVORE);
-			assert (adjacentCreature.entityID != INVALID_ENTITY_ID);
+			if (adjacentCreature.species == Species::HERBIVORE)
+			{
+				// TODO bug here not expected species sometimes?
+				//assert (adjacentCreature.species == Species::HERBIVORE);
+				assert (adjacentCreature.entityID != INVALID_ENTITY_ID);
 
-			// EAT if herbivore
-			constexpr int healthGain = 20;
-			const int healthBefore = health.m_Health;
-			health.ModHealth(healthGain);
-			const int healthAfter = health.m_Health;
+				// EAT if herbivore
+				constexpr int healthGain = 20;
+				const int healthBefore = health.m_Health;
+				health.ModHealth(healthGain);
+				const int healthAfter = health.m_Health;
 
-			printf("Entity[CARNIVORE] %d at (%d, %d) eat HERBIVORE %d at (%d, %d)! Health %d -> %d\n",
-				movingEntity, x, y, adjacentCreature.entityID, targetPos.x, targetPos.y, healthBefore, healthAfter);
+				printf("Entity[CARNIVORE] %d at (%d, %d) eat HERBIVORE %d at (%d, %d)! Health %d -> %d\n",
+					movingEntity, x, y, adjacentCreature.entityID, targetPos.x, targetPos.y, healthBefore, healthAfter);
 
-			entitiesToRemove.insert(adjacentCreature.entityID);
-			adjacentCreature = CreatureCache();
+				entitiesToRemove.insert(adjacentCreature.entityID);
+				adjacentCreature = CreatureCache();
 
-			didEat = true;
+				didEat = true;
+			}
+			
 		}
 		// Otherwise try to move towards the target
 		else

@@ -1,5 +1,9 @@
 #include "BlockoLifeWorldBuilder.h"
 
+// Lib includes
+#include <array>
+#include <numeric>
+
 // Engine includes
 #include "World.h"
 #include "SDLRenderManager.h"
@@ -104,39 +108,105 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->AddComponent<SpriteComponent>(playerEntity, dropperSprite);
 
 	// Create creature sprites
-	static constexpr bool RANDOM_PLANTS = true;
-	static constexpr int RANDOM_PLANTS_PROBABILITY_PERCENT = 75;
-
-	if (RANDOM_PLANTS)
+	enum class Scenario
 	{
-		Rect2i plantArea { { 5, 5 }, { 25, 20 } };
-		for (int y = plantArea.min.y; y < plantArea.max.y; ++y)
+		FIXED,
+		RANDOM_SMALL,
+		RANDOM_MASSIVE
+	};
+	// TODO scenario from config?
+	static constexpr Scenario scenario = Scenario::RANDOM_MASSIVE;
+
+	switch (scenario)
+	{
+		case Scenario::FIXED:
 		{
-			for (int x = plantArea.min.x; x < plantArea.max.x; ++x)
+			m_PlantBuilder.Build(*world, { 5, 4 });
+			m_PlantBuilder.Build(*world, { 5, 5 });
+			m_PlantBuilder.Build(*world, { 6, 5 });
+			m_PlantBuilder.Build(*world, { 6, 6 });
+			m_PlantBuilder.Build(*world, { 5, 6 });
+			m_PlantBuilder.Build(*world, { 6, 7 });
+			
+			m_HerbivoreBuilder.Build(*world, { 5, 11 });
+			m_HerbivoreBuilder.Build(*world, { 8, 11 });
+		
+			m_CarnivoreBuilder.Build(*world, { 12, 12 });
+			
+			break;
+		}
+		case Scenario::RANDOM_SMALL:
+		{
+			static constexpr int RANDOM_PLANTS_PROBABILITY_PERCENT = 75;
+
+			Rect2i plantArea { { 5, 5 }, { 25, 20 } };
+			for (int y = plantArea.min.y; y < plantArea.max.y; ++y)
 			{
-				int spawnRoll = rand() % 100;
-				if (spawnRoll < RANDOM_PLANTS_PROBABILITY_PERCENT)
+				for (int x = plantArea.min.x; x < plantArea.max.x; ++x)
 				{
-					m_PlantBuilder.Build(*world, { x, y });
+					int spawnRoll = rand() % 100;
+					if (spawnRoll < RANDOM_PLANTS_PROBABILITY_PERCENT)
+					{
+						m_PlantBuilder.Build(*world, { x, y });
+					}
 				}
 			}
+
+			m_HerbivoreBuilder.Build(*world, { 5, 21 });
+			m_HerbivoreBuilder.Build(*world, { 8, 21 });
+			m_HerbivoreBuilder.Build(*world, { 9, 22 });
+			m_HerbivoreBuilder.Build(*world, { 2, 3 });
+			m_HerbivoreBuilder.Build(*world, { 7, 4 });
+			m_HerbivoreBuilder.Build(*world, { 18, 3 });
+
+			m_CarnivoreBuilder.Build(*world, { 24, 24 });
+			m_CarnivoreBuilder.Build(*world, { 1, 1 });
+
+			break;
 		}
-	}
-	else
-	{
-		m_PlantBuilder.Build(*world, { 5, 4 });
-		m_PlantBuilder.Build(*world, { 5, 5 });
-		m_PlantBuilder.Build(*world, { 6, 5 });
-		m_PlantBuilder.Build(*world, { 6, 6 });
-		m_PlantBuilder.Build(*world, { 5, 6 });
-		m_PlantBuilder.Build(*world, { 6, 7 });
-	}
+		case Scenario::RANDOM_MASSIVE:
+		{
+			// Probability distribution for each type
+			static constexpr auto SpawnProbabilities = std::to_array<int>({
+				40, // PLANT
+				10, // HERBIVORE
+				1 // CARNIVORE
+			});
+			static_assert(SpawnProbabilities.size() == SpeciesCount, "SpawnProbabilities needs updating!");
+			static constexpr auto totalProbs = std::accumulate(SpawnProbabilities.begin(), SpawnProbabilities.end(), 0, std::plus<int>());
+			static_assert(totalProbs >= 0 && totalProbs <= 100);
+			
+			Rect2i spawnArea { { 0, 0 }, { 50, 40 } };
+			for (int y = spawnArea.min.y; y < spawnArea.max.y; ++y)
+			{
+				for (int x = spawnArea.min.x; x < spawnArea.max.x; ++x)
+				{ 
+					int spawnRoll = rand() % 100;
 
-	m_HerbivoreBuilder.Build(*world, { 5, 21 });
-	m_HerbivoreBuilder.Build(*world, { 8, 21 });
-	m_HerbivoreBuilder.Build(*world, { 9, 22 });
+					int probSum = 0;
+					for (int speciesIndex = 0; speciesIndex < SpeciesCount; ++speciesIndex)
+					{
+						probSum += SpawnProbabilities[speciesIndex];
+						if (spawnRoll <= probSum)
+						{
+							// TODO no need for switch if mapped by type
+							switch ((Species)speciesIndex)
+							{
+								case Species::PLANT: m_PlantBuilder.Build(*world, { x, y }); break;
+								case Species::HERBIVORE: m_HerbivoreBuilder.Build(*world, { x, y }); break;
+								case Species::CARNIVORE: m_CarnivoreBuilder.Build(*world, { x, y }); break;
+							}
+							break;
+						}
+					}
+				}
+			}
+			break;
+		}
+		default:
+			assert(false); // TODO compile-time would be nice!
 
-	m_CarnivoreBuilder.Build(*world, { 12, 21 });
+	}
 
 	return world;
 }
