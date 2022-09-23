@@ -4,6 +4,8 @@
 #include <string>
 #include <format>
 #include <algorithm>
+#include <chrono>
+#include <iostream>
 
 #include "Vector.h"
 
@@ -17,6 +19,14 @@
 #include "BlockoLifeWorldBuilder.h"
 
 constexpr bool DESTROY_PLANT_ON_EATEN = false;
+
+#define DEBUG_PRINT_ON 0
+
+#if DEBUG_PRINT_ON
+#	define DEBUG_PRINT(...) printf(__VA_ARGS__)
+#else
+#	define DEBUG_PRINT(...)
+#endif
 
 void GameOfLifeSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -138,7 +148,7 @@ void GameOfLifeSystem::Tick_Move_Herbivore(Array2D<CreatureCache>& cachedEntitie
 	const EntityID movingEntity = cache.entityID;
 	assert(cache.species == Species::HERBIVORE);
 
-	printf("Move HERBIVORE %d\n", movingEntity);
+	DEBUG_PRINT("Move HERBIVORE %d\n", movingEntity);
 	auto& health = m_ParentWorld->GetComponent<HealthComponent>(movingEntity);
 
 	GridDir possibleDirs[GridDirCount];
@@ -164,7 +174,7 @@ void GameOfLifeSystem::Tick_Move_Herbivore(Array2D<CreatureCache>& cachedEntitie
 				health.ModHealth(healthGain);
 				const int healthAfter = health.m_Health;
 
-				printf("Entity[HERBIVORE] %d at (%d, %d) eat plant %d at (%d, %d)! Health %d -> %d\n",
+				DEBUG_PRINT("Entity[HERBIVORE] %d at (%d, %d) eat plant %d at (%d, %d)! Health %d -> %d\n",
 					movingEntity, x, y, adjacentCreature.entityID, checkPos.x, checkPos.y, healthBefore, healthAfter);
 
 				if (DESTROY_PLANT_ON_EATEN)
@@ -188,57 +198,60 @@ void GameOfLifeSystem::Tick_Move_Herbivore(Array2D<CreatureCache>& cachedEntitie
 		}
 	}
 
+	if (numPossibleDirs == 0)
+	{
+		DEBUG_PRINT("Entity %d at (%d, %d) is BLOCKED!\n", movingEntity, x, y);
+	}
+
 	if (!didEat)
 	{
 		constexpr int healthLoss = -1;
 		const int healthBefore = health.m_Health;
 		health.ModHealth(healthLoss);
 		const int healthAfter = health.m_Health;
-		printf("Entity[HERBIVORE] %d at (%d, %d) didn't eat - Health %d -> %d\n",
+		DEBUG_PRINT("Entity[HERBIVORE] %d at (%d, %d) didn't eat - Health %d -> %d\n",
 			movingEntity, x, y, healthBefore, healthAfter);
 		if (healthAfter == 0)
 		{
-			printf("Entity[HERBIVORE] %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
+			DEBUG_PRINT("Entity[HERBIVORE] %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
 				movingEntity, x, y);
 			entitiesToRemove.insert(movingEntity);
 			cache = CreatureCache();
-			return; // TODO smelly late early return
+			numPossibleDirs = 0;
 		}
 	}
 
-	if (numPossibleDirs == 0)
+	if (numPossibleDirs != 0)
 	{
-		printf("Entity %d at (%d, %d) is BLOCKED!\n", movingEntity, x, y);
-		return; // TODO smelly late early return
-	}
-	else if (mostPlants == 0)
-	{
-		const int randomDirIndex = rand() % numPossibleDirs;
-		bestDirIndex = to_underlying(possibleDirs[randomDirIndex]);
-		printf("Entity[HERBIVORE] %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, bestDirIndex);
- 	}
-	else
-	{
-		printf("Entity[HERBIVORE] %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, bestDirIndex);
-	}
+		if (mostPlants == 0)
+		{
+			const int randomDirIndex = rand() % numPossibleDirs;
+			bestDirIndex = to_underlying(possibleDirs[randomDirIndex]);
+			DEBUG_PRINT("Entity[HERBIVORE] %d at (%d, %d) Pick random dir: %d\n", movingEntity, x, y, bestDirIndex);
+ 		}
+		else
+		{
+			DEBUG_PRINT("Entity[HERBIVORE] %d at (%d, %d) Pick best dir %d\n", movingEntity, x, y, bestDirIndex);
+		}		
 
-	auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
-	if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
-	{
-		printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
-			movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
-		assert(false);
+		auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
+		if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
+		{
+			printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
+				movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
+			assert(false);
+		}
+		const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDirIndex];
+
+		auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
+
+		// UGH we have two places where this info lives due to the cache - this can be better
+		// once we use the actual component storage rather than separate cache.
+		//assert(!target.beingMovedInto);
+		target = cache;
+		cache = CreatureCache();
+		thisTransform.m_Pos = moveIntoPos;
 	}
-	const Vector2i moveIntoPos = thisTransform.m_Pos + GridDirToVec[bestDirIndex];
-
-	auto& target = cachedEntities.At(moveIntoPos.x, moveIntoPos.y);
-
-	// UGH we have two places where this info lives due to the cache - this can be better
-	// once we use the actual component storage rather than separate cache.
-	//assert(!target.beingMovedInto);
-	target = cache;
-	cache = CreatureCache();
-	thisTransform.m_Pos = moveIntoPos;
 }
 
 void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove)
@@ -246,7 +259,7 @@ void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntitie
 	const EntityID movingEntity = cache.entityID;
 	assert(cache.species == Species::CARNIVORE);
 
-	printf("Move CARNIVORE %d\n", movingEntity);
+	DEBUG_PRINT("Move CARNIVORE %d\n", movingEntity);
 	auto& health = m_ParentWorld->GetComponent<HealthComponent>(movingEntity);
 
 	bool didEat = false;
@@ -301,7 +314,7 @@ void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntitie
 				health.ModHealth(healthGain);
 				const int healthAfter = health.m_Health;
 
-				printf("Entity[CARNIVORE] %d at (%d, %d) eat HERBIVORE %d at (%d, %d)! Health %d -> %d\n",
+				DEBUG_PRINT("Entity[CARNIVORE] %d at (%d, %d) eat HERBIVORE %d at (%d, %d)! Health %d -> %d\n",
 					movingEntity, x, y, adjacentCreature.entityID, targetPos.x, targetPos.y, healthBefore, healthAfter);
 
 				entitiesToRemove.insert(adjacentCreature.entityID);
@@ -324,11 +337,11 @@ void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntitie
 		const int healthBefore = health.m_Health;
 		health.ModHealth(healthLoss);
 		const int healthAfter = health.m_Health;
-		printf("Entity[CARNIVORE] %d at (%d, %d) didn't eat - Health %d -> %d\n",
+		DEBUG_PRINT("Entity[CARNIVORE] %d at (%d, %d) didn't eat - Health %d -> %d\n",
 			movingEntity, x, y, healthBefore, healthAfter);
 		if (healthAfter == 0)
 		{
-			printf("Entity[CARNIVORE] %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
+			DEBUG_PRINT("Entity[CARNIVORE] %d at (%d, %d) didn't eat - ZERO HEALTH, STARVED!",
 				movingEntity, x, y);
 			entitiesToRemove.insert(movingEntity);
 			cache = CreatureCache();
@@ -338,16 +351,16 @@ void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntitie
 
 	if (moveDir == GridDir::COUNT)
 	{
-		printf("Entity[CARNIVORE] %d at (%d, %d) not moving\n", movingEntity, x, y);
+		DEBUG_PRINT("Entity[CARNIVORE] %d at (%d, %d) not moving\n", movingEntity, x, y);
 	}
 	else
 	{
-		printf("Entity[CARNIVORE] %d at (%d, %d) Move dir %d\n", movingEntity, x, y, moveDir);
+		DEBUG_PRINT("Entity[CARNIVORE] %d at (%d, %d) Move dir %d\n", movingEntity, x, y, moveDir);
 
 		auto& thisTransform = m_ParentWorld->GetComponent<GridTransformComponent>(movingEntity);
 		if (thisTransform.m_Pos.x != x || thisTransform.m_Pos.y != y)
 		{
-			printf("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
+			DEBUG_PRINT("OOPS this object %d is at unexpected position - original (%d, %d) in cache (%d, %d)\n",
 				movingEntity, thisTransform.m_Pos.x, thisTransform.m_Pos.y, x, y);
 			assert(false);
 		}
@@ -365,7 +378,7 @@ void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntitie
 		}
 		else
 		{
-			printf("Entity[CARNIVORE] %d at (%d, %d) BLOCKED moving into (%d, %d)\n", movingEntity, x, y, moveIntoPos.x, moveIntoPos.y);
+			DEBUG_PRINT("Entity[CARNIVORE] %d at (%d, %d) BLOCKED moving into (%d, %d)\n", movingEntity, x, y, moveIntoPos.x, moveIntoPos.y);
 		}
 	}
 }
@@ -374,16 +387,18 @@ void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntitie
 // TODO needs heavy tidy-up
 void GameOfLifeSystem::Tick()
 {
+	using std::chrono::steady_clock;
+
+	steady_clock::time_point start = steady_clock::now(); 
+
 	// Solution 1: an for each living creature.
 	// TODO: Inefficient lookup for now, may need either a cache or a better query system
 	// (we'd like to be able to index into components, or adjacent ones, I guess?)
 	Rect2i limits ( {0, 0}, {0, 0} );
 
-	printf("\n\nTICK\n\n");
-
 	if (mEntities.empty())
 	{
-		printf("TICK no entities!\n");
+		printf("\nTICK no entities!\n");
 	}
 
 	for (EntityID e : mEntities)
@@ -401,7 +416,7 @@ void GameOfLifeSystem::Tick()
 		limits.max.y += 1;
 	}
 
-	printf("TICK entities(%zu) limits min(%d %d) max(%d %d)\n", mEntities.size(), limits.min.x, limits.min.y, limits.max.x, limits.max.y);
+	printf("\nTICK entities(%zu) limits min(%d %d) max(%d %d)\n", mEntities.size(), limits.min.x, limits.min.y, limits.max.x, limits.max.y);
 
 	assert(limits.max.y > limits.min.y);
 	assert(limits.max.x > limits.min.x);
@@ -416,6 +431,8 @@ void GameOfLifeSystem::Tick()
 
 	// TODO we're kind of bypassing the ECS here with custom storage - we need a way of storing components
 	// in the right order OR so we can index into adjacent cells!
+	// NOTE yes we could avoid remaking this each tick, but would need to put in support for vector-like grow/shrink
+	// due to the unbounded world. And then we might as well make this use ECS properly.
 	auto cachedEntities = Array2D<CreatureCache>(num_columns, num_rows, x_offset, y_offset);
 
 	for (EntityID e : mEntities)
@@ -474,7 +491,7 @@ void GameOfLifeSystem::Tick()
 			CreatureCache& creature = cachedEntities.At(x, y);
 			EntityID thisEntity = creature.entityID;
 			uint8_t numPlantNeighbours = CountNeighbours(cachedEntities, x, y, Species::PLANT);
-			//printf("neighbours at (%d, %d): %d\n", x, y, numNeighbours);
+			DEBUG_PRINT("neighbours at (%d, %d): %d\n", x, y, numNeighbours);
 			// Scan neighbour species for reproduction 
 			for (const Vector2i& dirVec : GridDirToVec)
 			{
@@ -512,7 +529,7 @@ void GameOfLifeSystem::Tick()
 					const EntityID newborn = BlockoLifeWorldBuilder::BuildEntity(*m_ParentWorld, parentSpecies, {x, y});
 					assert(newborn != INVALID_ENTITY_ID);
 
-					printf("Entity %u (species=%d) at (%d, %d) birthed new entity %u at (%d, %d)\n",
+					DEBUG_PRINT("Entity %u (species=%d) at (%d, %d) birthed new entity %u at (%d, %d)\n",
 						parent, parentSpecies, parentPos.x, parentPos.y, newborn, x, y);
 				}
 			}
@@ -543,4 +560,9 @@ void GameOfLifeSystem::Tick()
 	{
 		m_ParentWorld->DestroyEntity(e);
 	}
+	
+	steady_clock::time_point finish = steady_clock::now();
+
+	std::cout << "\t --> took " << std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count() << "[µs]" << std::endl;
+	//std::cout << "\t --> took " << std::chrono::duration_cast<std::chrono::nanoseconds> (finish - start).count() << "[ns]" << std::endl;
 }

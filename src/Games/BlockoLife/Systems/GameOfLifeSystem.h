@@ -51,7 +51,7 @@ private:
 
 		inline T& At(int x, int y)
 		{
-			size_t index = (y+m_OffsetY)*m_Width + (x+m_OffsetX);
+			const size_t index = (y+m_OffsetY)*m_Width + (x+m_OffsetX);
 			assert(index < NumCells());
 			return m_Array[index];
 		}
@@ -77,6 +77,4 @@ private:
 	void Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntities, CreatureCache& cache, int x, int y, std::set<EntityID>& entitiesToRemove);
 	
 	void Tick();
-
-
 };
