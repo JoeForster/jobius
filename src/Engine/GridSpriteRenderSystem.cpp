@@ -30,8 +30,12 @@ void GridSpriteRenderSystem::Render_Main()
 
 	for (EntityID e : mEntities)
 	{
-		auto& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		auto& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
+		if (r.m_SpriteID == ResourceID_Invalid)
+		{
+			continue;
+		}
+		auto& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		const auto spritePos = gridWorld.GridToScreen(*m_ParentWorld, t.m_Pos);
 		m_RenderMan->DrawSprite(r.m_SpriteID, r.m_TextureAlpha, spritePos);
 	}

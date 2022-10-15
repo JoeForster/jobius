@@ -38,6 +38,7 @@
 EntityBuilder<SpeciesIdentity<Species::PLANT>> BlockoLifeWorldBuilder::m_PlantBuilder;
 EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> BlockoLifeWorldBuilder::m_HerbivoreBuilder;
 EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> BlockoLifeWorldBuilder::m_CarnivoreBuilder;
+EntityBuilder<SpeciesIdentity<Species::NO_SPECIES>> BlockoLifeWorldBuilder::m_EmptyBuilder;
 
 std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {	
@@ -205,6 +206,69 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 		}
 		default:
 			assert(false); // TODO compile-time would be nice!
+
+	}
+
+	// Fill out blank grid squares
+
+	Rect2i limits ( {0, 0}, {0, 0} );
+
+	{
+		EntitySignature querySignature;
+		querySignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
+		querySignature.set((size_t)ComponentType::CT_BL_SPECIES);
+		EntityQuery q (querySignature);
+		std::set<EntityID> creatures;
+		world->ExecuteQuery(q, creatures);
+
+		for (EntityID e : creatures)
+		{
+			const auto& t = world->GetComponent<GridTransformComponent>(e);
+			if (t.m_Pos.x < limits.min.x) limits.min.x = t.m_Pos.x;
+			if (t.m_Pos.y < limits.min.y) limits.min.y = t.m_Pos.y;
+			if (t.m_Pos.x > limits.max.x) limits.max.x = t.m_Pos.x;
+			if (t.m_Pos.y > limits.max.y) limits.max.y = t.m_Pos.y;
+	
+			// Need to consider adjacent blocks too
+			limits.min.x -= 1;
+			limits.min.y -= 1;
+			limits.max.x += 1;
+			limits.max.y += 1;
+		}
+
+	}
+
+	{
+		EntitySignature querySignature;
+		querySignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
+		querySignature.set((size_t)ComponentType::CT_BL_SPECIES);
+		EntityQuery q (querySignature);
+		std::set<EntityID> creatures;
+		world->ExecuteQuery(q, creatures);
+
+		// TODO: Need common interface for looking up by grid coordinates, which eventually will be optimal by indexing rather than search
+		auto IsOccupied = [&](int x, int y) {
+			for (auto e : creatures)
+			{
+				const auto& pos = world->GetComponent<GridTransformComponent>(e).m_Pos;
+				if (pos.x == x && pos.y == y)
+				{
+					return true;
+				}
+			}
+			return false;
+		};
+
+		for (int y = limits.min.y+1; y < limits.max.y-1; ++y)
+		{
+			for (int x = limits.min.x+1; x < limits.max.x-1; ++x)
+			{
+				if (!IsOccupied(x, y))
+				{
+					m_EmptyBuilder.Build(*world, { x, y });
+				}
+			}
+		}
 
 	}
 

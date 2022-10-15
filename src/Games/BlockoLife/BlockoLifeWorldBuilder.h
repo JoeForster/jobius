@@ -36,4 +36,5 @@ private:
 	static EntityBuilder<SpeciesIdentity<Species::PLANT>> m_PlantBuilder;
 	static EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> m_HerbivoreBuilder;
 	static EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> m_CarnivoreBuilder;
+	static EntityBuilder<SpeciesIdentity<Species::NO_SPECIES>> m_EmptyBuilder;
 };

@@ -10,8 +10,6 @@
 template<class T>
 EntityID EntityBuilder<T>::BuildCommon(World& world, Vector2i pos, const int initialHealth, const int maxHealth)
 {
-	assert(m_ResourceID != ResourceID_Invalid);
-
 	EntityID e = world.CreateEntity();
 	const GridTransformComponent t(pos);
 	world.AddComponent<GridTransformComponent>(e, t);
@@ -45,4 +43,10 @@ EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& wo
 	constexpr int maxHealth = 40;
 
 	return BuildCommon(world, pos, initialHealth, maxHealth);
+}
+
+	
+EntityID EntityBuilder<SpeciesIdentity<Species::NO_SPECIES>>::BuildImpl(World& world, Vector2i pos)
+{
+	return BuildCommon(world, pos, 0, 0);
 }

@@ -56,3 +56,6 @@ EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& wo
 
 template<>
 EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& world, Vector2i pos);
+
+template<>
+EntityID EntityBuilder<SpeciesIdentity<Species::NO_SPECIES>>::BuildImpl(World& world, Vector2i pos);
