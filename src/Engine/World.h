@@ -31,6 +31,7 @@ public:
 	// Entity methods
 	EntityID CreateEntity()
 	{
+		m_SystemManager.SetEntitySetsDirty();
 		return m_EntityManager.CreateEntity();
 	}
 
@@ -57,8 +58,8 @@ public:
 		auto signature = m_EntityManager.GetSignature(entity);
 		signature.set(m_ComponentManager.GetComponentIndex<T>(), true);
 		m_EntityManager.SetSignature(entity, signature);
-
-		m_SystemManager.OnEntitySignatureChanged(entity, signature);
+		
+		m_SystemManager.SetEntitySetsDirty();
 	}
 
 	template<typename T>
@@ -67,18 +68,21 @@ public:
 		// A global component works just like a regular component of which there is one per world
 		assert(m_ComponentManager.GetComponentCount<T>() == 0 && "SetGlobalComponent called on component that already exists");
 		AddComponent<T>(0, component);
+		
+		m_SystemManager.SetEntitySetsDirty();
 	}
 
 	template<typename T>
 	void RemoveComponent(EntityID entity)
 	{
+		assert(false && "Untested route");
 		m_ComponentManager.RemoveComponent<T>(entity);
 
 		auto signature = m_EntityManager.GetSignature(entity);
 		signature.set(m_ComponentManager.GetComponentType<T>(), false);
 		m_EntityManager.SetSignature(entity, signature);
-
-		m_SystemManager.OnEntitySignatureChanged(entity, signature);
+		
+		m_SystemManager.SetEntitySetsDirty();
 	}
 
 	template<typename T>
@@ -109,21 +113,53 @@ public:
 	}
 
 	template<typename T>
-	void SetSystemSignature(EntitySignature signature)
+	void SetSystemSignatures(EntitySignature signature)
 	{
-		m_SystemManager.SetSignature<T>(signature);
+		m_SystemManager.SetSignatures<T>(signature, signature);
 	}
 
 	template<typename T>
-	void SetSystemDebugSignature(EntitySignature signature)
+	void SetSystemSignatures(EntitySignature signature, EntitySignature debugSignature)
 	{
-		m_SystemManager.SetDebugSignature<T>(signature);
+		m_SystemManager.SetSignatures<T>(signature, debugSignature);
 	}
 
 	void ExecuteQuery(EntityQuery query, std::set<EntityID>& entitiesOut)
 	{
 		m_EntityManager.ExecuteQuery(query, entitiesOut);
 	}
+
+	// TODO EXPERIMENTAL and not yet calling this!
+	//void RebuildEntityLists()
+	//{
+	//	// Notify each system that an entity's signature changed
+	//	for (size_t systemIndex = 0; systemIndex < NUM_SYSTEM_TYPES; ++systemIndex)
+	//	{
+	//		System* system = m_SystemManager.m_Systems[systemIndex].get();
+	//		if (system == nullptr)
+	//		{
+	//			continue; // This particular system was not created, which is fine
+	//		}
+	//
+	//
+	//
+	//		{
+	//			const EntitySignature& systemSignature = m_SystemManager.m_Signatures[systemIndex];
+	//			EntityQuery q (systemSignature);
+	//			std::set<EntityID> sysEntities;
+	//			ExecuteQuery(q, sysEntities);
+	//			system->mEntities = sysEntities;
+	//		}
+	//
+	//		{
+	//			const EntitySignature& debugSignature = m_SystemManager.m_DebugSignatures[systemIndex];
+	//			EntityQuery q (debugSignature);
+	//			std::set<EntityID> sysEntities;
+	//			ExecuteQuery(q, sysEntities);
+	//			system->mEntitiesDebug = sysEntities;
+	//		}
+	//	}
+	//}
 
 	void Update(float deltaSecs)
 	{

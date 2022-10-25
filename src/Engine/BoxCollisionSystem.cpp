@@ -14,8 +14,7 @@ void BoxCollisionSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_TRANSFORM);
 	sysSignature.set((size_t)ComponentType::CT_AABB);
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
-	m_ParentWorld->SetSystemSignature<BoxCollisionSystem>(sysSignature);
-	m_ParentWorld->SetSystemDebugSignature<BoxCollisionSystem>(sysSignature);
+	m_ParentWorld->SetSystemSignatures<BoxCollisionSystem>(sysSignature);
 
 	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);
 	m_RenderMan = renderInit.m_RenderMan;
@@ -30,14 +29,14 @@ void BoxCollisionSystem::Update(float deltaSecs)
 
 	constexpr float gravityAccel = 9.8f;
 	constexpr float terminalVelocity = 10.0f;
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& aabb = m_ParentWorld->GetComponent<AABBComponent>(e);
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 
 		rb.m_Colliding = false;
-		for (EntityID testCollide : mEntities)
+		for (EntityID testCollide : GetEntities())
 		{
 			if (testCollide == e)
 			{
@@ -58,7 +57,7 @@ void BoxCollisionSystem::Update(float deltaSecs)
 
 void BoxCollisionSystem::Render_Debug()
 {
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& aabb = m_ParentWorld->GetComponent<AABBComponent>(e);

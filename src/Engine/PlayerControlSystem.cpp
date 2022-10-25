@@ -21,9 +21,9 @@ void PlayerControlSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_TRANSFORM); // TODO_DEBUG_DRAW this is only needed for debug...
 	sysSignature.set((size_t)ComponentType::CT_KBINPUT);
 	sysSignature.set((size_t)ComponentType::CT_PADINPUT);
-	m_ParentWorld->SetSystemSignature<PlayerControlSystem>(sysSignature);
-	sysSignature.set((size_t)ComponentType::CT_DEBUGTEXT);
-	m_ParentWorld->SetSystemDebugSignature<PlayerControlSystem>(sysSignature);
+	EntitySignature dbgSignature = sysSignature;
+	dbgSignature.set((size_t)ComponentType::CT_DEBUGTEXT);
+	m_ParentWorld->SetSystemSignatures<PlayerControlSystem>(sysSignature, dbgSignature);
 
 
 	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);
@@ -37,7 +37,7 @@ void PlayerControlSystem::Update(float deltaSecs)
 {
 	System::Update(deltaSecs);
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& kbInput = m_ParentWorld->GetComponent<KBInputComponent>(e);
 		auto& padInput = m_ParentWorld->GetComponent<PadInputComponent>(e);
@@ -79,7 +79,7 @@ void PlayerControlSystem::Render_Debug()
 {
 	auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& pad = m_ParentWorld->GetComponent<PadInputComponent>(e);

@@ -19,9 +19,10 @@ void PhysicsSystem::Init(const SystemInitialiser& initialiser)
 	EntitySignature sysSignature;
 	sysSignature.set((size_t)ComponentType::CT_TRANSFORM);
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
-	m_ParentWorld->SetSystemSignature<PhysicsSystem>(sysSignature);
-	sysSignature.set((size_t)ComponentType::CT_DEBUGTEXT);
-	m_ParentWorld->SetSystemDebugSignature<PhysicsSystem>(sysSignature);
+	EntitySignature dbgSignature = sysSignature;
+	dbgSignature.set((size_t)ComponentType::CT_DEBUGTEXT);
+
+	m_ParentWorld->SetSystemSignatures<PhysicsSystem>(sysSignature, dbgSignature);
 
 	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);
 	m_RenderMan = renderInit.m_RenderMan;
@@ -39,7 +40,7 @@ void PhysicsSystem::Update(float deltaSecs)
 	constexpr float minVelocity = 0.01f;
 	constexpr float terminalVelocity = 10.0f;
 	static float damping = 1.0f;
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
@@ -77,7 +78,7 @@ void PhysicsSystem::Update(float deltaSecs)
 
 void PhysicsSystem::Render_Debug()
 {
-	for (EntityID e : mEntitiesDebug)
+	for (EntityID e : GetEntitiesDebug())
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);

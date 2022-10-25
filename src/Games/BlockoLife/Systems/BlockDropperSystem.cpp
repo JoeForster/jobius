@@ -27,15 +27,14 @@ void BlockDropperSystem::Init(const SystemInitialiser& initialiser)
 	EntitySignature renderSignature;
 	renderSignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
 	renderSignature.set((size_t)ComponentType::CT_BL_DROPPER);
-	m_ParentWorld->SetSystemSignature<BlockDropperSystem>(renderSignature);
-	m_ParentWorld->SetSystemDebugSignature<BlockDropperSystem>(renderSignature);
+	m_ParentWorld->SetSystemSignatures<BlockDropperSystem>(renderSignature);
 }
 
 void BlockDropperSystem::Update(float deltaSecs)
 {
 	System::Update(deltaSecs);
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& kbInput = m_ParentWorld->GetComponent<KBInputComponent>(e);
 		auto& padInput = m_ParentWorld->GetComponent<PadInputComponent>(e);
@@ -97,7 +96,7 @@ void BlockDropperSystem::Render_Main()
 {
 	auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& transform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 

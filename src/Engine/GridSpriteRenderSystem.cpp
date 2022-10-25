@@ -20,15 +20,14 @@ void GridSpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 	EntitySignature renderSignature;
 	renderSignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
 	renderSignature.set((size_t)ComponentType::CT_SPRITE);
-	m_ParentWorld->SetSystemSignature<GridSpriteRenderSystem>(renderSignature);
-	m_ParentWorld->SetSystemDebugSignature<GridSpriteRenderSystem>(renderSignature);
+	m_ParentWorld->SetSystemSignatures<GridSpriteRenderSystem>(renderSignature);
 }
 
 void GridSpriteRenderSystem::Render_Main()
 {
 	auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
 		if (r.m_SpriteID == ResourceID_Invalid)

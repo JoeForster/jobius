@@ -27,8 +27,7 @@ void CreatureSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
 	sysSignature.set((size_t)ComponentType::CT_BL_SPECIES);
 	sysSignature.set((size_t)ComponentType::CT_BL_HEALTH);
-	m_ParentWorld->SetSystemSignature<CreatureSystem>(sysSignature);
-	m_ParentWorld->SetSystemDebugSignature<CreatureSystem>(sysSignature);
+	m_ParentWorld->SetSystemSignatures<CreatureSystem>(sysSignature);
 }
 
 
@@ -58,7 +57,7 @@ void CreatureSystem::Render_Main()
 {
 	const auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		const auto& transform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		const auto& species = m_ParentWorld->GetComponent<SpeciesComponent>(e);

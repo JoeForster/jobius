@@ -210,6 +210,7 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	}
 
 	// Fill out blank grid squares
+	// TODO pre-fill these before inserting the living creatures.
 
 	Rect2i limits ( {0, 0}, {0, 0} );
 
@@ -246,7 +247,6 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 		std::set<EntityID> creatures;
 		world->ExecuteQuery(q, creatures);
 
-		// TODO: Need common interface for looking up by grid coordinates, which eventually will be optimal by indexing rather than search
 		auto IsOccupied = [&](int x, int y) {
 			for (auto e : creatures)
 			{

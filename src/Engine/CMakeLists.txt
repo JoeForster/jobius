@@ -23,6 +23,7 @@ add_executable(${SHELL_PROJECT_NAME} "WinMain.cpp")
 set(ENGINE_SOURCES
 	"${CMAKE_SOURCE_DIR}/src/Engine/ComponentArray.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/EntityManager.cpp"
+	"${CMAKE_SOURCE_DIR}/src/Engine/System.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/Vector.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PhysicsSystem.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BoxCollisionSystem.cpp"
@@ -47,6 +48,7 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/World.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/WorldBuilder.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/EntityManager.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/System.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PhysicsSystem.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BoxCollisionSystem.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PlaneCollisionSystem.h"
@@ -58,7 +60,6 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/Camera2DSystem.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/NPCSensorSystem.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/NPCControlSystem.h"
-	"${CMAKE_SOURCE_DIR}/src/Engine/System.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/SDLRenderManager.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/SystemManager.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/TransformComponent.h"
