@@ -64,6 +64,11 @@ public:
 	virtual void Update(float deltaSecs)
 	{
 		assert(IsInited() && "System updated before initialised");
+
+		if (IsEntitySetDirty())
+		{
+			UpdateEntitySet();
+		}
 	}
 	void Render(RenderPass pass)
 	{
