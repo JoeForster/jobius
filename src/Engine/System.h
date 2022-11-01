@@ -126,33 +126,33 @@ public:
 	}
 
 	// Update our entities for a specific entity
-	void UpdateEntitySet(EntityID entity, EntitySignature entitySignature)
-	{
-		// TODO unify this with EntityQuery so that a "system entity list" is just the (cached) result of one?
-		// Could even have a query system deal with the caching so that the system doesn't need to keep these lists..?
-		assert(!m_EntitiesDirty && "Can only UpdateEntitySet for one entity if list is already up-to-date");
-
-		// Entity signature matches system signature - insert into set
-		if ((entitySignature & m_Signature) == m_Signature)
-		{
-			m_Entities.insert(entity);
-		}
-		// Entity signature does not match system signature - erase from set
-		else
-		{
-			m_Entities.erase(entity);
-		}
-
-		// Same again for debug..
-		if ((entitySignature & m_DebugSignature) == m_DebugSignature)
-		{
-			m_EntitiesDebug.insert(entity);
-		}
-		else
-		{
-			m_EntitiesDebug.erase(entity);
-		}
-	}
+	//void UpdateEntitySet(EntityID entity, EntitySignature entitySignature)
+	//{
+	//	// TODO unify this with EntityQuery so that a "system entity list" is just the (cached) result of one?
+	//	// Could even have a query system deal with the caching so that the system doesn't need to keep these lists..?
+	//	assert(!m_EntitiesDirty && "Can only UpdateEntitySet for one entity if list is already up-to-date");
+	//
+	//	// Entity signature matches system signature - insert into set
+	//	if ((entitySignature & m_Signature) == m_Signature)
+	//	{
+	//		m_Entities.insert(entity);
+	//	}
+	//	// Entity signature does not match system signature - erase from set
+	//	else
+	//	{
+	//		m_Entities.erase(entity);
+	//	}
+	//
+	//	// Same again for debug..
+	//	if ((entitySignature & m_DebugSignature) == m_DebugSignature)
+	//	{
+	//		m_EntitiesDebug.insert(entity);
+	//	}
+	//	else
+	//	{
+	//		m_EntitiesDebug.erase(entity);
+	//	}
+	//}
 
 	void UpdateEntitySet();
 

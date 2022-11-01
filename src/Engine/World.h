@@ -129,37 +129,12 @@ public:
 		m_EntityManager.ExecuteQuery(query, entitiesOut);
 	}
 
-	// TODO EXPERIMENTAL and not yet calling this!
-	//void RebuildEntityLists()
-	//{
-	//	// Notify each system that an entity's signature changed
-	//	for (size_t systemIndex = 0; systemIndex < NUM_SYSTEM_TYPES; ++systemIndex)
-	//	{
-	//		System* system = m_SystemManager.m_Systems[systemIndex].get();
-	//		if (system == nullptr)
-	//		{
-	//			continue; // This particular system was not created, which is fine
-	//		}
-	//
-	//
-	//
-	//		{
-	//			const EntitySignature& systemSignature = m_SystemManager.m_Signatures[systemIndex];
-	//			EntityQuery q (systemSignature);
-	//			std::set<EntityID> sysEntities;
-	//			ExecuteQuery(q, sysEntities);
-	//			system->mEntities = sysEntities;
-	//		}
-	//
-	//		{
-	//			const EntitySignature& debugSignature = m_SystemManager.m_DebugSignatures[systemIndex];
-	//			EntityQuery q (debugSignature);
-	//			std::set<EntityID> sysEntities;
-	//			ExecuteQuery(q, sysEntities);
-	//			system->mEntitiesDebug = sysEntities;
-	//		}
-	//	}
-	//}
+	void UpdateEntitySets()
+	{
+		// TODO_ENTITY_CREATION in order to create/update entities after construction we need to call this,
+		// ideally at a fixed point per frame/tick automatically.
+		m_SystemManager.UpdateEntitySets();
+	}
 
 	void Update(float deltaSecs)
 	{

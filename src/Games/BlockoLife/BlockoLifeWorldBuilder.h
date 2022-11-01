@@ -14,7 +14,7 @@ class BlockoLifeWorldBuilder : public WorldBuilder
 public:
 	std::shared_ptr<World> BuildWorld(std::shared_ptr<SDLRenderManager> renderMan) final;
 
-	static EntityID BuildEntity(World& world, Species species, Vector2i pos)
+	static EntityID BuildEntity(World& world, Species species, const Vector2i& pos)
 	{
 		switch (species)
 		{
@@ -24,6 +24,8 @@ public:
 			return m_HerbivoreBuilder.Build(world, pos);
 		case Species::CARNIVORE:
 			return m_CarnivoreBuilder.Build(world, pos);
+		case Species::NO_SPECIES:
+			return m_EmptyBuilder.Build(world, pos);
 		}
 
 		assert(false && "Unrecognised Species for BuildEntity");
@@ -37,4 +39,16 @@ private:
 	static EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> m_HerbivoreBuilder;
 	static EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> m_CarnivoreBuilder;
 	static EntityBuilder<SpeciesIdentity<Species::NO_SPECIES>> m_EmptyBuilder;
+
+	template<class T>
+	static EntityBuilder<T>& GetBuilder()
+	{
+		switch(T::Value)
+		{
+			case Species::PLANT: return m_PlantBuilder;
+			case Species::HERBIVORE: return m_HerbivoreBuilder;
+			case Species::CARNIVORE: return m_CarnivoreBuilder;
+			default: return m_EmptyBuilder;
+		}
+	}
 };

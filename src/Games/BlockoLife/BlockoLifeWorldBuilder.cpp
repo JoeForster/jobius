@@ -118,19 +118,32 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	// TODO scenario from config?
 	static constexpr Scenario scenario = Scenario::RANDOM_MASSIVE;
 
+	std::map<Vector2i, Species> creatureSpawns;
+	Rect2i limits ( {0, 0}, {0, 0} );
+	auto AddSpawn = [&](Species species, const Vector2i& pos)
+	{
+		assert(species < Species::SPECIES_COUNT);
+		creatureSpawns[pos] = species;
+		if (pos.x < limits.min.x) limits.min.x = pos.x;
+		if (pos.y < limits.min.y) limits.min.y = pos.y;
+		if (pos.x > limits.max.x) limits.max.x = pos.x;
+		if (pos.y > limits.max.y) limits.max.y = pos.y;
+	};
+
+
 	switch (scenario)
 	{
 		case Scenario::FIXED:
 		{
-			m_PlantBuilder.Build(*world, { 5, 4 });
-			m_PlantBuilder.Build(*world, { 5, 5 });
-			m_PlantBuilder.Build(*world, { 6, 5 });
-			m_PlantBuilder.Build(*world, { 6, 6 });
-			m_PlantBuilder.Build(*world, { 5, 6 });
-			m_PlantBuilder.Build(*world, { 6, 7 });
+			AddSpawn(Species::PLANT, { 5, 4 });
+			AddSpawn(Species::PLANT, { 5, 5 });
+			AddSpawn(Species::PLANT, { 6, 5 });
+			AddSpawn(Species::PLANT, { 6, 6 });
+			AddSpawn(Species::PLANT, { 5, 6 });
+			AddSpawn(Species::PLANT, { 6, 7 });
 			
-			m_HerbivoreBuilder.Build(*world, { 5, 11 });
-			m_HerbivoreBuilder.Build(*world, { 8, 11 });
+			AddSpawn(Species::HERBIVORE, { 5, 11 });
+			AddSpawn(Species::HERBIVORE, { 8, 11 });
 		
 			m_CarnivoreBuilder.Build(*world, { 12, 12 });
 			
@@ -153,12 +166,12 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 				}
 			}
 
-			m_HerbivoreBuilder.Build(*world, { 5, 21 });
-			m_HerbivoreBuilder.Build(*world, { 8, 21 });
-			m_HerbivoreBuilder.Build(*world, { 9, 22 });
-			m_HerbivoreBuilder.Build(*world, { 2, 3 });
-			m_HerbivoreBuilder.Build(*world, { 7, 4 });
-			m_HerbivoreBuilder.Build(*world, { 18, 3 });
+			AddSpawn(Species::HERBIVORE, { 5, 21 });
+			AddSpawn(Species::HERBIVORE, { 8, 21 });
+			AddSpawn(Species::HERBIVORE, { 9, 22 });
+			AddSpawn(Species::HERBIVORE, { 2, 3 });
+			AddSpawn(Species::HERBIVORE, { 7, 4 });
+			AddSpawn(Species::HERBIVORE, { 18, 3 });
 
 			m_CarnivoreBuilder.Build(*world, { 24, 24 });
 			m_CarnivoreBuilder.Build(*world, { 1, 1 });
@@ -193,9 +206,9 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 							// TODO no need for switch if mapped by type
 							switch ((Species)speciesIndex)
 							{
-								case Species::PLANT: m_PlantBuilder.Build(*world, { x, y }); break;
-								case Species::HERBIVORE: m_HerbivoreBuilder.Build(*world, { x, y }); break;
-								case Species::CARNIVORE: m_CarnivoreBuilder.Build(*world, { x, y }); break;
+								case Species::PLANT: AddSpawn(Species::PLANT, { x, y }); break;
+								case Species::HERBIVORE: AddSpawn(Species::HERBIVORE, { x, y }); break;
+								case Species::CARNIVORE: AddSpawn(Species::CARNIVORE, { x, y }); break;
 							}
 							break;
 						}
@@ -209,68 +222,33 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 
 	}
 
-	// Fill out blank grid squares
-	// TODO pre-fill these before inserting the living creatures.
+	// TODO this should be the same logic as growing/shrinking after each tick?
+	// Actually create the grid squares, blank or with creature
+	// Need to fill out adjacent blocks too to make room for growth
+	limits.min.x -= 1;
+	limits.min.y -= 1;
+	limits.max.x += 1;
+	limits.max.y += 1;
 
-	Rect2i limits ( {0, 0}, {0, 0} );
-
+	for (int y = limits.min.y+1; y < limits.max.y-1; ++y)
 	{
-		EntitySignature querySignature;
-		querySignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
-		querySignature.set((size_t)ComponentType::CT_BL_SPECIES);
-		EntityQuery q (querySignature);
-		std::set<EntityID> creatures;
-		world->ExecuteQuery(q, creatures);
-
-		for (EntityID e : creatures)
+		for (int x = limits.min.x+1; x < limits.max.x-1; ++x)
 		{
-			const auto& t = world->GetComponent<GridTransformComponent>(e);
-			if (t.m_Pos.x < limits.min.x) limits.min.x = t.m_Pos.x;
-			if (t.m_Pos.y < limits.min.y) limits.min.y = t.m_Pos.y;
-			if (t.m_Pos.x > limits.max.x) limits.max.x = t.m_Pos.x;
-			if (t.m_Pos.y > limits.max.y) limits.max.y = t.m_Pos.y;
-	
-			// Need to consider adjacent blocks too
-			limits.min.x -= 1;
-			limits.min.y -= 1;
-			limits.max.x += 1;
-			limits.max.y += 1;
-		}
-
-	}
-
-	{
-		EntitySignature querySignature;
-		querySignature.set((size_t)ComponentType::CT_GRIDTRANSFORM);
-		querySignature.set((size_t)ComponentType::CT_BL_SPECIES);
-		EntityQuery q (querySignature);
-		std::set<EntityID> creatures;
-		world->ExecuteQuery(q, creatures);
-
-		auto IsOccupied = [&](int x, int y) {
-			for (auto e : creatures)
+			const Vector2i spawnPos {x, y};
+			const auto& itSpawn = creatureSpawns.find(spawnPos);
+			if (itSpawn != creatureSpawns.cend())
 			{
-				const auto& pos = world->GetComponent<GridTransformComponent>(e).m_Pos;
-				if (pos.x == x && pos.y == y)
-				{
-					return true;
-				}
+				BuildEntity(*world, itSpawn->second, spawnPos);
 			}
-			return false;
-		};
-
-		for (int y = limits.min.y+1; y < limits.max.y-1; ++y)
-		{
-			for (int x = limits.min.x+1; x < limits.max.x-1; ++x)
+			else
 			{
-				if (!IsOccupied(x, y))
-				{
-					m_EmptyBuilder.Build(*world, { x, y });
-				}
+				m_EmptyBuilder.Build(*world, spawnPos);
 			}
 		}
-
 	}
+
+	// All entities are constructed, so we can now refresh the signatures
+	world->UpdateEntitySets();
 
 	return world;
 }
