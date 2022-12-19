@@ -16,7 +16,7 @@ Next steps at the ECS level are to add ways to query components and schedule upd
 
 ### CMake Configuration
 
-It will complain about missing in folders, so make sure to point the SDL paths at the bundled or installed lib folder, e.g.
+When you Configure in CMake, it may complain about missing folders. Each time it does, make sure to point it to the SDL paths at the bundled lib folder. You can also point it at an installed libraries if desired. Examples:
 
 - `SDL2_DIR` as `C:/Dev/jobius/lib/SDL2-2.26.1/cmake`
 - `SDL2_image_DIR` as `C:/Dev/jobius/lib/SDL2_image-2.6.2/cmake`
