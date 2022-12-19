@@ -12,6 +12,7 @@ Next steps at the ECS level are to add ways to query components and schedule upd
 2. Run CMake on the folder
 3. Configure in SDL, filling in the missing SDL folders and selecting the desired game (examples below).
 4. Generate project files and build
+6. With a fresh CMake build folder or config, you'll need to copy the `SDL2.dll`, `SDL2_image.dll` and `SDL2_ttf.dll` files from their respective lib (probably `lib/x64`) folders to your build output folder, e.g. `build\src\Engine\Release`
 5. If in VS, set the start-up project to `JobiusShell`
 
 ### CMake Configuration
