@@ -8,16 +8,24 @@ Next steps at the ECS level are to add ways to query components and schedule upd
 
 ## Building
 
-(untested on any machine not mine!)
-
 1. Install CMake at least version 3.8
-2. Run CMake on the folder and configure paths to SDL libraries (provided in lib folder, but you may need to fix up the paths)
+2. Run CMake on the folder
+3. Configure in SDL, filling in the missing SDL folders and selecting the desired game (examples below).
 4. Generate project files and build
 5. If in VS, set the start-up project to `JobiusShell`
 
+### CMake Configuration
+
+It will complain about missing in folders, so make sure to point the SDL paths at the bundled or installed lib folder, e.g.
+
+- `SDL2_DIR` as `C:/Dev/jobius/lib/SDL2-2.26.1/cmake`
+- `SDL2_image_DIR` as `C:/Dev/jobius/lib/SDL2_image-2.6.2/cmake`
+- `SDL2_ttf_DIR` as `C:/Dev/jobius/lib/SDL2_ttf-2.20.1/cmake`
+- One of `JOBIUS_SHELL_GAME_<GAME>` should be ticked, by default `BLOCKO_LIFE`.
+
 ## Games
 
-To switch games, you will need to change the `JOBIUS_SHELL_GAME` preprocessor variable in `WinMain.cpp`.
+To switch games, you will need to change the `JOBIUS_SHELL_GAME` preprocessor variable in `WinMain.cpp`. This can also be set via CMake, see above.
 Current main work is the BlockoLife cellular automata demo, which simulates a simple ecosystem of plants, herbivores and carnivores.
 
 There's also the ChaosSpace demo game, which is just some space ships that don't do much yet.
