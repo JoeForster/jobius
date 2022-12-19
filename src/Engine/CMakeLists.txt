@@ -80,25 +80,19 @@ set(ENGINE_HEADERS
 
 add_library(${ENGINE_PROJECT_NAME} ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
+get_target_property(SDL2IMAGE_INCLUDE_DIRS SDL2_image::SDL2_image INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(SDL2TTF_INCLUDE_DIRS SDL2_ttf::SDL2_ttf INTERFACE_INCLUDE_DIRECTORIES)
 
-# TODO only one part (Engine or SDL specific lib?) should have this dep, remove it from the shell to avoid doubling up here
-
-target_include_directories(${ENGINE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
+target_include_directories(${ENGINE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIRS})
 
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE SDL2::SDL2)
 
-
 target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
-
-target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
-target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_IMAGE_INCLUDE_DIR})
-target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_TTF_INCLUDE_DIR})
 
 target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2)
 target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2main)
-target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2_image)
-target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2_ttf)
-
+target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2_image::SDL2_image)
+target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2_ttf::SDL2_ttf)
 
 # TODO: Tidy this so we build a game project using the engine as a library?
 
