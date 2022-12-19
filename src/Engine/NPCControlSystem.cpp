@@ -192,8 +192,7 @@ void NPCControlSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_BLACKBOARD_NPC);
 	sysSignature.set((size_t)ComponentType::CT_RIGIDBODY);
 	sysSignature.set((size_t)ComponentType::CT_TRANSFORM);
-	m_ParentWorld->SetSystemSignature<NPCControlSystem>(sysSignature);
-	m_ParentWorld->SetSystemDebugSignature<NPCControlSystem>(sysSignature);
+	m_ParentWorld->SetSystemSignatures<NPCControlSystem>(sysSignature);
 }
 
 
@@ -201,7 +200,7 @@ void NPCControlSystem::Update(float deltaSecs)
 {
 	System::Update(deltaSecs);
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& npcBB = m_ParentWorld->GetComponent<NPCBlackboardComponent>(e);
 		auto& rigidBody = m_ParentWorld->GetComponent<RigidBodyComponent>(e);

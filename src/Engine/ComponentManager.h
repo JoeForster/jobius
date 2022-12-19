@@ -22,42 +22,43 @@ public:
 	}
 
 	template<typename T>
-	ComponentType GetComponentType()
+	inline ComponentType GetComponentType() const
 	{
 		return T::GetComponentType();
 	}
 
 	template<typename T>
-	size_t GetComponentIndex()
+	inline size_t GetComponentIndex() const
 	{
 		return (size_t)T::GetComponentType();
 	}
 	
 	template<typename T>
-	size_t GetComponentCount()
+	inline size_t GetComponentCount() const
 	{
-		return GetComponentArray<T>()->GetNumEntries();
+		return GetComponentArray<T>().GetNumEntries();
 	}
 
 	template<typename T>
 	void AddComponent(EntityID entity, T component)
 	{
 		// Add a component to the array for an entity
-		GetComponentArray<T>()->InsertData(entity, component);
+		GetComponentArray<T>().InsertData(entity, component);
 	}
 
 	template<typename T>
 	void RemoveComponent(EntityID entity)
 	{
 		// Remove a component from the array for an entity
-		GetComponentArray<T>()->RemoveData(entity);
+		assert(false && "Untested route");
+		GetComponentArray<T>().RemoveData(entity);
 	}
 
 	template<typename T>
 	T& GetComponent(EntityID entity)
 	{
 		// Get a reference to a component from the array for an entity
-		return GetComponentArray<T>()->GetData(entity);
+		return GetComponentArray<T>().GetData(entity);
 	}
 
 	void OnEntityDestroyed(EntityID entity)
@@ -74,13 +75,21 @@ private:
 
 	std::shared_ptr<IComponentArray> m_ComponentArrays[NUM_COMPONENT_TYPES];
 
-	// TODO: This is a bit clunky. Find a way to have it return references, or just do away with the shared_ptr?
+	// TODO would be even better to return a reference
+	//template<typename T>
+	//ComponentArray<T>* GetComponentArray()
+	//{
+	//	return static_cast<ComponentArray<T>*>(m_ComponentArrays[GetComponentIndex<T>()].get());
+	//}
 	template<typename T>
-	std::shared_ptr<ComponentArray<T>> GetComponentArray()
+	ComponentArray<T>& GetComponentArray()
 	{
-		std::shared_ptr<IComponentArray> p = m_ComponentArrays[GetComponentIndex<T>()];
-		std::shared_ptr<ComponentArray<T>> pc = std::static_pointer_cast<ComponentArray<T>>(p);
-		return pc;
+		return *static_cast<ComponentArray<T>*>(m_ComponentArrays[GetComponentIndex<T>()].get());
+	}
+	template<typename T>
+	const ComponentArray<T>& GetComponentArray() const
+	{
+		return *static_cast<const ComponentArray<T>*>(m_ComponentArrays[GetComponentIndex<T>()].get());
 	}
 
 };

@@ -17,8 +17,7 @@ void Camera2DSystem::Init(const SystemInitialiser& initialiser)
 	EntitySignature sysSignature;
 	sysSignature.set((size_t)ComponentType::CT_KBINPUT);
 	//sysSignature.set((size_t)ComponentType::CT_PADINPUT);
-	m_ParentWorld->SetSystemSignature<Camera2DSystem>(sysSignature);
-	m_ParentWorld->SetSystemDebugSignature<Camera2DSystem>(sysSignature);
+	m_ParentWorld->SetSystemSignatures<Camera2DSystem>(sysSignature);
 
 
 	auto& renderInit = static_cast<const RenderSystemInitialiser&>(initialiser);
@@ -32,7 +31,7 @@ void Camera2DSystem::Update(float deltaSecs)
 {
 	System::Update(deltaSecs);
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& kbInput = m_ParentWorld->GetComponent<KBInputComponent>(e);
 		//auto& padInput = m_ParentWorld->GetComponent<PadInputComponent>(e);

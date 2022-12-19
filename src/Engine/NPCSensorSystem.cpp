@@ -15,8 +15,7 @@ void NPCSensorSystem::Init(const SystemInitialiser& initialiser)
 
 	EntitySignature sysSignature;
 	sysSignature.set((size_t)ComponentType::CT_BLACKBOARD_NPC);
-	m_ParentWorld->SetSystemSignature<NPCSensorSystem>(sysSignature);
-	m_ParentWorld->SetSystemDebugSignature<NPCSensorSystem>(sysSignature);
+	m_ParentWorld->SetSystemSignatures<NPCSensorSystem>(sysSignature);
 }
 
 
@@ -54,7 +53,7 @@ void NPCSensorSystem::Update(float deltaSecs)
 		return;
 	}
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& npcBB = m_ParentWorld->GetComponent<NPCBlackboardComponent>(e);
 

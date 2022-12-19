@@ -48,12 +48,13 @@ public:
 	System(std::shared_ptr<World> parentWorld)
 	: m_ParentWorld(parentWorld)
 	, m_IsInited(false)
+	, m_EntitiesDirty(true)
 	{
 		assert(m_ParentWorld != nullptr);
 	}
 
-	std::set<EntityID> mEntities;
-	std::set<EntityID> mEntitiesDebug;
+	// TODO make private
+	// TODO naming consistency m_!
 
 	// Init to "finalise" the World, ready to render/update.
 	virtual void Init(const SystemInitialiser& initialiser = s_EmptyInitialiser)
@@ -63,6 +64,11 @@ public:
 	virtual void Update(float deltaSecs)
 	{
 		assert(IsInited() && "System updated before initialised");
+
+		if (IsEntitySetDirty())
+		{
+			UpdateEntitySet();
+		}
 	}
 	void Render(RenderPass pass)
 	{
@@ -78,6 +84,83 @@ public:
 		}
 	}
 
+	void SetSignature(const EntitySignature& signature, const EntitySignature& dbgSignature)
+	{
+		if (m_Signature != signature || m_DebugSignature != dbgSignature)
+		{
+			m_Signature = signature;
+			m_DebugSignature = dbgSignature;
+			m_EntitiesDirty = true;
+		}
+	}
+
+	const std::set<EntityID>& GetEntities() const
+	{
+		if (m_EntitiesDirty)
+		{
+			// TODO update here?
+			assert(false && "Entity list needs updating");
+		}
+		return m_Entities;
+	}
+
+	const std::set<EntityID>& GetEntitiesDebug() const
+	{
+		if (m_EntitiesDirty)
+		{
+			// TODO update here?
+			assert(false && "Entity list needs updating");
+		}
+		return m_EntitiesDebug;
+	}
+
+	void RemoveEntity(EntityID e)
+	{
+		m_Entities.erase(e);
+		m_EntitiesDebug.erase(e);
+	}
+
+	inline bool IsEntitySetDirty() const
+	{
+		return m_EntitiesDirty;
+	}
+
+	inline void SetEntitySetDirty()
+	{
+		m_EntitiesDirty = true;
+	}
+
+	// Update our entities for a specific entity
+	//void UpdateEntitySet(EntityID entity, EntitySignature entitySignature)
+	//{
+	//	// TODO unify this with EntityQuery so that a "system entity list" is just the (cached) result of one?
+	//	// Could even have a query system deal with the caching so that the system doesn't need to keep these lists..?
+	//	assert(!m_EntitiesDirty && "Can only UpdateEntitySet for one entity if list is already up-to-date");
+	//
+	//	// Entity signature matches system signature - insert into set
+	//	if ((entitySignature & m_Signature) == m_Signature)
+	//	{
+	//		m_Entities.insert(entity);
+	//	}
+	//	// Entity signature does not match system signature - erase from set
+	//	else
+	//	{
+	//		m_Entities.erase(entity);
+	//	}
+	//
+	//	// Same again for debug..
+	//	if ((entitySignature & m_DebugSignature) == m_DebugSignature)
+	//	{
+	//		m_EntitiesDebug.insert(entity);
+	//	}
+	//	else
+	//	{
+	//		m_EntitiesDebug.erase(entity);
+	//	}
+	//}
+
+	void UpdateEntitySet();
+
 protected:
 	static constexpr SystemInitialiser s_EmptyInitialiser{};
 
@@ -89,6 +172,17 @@ protected:
 
 private:
 	inline bool IsInited() const { return m_IsInited; }
-
+	
 	bool m_IsInited;
+	
+	EntitySignature m_Signature;
+	EntitySignature m_DebugSignature;
+
+	// WIP: These are "redundant" in that they depend on the signatures above, but it's far too slow for large worlds
+	// to be rebuilding these lists every time we add an entity. so implementing dirty flag and ability to
+	// update either on access or at runtime (after simulation start) or in one go (at simulation start)
+	std::set<EntityID> m_Entities;
+	std::set<EntityID> m_EntitiesDebug;
+	bool m_EntitiesDirty;
+
 };

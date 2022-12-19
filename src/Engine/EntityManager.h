@@ -32,7 +32,9 @@ constexpr size_t NUM_COMPONENT_TYPES = (size_t)ComponentType::CT_MAX;
 using EntityID = std::uint32_t;
 using EntitySignature = std::bitset<NUM_COMPONENT_TYPES>;
 
-constexpr size_t MAX_ENTITIES = 10000;
+// NOTE can't keep putting this up due to hard array size limit of 0x7fffffff (2,147,483,647) bytes
+// for expanding grid worlds may need to reconsider ordering or 
+constexpr size_t MAX_ENTITIES = 10000000;
 constexpr EntityID INVALID_ENTITY_ID = MAX_ENTITIES;
 
 class EntityQuery;

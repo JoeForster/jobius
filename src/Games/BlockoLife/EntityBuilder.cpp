@@ -8,10 +8,8 @@
 #include "Components/HealthComponent.h"
 
 template<class T>
-EntityID EntityBuilder<T>::BuildCommon(World& world, Vector2i pos, const int initialHealth, const int maxHealth)
+EntityID EntityBuilder<T>::BuildCommon(World& world, const Vector2i& pos, const int initialHealth, const int maxHealth)
 {
-	assert(m_ResourceID != ResourceID_Invalid);
-
 	EntityID e = world.CreateEntity();
 	const GridTransformComponent t(pos);
 	world.AddComponent<GridTransformComponent>(e, t);
@@ -23,7 +21,7 @@ EntityID EntityBuilder<T>::BuildCommon(World& world, Vector2i pos, const int ini
 }
 
 
-EntityID EntityBuilder<SpeciesIdentity<Species::PLANT>>::BuildImpl(World& world, Vector2i pos)
+EntityID EntityBuilder<SpeciesIdentity<Species::PLANT>>::BuildImpl(World& world, const Vector2i& pos)
 {
 	constexpr int initialHealth = 1;
 	constexpr int maxHealth = 1;
@@ -31,7 +29,7 @@ EntityID EntityBuilder<SpeciesIdentity<Species::PLANT>>::BuildImpl(World& world,
 	return BuildCommon(world, pos, initialHealth, maxHealth);
 }
 
-EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& world, Vector2i pos)
+EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& world, const Vector2i& pos)
 {
 	constexpr int initialHealth = 10;
 	constexpr int maxHealth = 20;
@@ -39,10 +37,16 @@ EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& wo
 	return BuildCommon(world, pos, initialHealth, maxHealth);
 }
 	
-EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& world, Vector2i pos)
+EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& world, const Vector2i& pos)
 {
 	constexpr int initialHealth = 30;
 	constexpr int maxHealth = 40;
 
 	return BuildCommon(world, pos, initialHealth, maxHealth);
+}
+
+	
+EntityID EntityBuilder<SpeciesIdentity<Species::NO_SPECIES>>::BuildImpl(World& world, const Vector2i& pos)
+{
+	return BuildCommon(world, pos, 0, 0);
 }

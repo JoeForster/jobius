@@ -19,15 +19,14 @@ void SpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 	EntitySignature renderSignature;
 	renderSignature.set((size_t)ComponentType::CT_TRANSFORM);
 	renderSignature.set((size_t)ComponentType::CT_SPRITE);
-	m_ParentWorld->SetSystemSignature<SpriteRenderSystem>(renderSignature);
-	m_ParentWorld->SetSystemDebugSignature<SpriteRenderSystem>(renderSignature);
+	m_ParentWorld->SetSystemSignatures<SpriteRenderSystem>(renderSignature);
 }
 
 void SpriteRenderSystem::Render_Main()
 {
 	const auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		TransformComponent& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		SpriteComponent& r = m_ParentWorld->GetComponent<SpriteComponent>(e);

@@ -37,8 +37,7 @@ void GameOfLifeSystem::Init(const SystemInitialiser& initialiser)
 	sysSignature.set((size_t)ComponentType::CT_SPRITE);
 	sysSignature.set((size_t)ComponentType::CT_BL_SPECIES);
 	sysSignature.set((size_t)ComponentType::CT_BL_HEALTH);
-	m_ParentWorld->SetSystemSignature<GameOfLifeSystem>(sysSignature);
-	m_ParentWorld->SetSystemDebugSignature<GameOfLifeSystem>(sysSignature);
+	m_ParentWorld->SetSystemSignatures<GameOfLifeSystem>(sysSignature);
 }
 
 
@@ -272,7 +271,7 @@ void GameOfLifeSystem::Tick_Move_Carnivore(Array2D<CreatureCache>& cachedEntitie
 	Vector2i targetPos;
 	if (health.m_Health < health.m_MaxHealth/2)
 	{
-		for (EntityID e : mEntities)
+		for (EntityID e : GetEntities())
 		{
 			auto& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 			auto& s = m_ParentWorld->GetComponent<SpeciesComponent>(e);
@@ -396,12 +395,12 @@ void GameOfLifeSystem::Tick()
 	// (we'd like to be able to index into components, or adjacent ones, I guess?)
 	Rect2i limits ( {0, 0}, {0, 0} );
 
-	if (mEntities.empty())
+	if (GetEntities().empty())
 	{
 		printf("\nTICK no entities!\n");
 	}
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		if (t.m_Pos.x < limits.min.x) limits.min.x = t.m_Pos.x;
@@ -416,7 +415,7 @@ void GameOfLifeSystem::Tick()
 		limits.max.y += 1;
 	}
 
-	printf("\nTICK entities(%zu) limits min(%d %d) max(%d %d)\n", mEntities.size(), limits.min.x, limits.min.y, limits.max.x, limits.max.y);
+	printf("\nTICK entities(%zu) limits min(%d %d) max(%d %d)\n", GetEntities().size(), limits.min.x, limits.min.y, limits.max.x, limits.max.y);
 
 	assert(limits.max.y > limits.min.y);
 	assert(limits.max.x > limits.min.x);
@@ -435,7 +434,7 @@ void GameOfLifeSystem::Tick()
 	// due to the unbounded world. And then we might as well make this use ECS properly.
 	auto cachedEntities = Array2D<CreatureCache>(num_columns, num_rows, x_offset, y_offset);
 
-	for (EntityID e : mEntities)
+	for (EntityID e : GetEntities())
 	{
 		auto& transform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		auto& species = m_ParentWorld->GetComponent<SpeciesComponent>(e);
@@ -452,7 +451,7 @@ void GameOfLifeSystem::Tick()
 	std::set<EntityID> entitiesToRemove;
 
 	// Move pass
-	for (EntityID movingEntity : mEntities)
+	for (EntityID movingEntity : GetEntities())
 	{
 		if (entitiesToRemove.contains(movingEntity))
 		{

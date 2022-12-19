@@ -31,6 +31,7 @@ public:
 	// Entity methods
 	EntityID CreateEntity()
 	{
+		m_SystemManager.SetEntitySetsDirty();
 		return m_EntityManager.CreateEntity();
 	}
 
@@ -57,8 +58,8 @@ public:
 		auto signature = m_EntityManager.GetSignature(entity);
 		signature.set(m_ComponentManager.GetComponentIndex<T>(), true);
 		m_EntityManager.SetSignature(entity, signature);
-
-		m_SystemManager.OnEntitySignatureChanged(entity, signature);
+		
+		m_SystemManager.SetEntitySetsDirty();
 	}
 
 	template<typename T>
@@ -67,18 +68,21 @@ public:
 		// A global component works just like a regular component of which there is one per world
 		assert(m_ComponentManager.GetComponentCount<T>() == 0 && "SetGlobalComponent called on component that already exists");
 		AddComponent<T>(0, component);
+		
+		m_SystemManager.SetEntitySetsDirty();
 	}
 
 	template<typename T>
 	void RemoveComponent(EntityID entity)
 	{
+		assert(false && "Untested route");
 		m_ComponentManager.RemoveComponent<T>(entity);
 
 		auto signature = m_EntityManager.GetSignature(entity);
 		signature.set(m_ComponentManager.GetComponentType<T>(), false);
 		m_EntityManager.SetSignature(entity, signature);
-
-		m_SystemManager.OnEntitySignatureChanged(entity, signature);
+		
+		m_SystemManager.SetEntitySetsDirty();
 	}
 
 	template<typename T>
@@ -109,20 +113,27 @@ public:
 	}
 
 	template<typename T>
-	void SetSystemSignature(EntitySignature signature)
+	void SetSystemSignatures(EntitySignature signature)
 	{
-		m_SystemManager.SetSignature<T>(signature);
+		m_SystemManager.SetSignatures<T>(signature, signature);
 	}
 
 	template<typename T>
-	void SetSystemDebugSignature(EntitySignature signature)
+	void SetSystemSignatures(EntitySignature signature, EntitySignature debugSignature)
 	{
-		m_SystemManager.SetDebugSignature<T>(signature);
+		m_SystemManager.SetSignatures<T>(signature, debugSignature);
 	}
 
 	void ExecuteQuery(EntityQuery query, std::set<EntityID>& entitiesOut)
 	{
 		m_EntityManager.ExecuteQuery(query, entitiesOut);
+	}
+
+	void UpdateEntitySets()
+	{
+		// TODO_ENTITY_CREATION in order to create/update entities after construction we need to call this,
+		// ideally at a fixed point per frame/tick automatically.
+		m_SystemManager.UpdateEntitySets();
 	}
 
 	void Update(float deltaSecs)
