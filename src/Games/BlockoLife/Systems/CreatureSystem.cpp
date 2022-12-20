@@ -62,7 +62,7 @@ void CreatureSystem::Render_Main()
 		const auto& transform = m_ParentWorld->GetComponent<GridTransformComponent>(e);
 		const auto& species = m_ParentWorld->GetComponent<SpeciesComponent>(e);
 		const auto& health = m_ParentWorld->GetComponent<HealthComponent>(e);
-		if (species.m_Species == Species::PLANT)
+		if (species.m_Species == Species::PLANT || species.m_Species == Species::NO_SPECIES)
 		{
 			continue;
 		}
