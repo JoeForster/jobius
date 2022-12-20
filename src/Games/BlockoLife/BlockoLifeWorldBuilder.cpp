@@ -35,6 +35,8 @@
 #include "Components/HealthComponent.h"
 #include "Components/BlockDropperComponent.h"
 
+#pragma optimize("", off)
+
 EntityBuilder<SpeciesIdentity<Species::PLANT>> BlockoLifeWorldBuilder::m_PlantBuilder;
 EntityBuilder<SpeciesIdentity<Species::HERBIVORE>> BlockoLifeWorldBuilder::m_HerbivoreBuilder;
 EntityBuilder<SpeciesIdentity<Species::CARNIVORE>> BlockoLifeWorldBuilder::m_CarnivoreBuilder;
@@ -118,12 +120,18 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	// TODO scenario from config?
 	static constexpr Scenario scenario = Scenario::RANDOM_MASSIVE;
 
-	std::map<Vector2i, Species> creatureSpawns;
+	std::map<int, std::map<int, Species>> creatureSpawns;
 	Rect2i limits ( {0, 0}, {0, 0} );
 	auto AddSpawn = [&](Species species, const Vector2i& pos)
 	{
 		assert(species < Species::SPECIES_COUNT);
-		creatureSpawns[pos] = species;
+
+		if (creatureSpawns.find(pos.x) == creatureSpawns.cend())
+			creatureSpawns[pos.x] = {{ pos.y, species }};
+		else
+			creatureSpawns[pos.x].insert({pos.y, species});
+
+		//creatureSpawns[pos.x] = species;
 		if (pos.x < limits.min.x) limits.min.x = pos.x;
 		if (pos.y < limits.min.y) limits.min.y = pos.y;
 		if (pos.x > limits.max.x) limits.max.x = pos.x;
@@ -235,10 +243,19 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 		for (int x = limits.min.x+1; x < limits.max.x-1; ++x)
 		{
 			const Vector2i spawnPos {x, y};
-			const auto& itSpawn = creatureSpawns.find(spawnPos);
-			if (itSpawn != creatureSpawns.cend())
+			const auto& itSpawnCol = creatureSpawns.find(x);
+			if (itSpawnCol != creatureSpawns.cend())
 			{
-				BuildEntity(*world, itSpawn->second, spawnPos);
+				const auto& itSpawn = itSpawnCol->second.find(y);
+				if (itSpawn != itSpawnCol->second.cend())
+				{
+					BuildEntity(*world, itSpawn->second, spawnPos);
+				}
+				else
+				{
+					// TODO this does not quite work
+					m_EmptyBuilder.Build(*world, spawnPos);
+				}
 			}
 			else
 			{

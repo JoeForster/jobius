@@ -11,9 +11,6 @@ struct Vector2f
 
 	static const Vector2f ZERO;
 
-	//Vector2f(float initX, float initY)
-	//: x(initX), y(initY) {}
-
 	const Vector2f operator-(const Vector2f& other) const
 	{
 		Vector2f v {x - other.x, y - other.y};
@@ -72,25 +69,6 @@ struct Vector2f
 	{
 		return (x != rVec.x || y != rVec.y);
 	}
-
-	bool operator>(const Vector2f& rVec) const
-	{
-		return (x > rVec.x && y > rVec.y);
-	}
-	bool operator>=(const Vector2f& rVec) const
-	{
-		return (x >= rVec.x && y >= rVec.y);
-	}
-
-	bool operator<(const Vector2f& rVec) const
-	{
-		return (x < rVec.x && y < rVec.y);
-	}
-	bool operator<=(const Vector2f& rVec) const
-	{
-		return (x <= rVec.x && y <= rVec.y);
-	}
-
 
 	bool IsZero() const
 	{
@@ -188,24 +166,6 @@ struct Vector2i
 		return (x != rVec.x || y != rVec.y);
 	}
 
-	bool operator>(const Vector2i& rVec) const
-	{
-		return (x > rVec.x && y > rVec.y);
-	}
-	bool operator>=(const Vector2i& rVec) const
-	{
-		return (x >= rVec.x && y >= rVec.y);
-	}
-
-	bool operator<(const Vector2i& rVec) const
-	{
-		return (x < rVec.x && y < rVec.y);
-	}
-	bool operator<=(const Vector2i& rVec) const
-	{
-		return (x <= rVec.x && y <= rVec.y);
-	}
-
 	Vector2i& operator+=(const Vector2i& other)
 	{
 		x = x + other.x;
@@ -238,7 +198,8 @@ struct Rect2f
 
 	const bool IsInside(const Vector2f& testPoint)
 	{
-		return (testPoint > min && testPoint < max);
+		return (testPoint.x > min.x && testPoint.x < max.x &&
+				testPoint.y > min.y && testPoint.y < max.y);
 	}
 };
 
@@ -252,7 +213,8 @@ struct Rect2i
 
 	const bool IsInside(const Vector2i& testPoint)
 	{
-		return (testPoint > min && testPoint < max);
+		return (testPoint.x > min.x && testPoint.x < max.x &&
+				testPoint.y > min.y && testPoint.y < max.y);
 	}
 };
 
