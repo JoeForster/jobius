@@ -10,6 +10,7 @@
 #include "PlaneCollisionSystem.h"
 #include "PlayerControlSystem.h"
 #include "SDLInputSystem.h"
+#include "Camera2DSystem.h"
 #include "SpriteRenderSystem.h"
 
 #include "AABBComponent.h"
@@ -24,6 +25,7 @@
 #include "RigidBodyComponent.h"
 #include "SpriteComponent.h"
 #include "TransformComponent.h"
+#include "Camera2DComponent.h"
 
 std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {
@@ -49,6 +51,7 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->RegisterComponent<PlayerComponent>();
 	world->RegisterComponent<DebugTextComponent>();
 	world->RegisterComponent<GridWorldComponent>();
+	world->RegisterComponent<Camera2DComponent>();
 
 	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
@@ -56,6 +59,7 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 
 	// Init systems
 	world->RegisterSystem<SDLInputSystem>()->Init();
+	world->RegisterSystem<Camera2DSystem>()->Init(renderInit);
 	world->RegisterSystem<PlayerControlSystem>()->Init(renderInit);
 	world->RegisterSystem<NPCControlSystem>()->Init();
 	world->RegisterSystem<NPCSensorSystem>()->Init();
@@ -69,6 +73,7 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	EntityID globalHack = world->CreateEntity();
 	assert(globalHack == 0);
 	world->SetGlobalComponent<GridWorldComponent>( { Rect2f{ Vector2f{0, 0}, Vector2f{1000, 700} }, 32 } );
+	world->SetGlobalComponent<Camera2DComponent>();
 
 	// Create test world entities
 	auto createSprite = [](World& w, ResourceID resID, Vector3f pos)
