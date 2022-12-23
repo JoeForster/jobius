@@ -47,6 +47,7 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/Enum.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/World.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/WorldBuilder.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/WorldCoords.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/EntityManager.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/System.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/PhysicsSystem.h"

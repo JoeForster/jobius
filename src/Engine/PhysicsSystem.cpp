@@ -10,6 +10,7 @@
 #include "GridWorldComponent.h"
 
 #include "World.h"
+#include "WorldCoords.h"
 #include "SDLRenderManager.h"
 
 void PhysicsSystem::Init(const SystemInitialiser& initialiser)
@@ -84,11 +85,10 @@ void PhysicsSystem::Render_Debug()
 		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 		
-		auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
-		const Vector2i gridCoords = gridWorld.WorldToGrid(t.m_Pos);
+		const Vector2i gridCoords = WorldCoords::WorldToGrid(*m_ParentWorld, t.m_Pos);
 
 		m_RenderMan->DrawText(
 			std::format("{:.2f}({}), {:.2f}({})", rb.m_Vel.x, gridCoords.x, rb.m_Vel.y, gridCoords.y).c_str(),
-			dt.m_ResID, gridWorld.WorldToScreen(*m_ParentWorld, t.m_Pos));
+			dt.m_ResID, WorldCoords::WorldToScreen(*m_ParentWorld, t.m_Pos));
 	}
 }

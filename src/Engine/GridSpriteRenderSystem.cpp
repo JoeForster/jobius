@@ -1,6 +1,7 @@
 #include "GridSpriteRenderSystem.h"
 
 #include "World.h"
+#include "WorldCoords.h"
 #include "GridWorldComponent.h"
 #include "GridTransformComponent.h"
 #include "SpriteComponent.h"
@@ -35,7 +36,7 @@ void GridSpriteRenderSystem::Render_Main()
 			continue;
 		}
 		auto& t = m_ParentWorld->GetComponent<GridTransformComponent>(e);
-		const auto spritePos = gridWorld.GridToScreen(*m_ParentWorld, t.m_Pos);
+		const auto spritePos = WorldCoords::GridToScreen(*m_ParentWorld, t.m_Pos);
 		m_RenderMan->DrawSprite(r.m_SpriteID, r.m_TextureAlpha, spritePos);
 	}
 }

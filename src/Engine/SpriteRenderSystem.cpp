@@ -2,10 +2,10 @@
 
 #include "World.h"
 #include "SDLRenderManager.h"
+#include "WorldCoords.h"
 
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
-#include "GridWorldComponent.h"
 
 void SpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -24,13 +24,11 @@ void SpriteRenderSystem::Init(const SystemInitialiser& initialiser)
 
 void SpriteRenderSystem::Render_Main()
 {
-	const auto& gridWorld = m_ParentWorld->GetGlobalComponent<GridWorldComponent>();
-
 	for (EntityID e : GetEntities())
 	{
 		TransformComponent& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		SpriteComponent& r = m_ParentWorld->GetComponent<SpriteComponent>(e);
-		const auto screenPos = gridWorld.WorldToScreen(*m_ParentWorld, t.m_Pos);
+		const auto screenPos = WorldCoords::WorldToScreen(*m_ParentWorld, t.m_Pos);
 		m_RenderMan->DrawSprite(r.m_SpriteID, r.m_TextureAlpha, screenPos);
 	}
 }
