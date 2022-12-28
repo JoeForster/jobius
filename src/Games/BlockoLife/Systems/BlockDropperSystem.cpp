@@ -107,6 +107,6 @@ void BlockDropperSystem::Render_Main()
 		const Vector2i bottomRight { screenPos.x+gridWorld.m_GridSize, screenPos.y+gridWorld.m_GridSize };
 		const Rect2i drawBox { topLeft, bottomRight };
 
-		m_RenderMan->DrawRect(drawBox, BLUE);
+		m_RenderMan->DrawRect(drawBox, Vector2i::ZERO, BLUE);
 	}
 }

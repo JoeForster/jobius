@@ -187,22 +187,6 @@ struct Vector3f
 
 // TODO these don't belong in Vector.h
 
-// TODO rename to Rect2f
-struct Rect2f
-{
-	Vector2f min;
-	Vector2f max;
-
-	float GetWidth() const { return max.x-min.x; }
-	float GetHeight() const { return max.y-min.y; }
-
-	const bool IsInside(const Vector2f& testPoint)
-	{
-		return (testPoint.x > min.x && testPoint.x < max.x &&
-				testPoint.y > min.y && testPoint.y < max.y);
-	}
-};
-
 struct Rect2i
 {
 	Vector2i min;
@@ -216,7 +200,47 @@ struct Rect2i
 		return (testPoint.x > min.x && testPoint.x < max.x &&
 				testPoint.y > min.y && testPoint.y < max.y);
 	}
+
+	static Rect2i FromBoxAndOffset(const Vector2i& pos, const Vector2i& offset)
+	{
+		const int minX = offset.x - pos.x / 2;
+		const int maxX = offset.x + pos.x / 2;
+		const int minY = offset.y - pos.y / 2;
+		const int maxY = offset.y + pos.y / 2;
+		return Rect2i({ minX, minY }, { maxX, maxY });
+	}
 };
+
+// TODO rename to Rect2f
+struct Rect2f
+{
+	Vector2f min;
+	Vector2f max;
+
+	float GetWidth() const { return max.x - min.x; }
+	float GetHeight() const { return max.y - min.y; }
+
+	const bool IsInside(const Vector2f& testPoint)
+	{
+		return (testPoint.x > min.x && testPoint.x < max.x&&
+			testPoint.y > min.y && testPoint.y < max.y);
+	}
+
+	static Rect2f FromBoxAndOffset(const Vector2f& pos, const Vector2f& offset)
+	{
+		const float minX = offset.x - pos.x / 2;
+		const float maxX = offset.x + pos.x / 2;
+		const float minY = offset.y - pos.y / 2;
+		const float maxY = offset.y + pos.y / 2;
+		return Rect2f({ minX, minY }, { maxX, maxY });
+	}
+
+	operator Rect2i()
+	{
+		return Rect2i({ (int)min.x, (int)min.y }, { (int)max.x, (int)max.y });
+	}
+};
+
 
 struct Colour4i
 {

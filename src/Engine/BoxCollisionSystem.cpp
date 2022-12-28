@@ -5,6 +5,7 @@
 #include "AABBComponent.h"
 #include "World.h"
 #include "SDLRenderManager.h"
+#include "WorldCoords.h"
 
 void BoxCollisionSystem::Init(const SystemInitialiser& initialiser)
 {
@@ -44,8 +45,8 @@ void BoxCollisionSystem::Update(float deltaSecs)
 			}
 			auto& transformTest = m_ParentWorld->GetComponent<TransformComponent>(testCollide);
 			auto& aabbTest = m_ParentWorld->GetComponent<AABBComponent>(testCollide);
-			if ( (fabsf((transformTest.m_Pos.x + aabb.m_Offset.x) - (t.m_Pos.x + aabbTest.m_Offset.x)) < aabb.m_Box.x/2 + aabbTest.m_Box.x/2 ) &&
-				 (fabsf((transformTest.m_Pos.y + aabb.m_Offset.y) - (t.m_Pos.y + aabbTest.m_Offset.x)) < aabb.m_Box.y/2 + aabbTest.m_Box.y/2) )
+			if (transformTest.m_Pos.x >= aabbTest.m_Box.min.x && transformTest.m_Pos.y >= aabbTest.m_Box.min.y &&
+				transformTest.m_Pos.x <= aabbTest.m_Box.max.x && transformTest.m_Pos.y <= aabbTest.m_Box.min.y)
 			{
 				rb.m_Colliding = true;
 				break;
@@ -61,16 +62,6 @@ void BoxCollisionSystem::Render_Debug()
 	{
 		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
 		auto& aabb = m_ParentWorld->GetComponent<AABBComponent>(e);
-
-		const int minX = (int) (t.m_Pos.x + aabb.m_Offset.x - aabb.m_Box.x/2);
-		const int maxX = (int) (t.m_Pos.x + aabb.m_Offset.x + aabb.m_Box.x/2);
-		const int minY = (int) (t.m_Pos.y + aabb.m_Offset.y - aabb.m_Box.y/2);
-		const int maxY = (int) (t.m_Pos.y + aabb.m_Offset.y + aabb.m_Box.y/2);
-
-		// TODO multi draw line
-		m_RenderMan->DrawLine(minX, minY, maxX, minY);
-		m_RenderMan->DrawLine(maxX, minY, maxX, maxY);
-		m_RenderMan->DrawLine(maxX, maxY, minX, maxY);
-		m_RenderMan->DrawLine(minX, maxY, minX, minY);
+		m_RenderMan->DrawRect((Rect2i)aabb.m_Box, WorldCoords::WorldToScreen(*m_ParentWorld, t.m_Pos));
 	}
 }

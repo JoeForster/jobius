@@ -66,10 +66,10 @@ public:
 	// Primitive drawing helpers
 	void DrawLine(int x0, int y0, int x1, int y1, Colour4i colour = DEFAULT_LINE_COLOUR);
 	void DrawLine(Vector2i from, Vector2i to, Colour4i colour = DEFAULT_LINE_COLOUR);
-	void DrawRect(const Rect2f& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
-	void DrawRect(const Rect2i& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
-	void DrawFillRect(const Rect2f& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
-	void DrawFillRect(const Rect2i& r, Colour4i colour = DEFAULT_LINE_COLOUR); 
+	void DrawRect(const Rect2f& r, Vector2f offset = Vector2f::ZERO, Colour4i colour = DEFAULT_LINE_COLOUR);
+	void DrawRect(const Rect2i& r, Vector2i offset = Vector2i::ZERO, Colour4i colour = DEFAULT_LINE_COLOUR);
+	void DrawFillRect(const Rect2f& r, Vector2f offset = Vector2f::ZERO, Colour4i colour = DEFAULT_LINE_COLOUR);
+	void DrawFillRect(const Rect2i& r, Vector2i offset = Vector2i::ZERO, Colour4i colour = DEFAULT_LINE_COLOUR);
 
 private:
 	bool Init();

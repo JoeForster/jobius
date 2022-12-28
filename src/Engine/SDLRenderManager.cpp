@@ -258,6 +258,7 @@ bool SDLRenderManager::DrawText(const char* text, ResourceID& textResID, Vector2
 	return result;
 }
 
+// TODO FIX CAMERA OFFSETS??
 void SDLRenderManager::DrawLine(int x0, int y0, int x1, int y1, Colour4i colour)
 {
 	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
@@ -269,36 +270,36 @@ void SDLRenderManager::DrawLine(Vector2i from, Vector2i to, Colour4i colour)
 	DrawLine(from.x, from.y, to.x, to.y, colour);
 }
 
-void SDLRenderManager::DrawRect(const Rect2f& r, Colour4i colour)
+void SDLRenderManager::DrawRect(const Rect2f& r, Vector2f offset, Colour4i colour)
 {
 	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
 
-	SDL_FRect rect (r.min.x, r.min.y, r.GetWidth(), r.GetHeight());
+	SDL_FRect rect (r.min.x + offset.x, r.min.y + offset.y, r.GetWidth(), r.GetHeight());
 	SDL_RenderDrawRectF(m_Renderer, &rect);
 }
 
 
-void SDLRenderManager::DrawRect(const Rect2i& r, Colour4i colour)
+void SDLRenderManager::DrawRect(const Rect2i& r, Vector2i offset, Colour4i colour)
 {
 	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
 
-	SDL_Rect rect (r.min.x, r.min.y, r.GetWidth(), r.GetHeight());
+	SDL_Rect rect (r.min.x + offset.x, r.min.y + offset.y, r.GetWidth(), r.GetHeight());
 	SDL_RenderDrawRect(m_Renderer, &rect);
 }
 
-void SDLRenderManager::DrawFillRect(const Rect2f& r, Colour4i colour)
+void SDLRenderManager::DrawFillRect(const Rect2f& r, Vector2f offset, Colour4i colour)
 {
 	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
 
-	SDL_FRect rect (r.min.x, r.min.y, r.GetWidth(), r.GetHeight());
+	SDL_FRect rect (r.min.x + offset.x, r.min.y + offset.y, r.GetWidth(), r.GetHeight());
 	SDL_RenderFillRectF(m_Renderer, &rect);
 }
 
 
-void SDLRenderManager::DrawFillRect(const Rect2i& r, Colour4i colour)
+void SDLRenderManager::DrawFillRect(const Rect2i& r, Vector2i offset, Colour4i colour)
 {
 	SDL_SetRenderDrawColor(m_Renderer, colour.r, colour.g, colour.b, colour.a);
 
-	SDL_Rect rect (r.min.x, r.min.y, r.GetWidth(), r.GetHeight());
+	SDL_Rect rect (r.min.x + offset.x, r.min.y + offset.y, r.GetWidth(), r.GetHeight());
 	SDL_RenderFillRect(m_Renderer, &rect);
 }
