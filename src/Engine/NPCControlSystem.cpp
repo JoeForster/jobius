@@ -250,12 +250,12 @@ void NPCControlSystem::Update(float deltaSecs)
 		bt->Tick();
 		// TODO_DEBUG_DRAW
 		//bt->DebugToStream(std::cout) << std::endl;
-		std::cout << "LastActiveNode: ";
+		//std::cout << "LastActiveNode: ";
 		const Behaviour* an = bt->GetState().LastActiveNode;
 		//if (an != nullptr)
-		{
-			an->DebugToStream(std::cout) << std::endl;
-		}
+		//{
+		//	an->DebugToStream(std::cout) << std::endl;
+		//}
 		//else
 		//{
 		//	std::cout << "NULL" << std::endl;
@@ -278,5 +278,16 @@ void NPCControlSystem::Update(float deltaSecs)
 
 		rigidBody.m_Mass = 0.0f;
 		rigidBody.m_Kinematic = true;
+	}
+}
+
+void NPCControlSystem::Render_Debug()
+{
+	for (EntityID e : GetEntities())
+	{
+		// TODO
+		//auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
+		//auto& aabb = m_ParentWorld->GetComponent<AABBComponent>(e);
+		//m_RenderMan->DrawRect((Rect2i)aabb.m_Box, WorldCoords::WorldToScreen(*m_ParentWorld, t.m_Pos));
 	}
 }

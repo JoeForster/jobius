@@ -61,7 +61,7 @@ public:
 	void DrawSprite(ResourceID imageID, uint8_t alpha = 255, Vector2i screenCoords = Vector2i::ZERO);
 	void DrawText(ResourceID textID, Vector2i screenCoords = Vector2i::ZERO);
 	// Helper to both prepare and draw text in one
-	bool DrawText(const char* text, ResourceID& textResID, Vector2i screenCoords = Vector2i::ZERO, ResourceID fontID = ResourceID_Invalid);
+	bool PrepareAndDrawText(const char* text, ResourceID& textResID, Vector2i screenCoords = Vector2i::ZERO, ResourceID fontID = ResourceID_Invalid);
 
 	// Primitive drawing helpers
 	void DrawLine(int x0, int y0, int x1, int y1, Colour4i colour = DEFAULT_LINE_COLOUR);

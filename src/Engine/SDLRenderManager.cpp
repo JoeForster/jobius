@@ -99,7 +99,8 @@ ResourceID SDLRenderManager::LoadFont(const char* fontFile)
 {
 	// Simply load the font from the file, and if successful store and return the ID.
 	// -1 indicates a valid font could not be loaded.
-	TTF_Font* font = TTF_OpenFont(fontFile, 24);
+	// TODO: allow set font size at runtime
+	TTF_Font* font = TTF_OpenFont(fontFile, 20);
 	if (font == nullptr)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "LoadFont FAILED due to TTF_OpenFont failure: %s\n", TTF_GetError());
@@ -248,7 +249,7 @@ void SDLRenderManager::DrawText(ResourceID textID, Vector2i screenCoords)
 	SDL_RenderCopy(m_Renderer, optimizedSurface, sizeRect, &posRect);
 }
 
-bool SDLRenderManager::DrawText(const char* text, ResourceID& textResID, Vector2i screenCoords, ResourceID fontID)
+bool SDLRenderManager::PrepareAndDrawText(const char* text, ResourceID& textResID, Vector2i screenCoords, ResourceID fontID)
 {
 	bool result = PrepareText(text, textResID, fontID);
 	if (result)

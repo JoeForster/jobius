@@ -6,6 +6,7 @@ This is my rudimentary game engine project for playing around with ECS, currentl
 
 Next steps at the ECS level are to add ways to query components and schedule updates in a proper way, optimise, and demonstrate all this with some little games. Also working on a Behaviour Tree implementation with OOP and looking into how that can be re-worked into ECS.
 
+
 ## Building
 
 1. Install CMake at least version 3.8
@@ -14,6 +15,7 @@ Next steps at the ECS level are to add ways to query components and schedule upd
 4. Generate project files and build
 6. With a fresh CMake build folder or config, you'll need to copy the `SDL2.dll`, `SDL2_image.dll` and `SDL2_ttf.dll` files from their respective lib (probably `lib/x64`) folders to your build output folder, e.g. `build\src\Engine\Release`
 5. If in VS, set the start-up project to `JobiusShell`
+
 
 ### CMake Configuration
 
@@ -36,8 +38,14 @@ There's also the ChaosSpace demo game, which is just some space ships that don't
 Package has the .exe copied to the root folder from build/src/Engine for demonstration.
 Run from within Visual Studio, or if using the package just run JobiusShell.exe
 
-### Controls
+### Controls - Blocko Life
 
 - WSAD moves the camera, Q and E zooms.
 - Return resets the camera.
 - Arrow keys to move the block dropper, SPACE to place a block.
+
+### Controls - Chaos Space
+
+You can just move the ship around with arrow keys and test the AI follows you around.
+
+There's currently an issue with the stick axis input being quite laggy. I think the way we are polling axis values is incorrect and needs to switch to events instead. In the meantime, keyboard arrow keys seem to work

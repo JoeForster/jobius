@@ -81,13 +81,13 @@ void PhysicsSystem::Render_Debug()
 {
 	for (EntityID e : GetEntitiesDebug())
 	{
-		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
-		auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
+		const auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
+		const auto& rb = m_ParentWorld->GetComponent<RigidBodyComponent>(e);
 		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 		
 		const Vector2i gridCoords = WorldCoords::WorldToGrid(*m_ParentWorld, t.m_Pos);
 
-		m_RenderMan->DrawText(
+		m_RenderMan->PrepareAndDrawText(
 			std::format("{:.2f}({}), {:.2f}({})", rb.m_Vel.x, gridCoords.x, rb.m_Vel.y, gridCoords.y).c_str(),
 			dt.m_ResID, WorldCoords::WorldToScreen(*m_ParentWorld, t.m_Pos));
 	}

@@ -59,7 +59,6 @@ void PlayerControlSystem::Update(float deltaSecs)
 
 		desiredVel.x += padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_X);
 		desiredVel.y += padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y);
-		printf("DesiredVel: %f %f\n", desiredVel.x, desiredVel.y);
 
 		rigidBody.m_Mass = kbInput.IsPressed(KB_KEY::KEY_SPACE) || padInput.IsPressed(GAMEPAD_BTN::BTN_FACE_CROSS) ? 0.0f : 1.0f;
 
@@ -70,8 +69,7 @@ void PlayerControlSystem::Update(float deltaSecs)
 		else
 		{
 			rigidBody.m_Kinematic = true;
-			rigidBody.m_Vel.x = padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_X);;// * 5.0f;
-			rigidBody.m_Vel.y = padInput.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y);;// * 5.0f;
+			rigidBody.m_Vel = desiredVel;
 		}
 	}
 }
@@ -80,18 +78,19 @@ void PlayerControlSystem::Render_Debug()
 {
 	for (EntityID e : GetEntities())
 	{
-		auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
-		auto& pad = m_ParentWorld->GetComponent<PadInputComponent>(e);
+		const auto& t = m_ParentWorld->GetComponent<TransformComponent>(e);
+		const auto& kbInput = m_ParentWorld->GetComponent<KBInputComponent>(e);
+		const auto& pad = m_ParentWorld->GetComponent<PadInputComponent>(e);
 		auto& dt = m_ParentWorld->GetComponent<DebugTextComponent>(e);
 
 		static Vector2i offset (0, 20); 
 		const auto drawPos = WorldCoords::WorldToScreen(*m_ParentWorld, t.m_Pos);
-		m_RenderMan->DrawText(
-			std::format("{:.2f}, {:.2f}, {:.2f}, {:.2f}",
+		m_RenderMan->PrepareAndDrawText(
+			std::format("ls:({:.2f},{:.2f}), kb:({:.2f}, {:.2f})",
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_LS_X),
 				pad.GetAxis(GAMEPAD_AXIS::AXIS_LS_Y),
-				pad.GetAxis(GAMEPAD_AXIS::AXIS_RS_X),
-				pad.GetAxis(GAMEPAD_AXIS::AXIS_RS_Y)).c_str(),
+				(float)kbInput.IsPressed(KB_KEY::KEY_DOWN) - (float)kbInput.IsPressed(KB_KEY::KEY_UP),
+				(float)kbInput.IsPressed(KB_KEY::KEY_RIGHT) - (float)kbInput.IsPressed(KB_KEY::KEY_LEFT)).c_str(),
 			dt.m_ResID, drawPos + offset);
 	}
 }

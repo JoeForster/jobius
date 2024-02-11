@@ -39,7 +39,9 @@ void SDLInputSystem::Update(float deltaSecs)
 	auto ReadAxis = [&](SDL_GameControllerAxis axis)
 	{
 		Sint16 axisVal = SDL_GameControllerGetAxis(this->m_Controllers[0], axis);
-		//printf("axis_%d = %d\n", axis, axisVal);
+		printf("axis_%d = %d (error: '%s')\n", axis, axisVal, SDL_GetError());
+		
+
 		float normalisedVal;
 		if (axisVal >= s_AxisDeadZone)
 		{
@@ -83,7 +85,10 @@ void SDLInputSystem::Update(float deltaSecs)
 			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_X, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_X));
 			padControl.m_CurrBtnState.set((size_t)GAMEPAD_BTN::BTN_FACE_Y, SDL_GameControllerGetButton(pad, SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_Y));
 
+			// TODO: why not passing through pad ID?
+			// TODO: don't read per entity, read per pad and then feed to entity
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_X] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTX);
+			//printf("axis_ls_x %f\n", padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_X]);
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_LS_Y] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_LEFTY);
 
 			padControl.m_AxisState[(size_t)GAMEPAD_AXIS::AXIS_RS_X] = ReadAxis(SDL_GameControllerAxis::SDL_CONTROLLER_AXIS_RIGHTX);
