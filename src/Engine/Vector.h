@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <cstdint>
+#include <math.h>
 
 // TODO: Templatised vector class
 struct Vector2f
