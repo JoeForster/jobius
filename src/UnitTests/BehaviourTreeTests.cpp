@@ -2,6 +2,7 @@
 
 #include "BehaviourTree.h"
 #include "BehaviourTreeBuilder.h"
+#include "Behaviours.h"
 
 // MOCK TYPES
 // TODO likely to go into their own new header/cpp once this file gets too massive...

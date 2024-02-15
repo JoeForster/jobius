@@ -4,6 +4,7 @@
 set(TESTS_SOURCES
 	"${CMAKE_SOURCE_DIR}/src/UnitTests/UnitTestsMain.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTree.cpp"
+	"${CMAKE_SOURCE_DIR}/src/Engine/Behaviours.cpp"
 	"${CMAKE_SOURCE_DIR}/src/UnitTests/BehaviourTreeTests.cpp"
 )
 
