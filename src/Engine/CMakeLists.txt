@@ -37,6 +37,7 @@ set(ENGINE_SOURCES
 	"${CMAKE_SOURCE_DIR}/src/Engine/NPCControlSystem.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/SDLRenderManager.cpp"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTree.cpp"
+	"${CMAKE_SOURCE_DIR}/src/Engine/Behaviours.cpp"
 )
 
 set(ENGINE_HEADERS
@@ -76,8 +77,10 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/GridWorldComponent.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/Camera2DComponent.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/Behaviours.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourStatus.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTree.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTreeBuilder.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourNodeComponent.h"
 )
 
 add_library(${ENGINE_PROJECT_NAME} ${ENGINE_SOURCES} ${ENGINE_HEADERS})

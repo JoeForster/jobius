@@ -228,6 +228,8 @@ void Composite::ClearChildren()
 	m_Children.clear();
 }
 
+using namespace std;
+
 ostream& ActiveSelector::DebugToStream(ostream& stream) const
 {
 	// FIXME: Iterator may be invalidated here if child list modified but OnInitialise not yet called.
