@@ -11,7 +11,7 @@ Behaviour::Behaviour(Behaviour* parent, BehaviourTreeState& treeState)
 , m_TreeState(treeState)
 {}
 
-BehaviourStatus Behaviour::Tick()
+BehaviourStatus Behaviour::Tick(NPCBlackboardComponent& blackboard)
 {
 	if (m_Status != BehaviourStatus::RUNNING)
 	{
@@ -19,7 +19,7 @@ BehaviourStatus Behaviour::Tick()
 	}
 	
 	m_TreeState.LastActiveNode = this;
-	m_Status = Update();
+	m_Status = Update(blackboard);
 
 	if (m_Status != BehaviourStatus::RUNNING)
 	{
@@ -53,7 +53,7 @@ BehaviourTree::~BehaviourTree()
 	}
 }
 
-BehaviourStatus BehaviourTree::Tick()
+BehaviourStatus BehaviourTree::Tick(NPCBlackboardComponent& blackboard)
 {
 	assert(m_State.IsStructureLocked && "Behaviour tree ticked but not yet locked");
 	if (!m_State.IsStarted)
@@ -62,7 +62,7 @@ BehaviourStatus BehaviourTree::Tick()
 		// which are handled appropriately depending on whether we're running in engine, test mode, etc
 		throw std::exception("Behaviour tree ticked but not yet started");
 	}
-	return m_Root->Tick();
+	return m_Root->Tick(blackboard);
 }
 
 void BehaviourTree::Step()

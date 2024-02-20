@@ -3,6 +3,7 @@
 #include "BehaviourTree.h"
 #include "BehaviourTreeBuilder.h"
 #include "Behaviours.h"
+#include "NPCBlackboardComponent.h"
 
 // MOCK TYPES
 // TODO likely to go into their own new header/cpp once this file gets too massive...
@@ -37,7 +38,7 @@ protected:
 		m_Status = BehaviourStatus::RUNNING;
 	}
 
-	BehaviourStatus Update()
+	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override
 	{
 		// TODO improve by using strategy pattern if it gets complex enough, otherwise just take a lambda?
 		switch (m_Rule)
@@ -98,6 +99,8 @@ private:
 	MockActionRule m_Rule;
 };
 
+using MockBlackboardComponent = NPCBlackboardComponent;
+
 enum class MockConditionRule
 {
 	ALWAYS_SUCCEED,
@@ -131,7 +134,7 @@ protected:
 		// We must persist our counter and not reset it here.
 	}
 
-	BehaviourStatus Update() override
+	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override
 	{
 		switch (m_Rule)
 		{
@@ -200,6 +203,8 @@ TEST_CASE("Build single-node tree", "[BehaviourTree]")
 
 TEST_CASE("Illegal tree update", "[BehaviourTree]")
 {
+	MockBlackboardComponent bb {};
+
 	BehaviourTree* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>()
 			.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL).EndNode()
@@ -208,7 +213,7 @@ TEST_CASE("Illegal tree update", "[BehaviourTree]")
 		.EndTree();
 		
 	// Tick a tree before starting it
-	REQUIRE_THROWS_WITH(bt->Tick(), "Behaviour tree ticked but not yet started");
+	REQUIRE_THROWS_WITH(bt->Tick(bb), "Behaviour tree ticked but not yet started");
 
 	delete bt;
 
@@ -242,6 +247,8 @@ TEST_CASE("Illegal modification of structure", "[BehaviourTree]")
 
 TEST_CASE("Active selector test tree", "[BehaviourTree]")
 {
+	MockBlackboardComponent bb {};
+
 	BehaviourTree* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>()
 			.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL).EndNode()
@@ -265,7 +272,7 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 	BehaviourStatus status;
 	auto tickAndPrint = [&]
 	{
-		status = bt->Tick();
+		status = bt->Tick(bb);
 		bt->DebugToStream(std::cout) << std::endl << "  TREE STATUS --> " << StatusString[(int)status] << std::endl;
 
 	};
@@ -348,6 +355,7 @@ public:
 
 TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
 {
+	MockBlackboardComponent bb {};
 
 	BehaviourTree* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>() // Root
@@ -380,7 +388,7 @@ TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
 	BehaviourStatus status;
 	auto tickAndPrint = [&]
 	{
-		status = bt->Tick();
+		status = bt->Tick(bb);
 		bt->DebugToStream(std::cout) << std::endl << "  TREE STATUS --> " << StatusString[(int)status] << std::endl;
 
 	};

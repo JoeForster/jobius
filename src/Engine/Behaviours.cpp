@@ -8,12 +8,12 @@ void Decorator::OnInitialise()
 	assert(m_Child != nullptr && "Decorator OnInitialise no child set");
 }
 
-BehaviourStatus Repeat::Update()
+BehaviourStatus Repeat::Update(NPCBlackboardComponent& blackboard)
 {
 	assert(m_Child != nullptr);
 	while (true)
 	{
-		m_Child->Tick();
+		m_Child->Tick(blackboard);
 
 		const auto status = m_Child->GetStatus();
 		if (status == BehaviourStatus::RUNNING)
@@ -40,14 +40,14 @@ void Sequence::OnInitialise()
 	m_CurrentChild = m_Children.begin();
 }
 
-BehaviourStatus Sequence::Update()
+BehaviourStatus Sequence::Update(NPCBlackboardComponent& blackboard)
 {
 	assert(m_Children.size() > 0);
 
 	// Run every child until one is running/fails/invalid or we reach the end.
 	while (true)
 	{
-		BehaviourStatus childStatus = (*m_CurrentChild)->Tick();
+		BehaviourStatus childStatus = (*m_CurrentChild)->Tick(blackboard);
 		if (childStatus != BehaviourStatus::SUCCESS)
 		{
 			assert(childStatus != BehaviourStatus::INVALID);
@@ -83,7 +83,7 @@ void Filter::AddAction(Behaviour* action)
 }
 
 
-BehaviourStatus Parallel::Update()
+BehaviourStatus Parallel::Update(NPCBlackboardComponent& blackboard)
 {
 	// TODO this doesn't deal with the case that the child list is empty!
 	// TODO what about the case that all children are in the "invalid" state?
@@ -94,7 +94,7 @@ BehaviourStatus Parallel::Update()
 	{
 		if (!child->IsTerminated())
 		{
-			child->Tick();
+			child->Tick(blackboard);
 		}
 		const auto status = child->GetStatus();
 		if (status == BehaviourStatus::SUCCESS)
@@ -157,14 +157,14 @@ void Selector::OnInitialise()
 	m_CurrentChild = m_Children.begin();
 }
 
-BehaviourStatus Selector::Update()
+BehaviourStatus Selector::Update(NPCBlackboardComponent& blackboard)
 {
 	assert(m_Children.size() > 0);
 
 	// Tick every child until one succeeds/runs - or fail if none do so.
 	while (true)
 	{
-		BehaviourStatus childStatus = (*m_CurrentChild)->Tick();
+		BehaviourStatus childStatus = (*m_CurrentChild)->Tick(blackboard);
 		// Child either ran successfully or is in-progress
 		if (childStatus != BehaviourStatus::FAILURE)
 		{
@@ -182,11 +182,11 @@ BehaviourStatus Selector::Update()
 }
 
 
-BehaviourStatus ActiveSelector::Update()
+BehaviourStatus ActiveSelector::Update(NPCBlackboardComponent& blackboard)
 {
 	Behaviours::iterator prev = m_CurrentChild;
 	OnInitialise();
-	BehaviourStatus result = Selector::Update();
+	BehaviourStatus result = Selector::Update(blackboard);
 	if (prev != m_Children.end() && m_CurrentChild != prev)
 	{
 		(*prev)->Abort();

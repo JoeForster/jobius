@@ -2,6 +2,9 @@
 
 #include "World.h"
 #include "SDLRenderManager.h"
+#include "BehaviourTreeBuilder.h"
+#include "Behaviours.h"
+#include "TestBehaviourNodes.h"
 
 #include "BoxCollisionSystem.h"
 #include "NPCControlSystem.h"
@@ -26,6 +29,8 @@
 #include "SpriteComponent.h"
 #include "TransformComponent.h"
 #include "Camera2DComponent.h"
+#include "BehaviourTreeComponent.h"
+#include "BehaviourNodeComponent.h"
 
 std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {
@@ -52,6 +57,8 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->RegisterComponent<DebugTextComponent>();
 	world->RegisterComponent<GridWorldComponent>();
 	world->RegisterComponent<Camera2DComponent>();
+	world->RegisterComponent<BehaviourTreeComponent>();
+	world->RegisterComponent<BehaviourNodeComponent>();
 
 	// Initialiser for systems that render
 	RenderSystemInitialiser renderInit;
@@ -118,6 +125,34 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 
 	createPlayer({ 500, 0, 0 });
 	createPlayer({ 700, 0, 0 });
+
+	// Create AI test entity
+
+	BehaviourTree* bt = BehaviourTreeBuilder()
+		.AddNode<ActiveSelector>() // Root
+			.AddNode<Sequence>() // Attack the player if seen
+				.AddNode<CheckPlayerVisible>().EndNode()
+				.AddNode<ActiveSelector>()
+					.AddNode<Sequence>()
+						.AddNode<IsPlayerInRange>().EndNode()
+						.AddNode<Repeat>(3)
+							.AddNode<FireAtPlayer>().EndNode()
+						.EndNode()
+					.EndNode()
+				.EndNode()
+			.EndNode() // End sequence: Attack player if seen
+			.AddNode<Sequence>() // Search near last-known position
+				.AddNode<CheckHasPlayersLKP>().EndNode()
+				.AddNode<MoveToPlayersLKP>().EndNode()
+				.AddNode<LookAround>().EndNode()
+			.EndNode() // End sequence: search near last-known position
+			.AddNode<Sequence>() // Random wander
+				.AddNode<MoveToRandomPosition>().EndNode()
+				.AddNode<LookAround>().EndNode()
+			.EndNode() // End sequence: random wander
+		.EndNode() // End root active selector
+	.EndTree();
+
 
 	auto ufoEntity = createSpriteWithPhysics(*world, resID_ufo, { 200, 200, 200 }, { 158, 48 }, { 79, 24 });
 	world->AddComponent<NPCBlackboardComponent>(ufoEntity);

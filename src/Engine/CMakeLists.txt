@@ -80,6 +80,7 @@ set(ENGINE_HEADERS
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourStatus.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTree.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTreeBuilder.h"
+	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourTreeComponent.h"
 	"${CMAKE_SOURCE_DIR}/src/Engine/BehaviourNodeComponent.h"
 )
 

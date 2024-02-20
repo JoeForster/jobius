@@ -14,6 +14,7 @@
 // May become an enum?
 // TODO: some of this should be made const again, if we don't do away with this soon..
 class Behaviour;
+struct NPCBlackboardComponent;
 
 struct BehaviourTreeState
 {
@@ -28,7 +29,7 @@ public:
 	Behaviour(Behaviour* parent, BehaviourTreeState& treeState);
 	virtual ~Behaviour() {}
 
-	BehaviourStatus Tick();
+	BehaviourStatus Tick(NPCBlackboardComponent& blackboard);
 	void Abort();
 
 	bool IsTerminated() const;
@@ -47,7 +48,7 @@ public:
 
 protected:
 	virtual void OnInitialise() {}
-	virtual BehaviourStatus Update() = 0;
+	virtual BehaviourStatus Update(NPCBlackboardComponent& blackboard) = 0;
 	virtual void OnTerminate(BehaviourStatus) {}
 
 	inline bool CanChangeStructure() const { return !m_TreeState.IsStructureLocked; }
@@ -69,7 +70,7 @@ public:
 	BehaviourTree() = default;
 	~BehaviourTree();
 
-	BehaviourStatus Tick();
+	BehaviourStatus Tick(NPCBlackboardComponent& blackboard);
 	void Step();
 	void Start();
 

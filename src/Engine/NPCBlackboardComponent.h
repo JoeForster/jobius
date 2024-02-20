@@ -4,8 +4,11 @@
 
 #include "ComponentManager.h"
 
-// Placeholdery component to control data needed by for the NPC controller
-// General flow is: Sensor System updates -> Control System reads 
+// Placeholdery component to hold state and working knowledge data neded for NPC behaviour/control;
+// Bit of a mess as we don't have a proper sensor system or flow yet - NPCControlSystem writes initial state
+// and then the behaviour tree will read/write values willy nilly
+// TODO need a knowledge system, and define how the ECS data will be fed into BT without
+// the need for game-specific concepts to bleed into engine
 struct NPCBlackboardComponent
 {
 	static constexpr ComponentType GetComponentType() { return ComponentType::CT_BLACKBOARD_NPC; }

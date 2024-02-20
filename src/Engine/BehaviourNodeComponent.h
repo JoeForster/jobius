@@ -1,16 +1,20 @@
 #pragma once
 
+#include "BehaviourStatus.h"
 #include "ComponentManager.h"
 
-// TODO rename to 2D?
+class Behaviour;
+
 struct BehaviourNodeComponent
 {
-	static constexpr ComponentType GetComponentType() { return ComponentType::CT_BTNODE; }
+	static constexpr ComponentType GetComponentType() { return ComponentType::CT_BEHAVIOURNODE; }
 
+	// TODO take unique ptr
+	BehaviourNodeComponent(Behaviour* node): m_Node(node) {}
 	BehaviourNodeComponent() {}
+	~BehaviourNodeComponent() { delete m_Node; }
 
-	BehaviourNodeComponent(Vector2f box, Vector2f offset)
-	: m_Box(Rect2f::FromBoxAndOffset(box, offset)) {}
-
-	Rect2f m_Box;
+	Behaviour* m_Node = nullptr;
+	int m_NumChildren = 0;
+	BehaviourStatus m_Status = BehaviourStatus::INVALID;
 };

@@ -20,7 +20,8 @@ enum class ComponentType
 	CT_DEBUGTEXT,
 	CT_GRIDWORLD,
 	CT_CAMERA_2D,
-	CT_BTNODE,
+	CT_BEHAVIOURTREE,
+	CT_BEHAVIOURNODE,
 	// TODO: Game-specific components below, requires a better system to keep them in game code
 	CT_BL_SPECIES,
 	CT_BL_HEALTH,

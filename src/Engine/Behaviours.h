@@ -32,7 +32,7 @@ public:
 	{}
 
 protected:
-	BehaviourStatus Update() override;
+	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
 
 private:
 	unsigned m_RepeatCounter = 0;
@@ -67,7 +67,7 @@ public:
 
 protected:
 	virtual void OnInitialise() override;
-	virtual BehaviourStatus Update() override;
+	virtual BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
 
 private:
 	Behaviours::iterator m_CurrentChild;
@@ -104,7 +104,7 @@ protected:
 	Policy m_SuccessPolicy;
 	Policy m_FailurePolicy;
 
-	virtual BehaviourStatus Update() override;
+	virtual BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
 };
 
 // Monitor node: a parallel node which will always re-check a set of conditions befor eexecuting the actions.
@@ -130,7 +130,7 @@ public:
 
 protected:
 	virtual void OnInitialise() override;
-	virtual BehaviourStatus Update() override;
+	virtual BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
 
 protected:
 	Behaviours::iterator m_CurrentChild;
@@ -147,7 +147,7 @@ public:
 	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 
 protected:
-	BehaviourStatus Update() final;
+	BehaviourStatus Update(NPCBlackboardComponent& blackboard) final;
 };
 
 class Action : public Behaviour
