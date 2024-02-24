@@ -51,9 +51,9 @@ public:
 	}
 
 	template<typename T>
-	void AddComponent(EntityID entity, T component = {})
+	void AddComponent(EntityID entity, T&& component = {})
 	{
-		m_ComponentManager.AddComponent<T>(entity, component);
+		m_ComponentManager.AddComponent<T>(entity, std::move(component));
 
 		auto signature = m_EntityManager.GetSignature(entity);
 		signature.set(m_ComponentManager.GetComponentIndex<T>(), true);
@@ -63,11 +63,11 @@ public:
 	}
 
 	template<typename T>
-	void SetGlobalComponent(T component = {})
+	void SetGlobalComponent(T&& component = {})
 	{
 		// A global component works just like a regular component of which there is one per world
 		assert(m_ComponentManager.GetComponentCount<T>() == 0 && "SetGlobalComponent called on component that already exists");
-		AddComponent<T>(0, component);
+		AddComponent<T>(0, std::move(component));
 		
 		m_SystemManager.SetEntitySetsDirty();
 	}

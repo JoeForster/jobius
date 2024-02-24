@@ -105,10 +105,10 @@ std::shared_ptr<World> BlockoLifeWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->AddComponent<GridTransformComponent>(playerEntity, {{14, 10}});
 	world->AddComponent<BlockDropperComponent>(playerEntity, {dropperSpecies});
 	// TODO test hack - needs to be switchable
-	const SpriteComponent dropperSprite (
+	SpriteComponent dropperSprite (
 		creatureSprites[to_underlying(dropperSpecies)],
 		100);
-	world->AddComponent<SpriteComponent>(playerEntity, dropperSprite);
+	world->AddComponent<SpriteComponent>(playerEntity, std::move(dropperSprite));
 
 	// Create creature sprites
 	enum class Scenario

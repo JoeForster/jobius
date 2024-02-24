@@ -14,5 +14,21 @@ struct BehaviourTreeComponent
 	BehaviourTreeComponent() {}
 	~BehaviourTreeComponent() { delete m_Tree; }
 
+	BehaviourTreeComponent(const BehaviourTreeComponent& toCopy) = delete;
+	BehaviourTreeComponent& operator=(const BehaviourTreeComponent&& toCopy) = delete;
+	BehaviourTreeComponent(BehaviourTreeComponent&& toMove) noexcept
+	{
+		m_Tree = toMove.m_Tree;
+		toMove.m_Tree = nullptr;
+	};
+	BehaviourTreeComponent& operator=(BehaviourTreeComponent&& toMove) noexcept
+	{
+		delete m_Tree;
+		m_Tree = toMove.m_Tree;
+		toMove.m_Tree = nullptr;
+		return *this;
+	}
+
+
 	BehaviourTree* m_Tree = nullptr;
 };

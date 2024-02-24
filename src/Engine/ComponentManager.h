@@ -40,10 +40,10 @@ public:
 	}
 
 	template<typename T>
-	void AddComponent(EntityID entity, T component)
+	void AddComponent(EntityID entity, T&& component)
 	{
 		// Add a component to the array for an entity
-		GetComponentArray<T>().InsertData(entity, component);
+		GetComponentArray<T>().InsertData(entity, std::move(component));
 	}
 
 	template<typename T>

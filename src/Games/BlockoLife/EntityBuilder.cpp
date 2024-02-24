@@ -11,8 +11,7 @@ template<class T>
 EntityID EntityBuilder<T>::BuildCommon(World& world, const Vector2i& pos, const int initialHealth, const int maxHealth)
 {
 	EntityID e = world.CreateEntity();
-	const GridTransformComponent t(pos);
-	world.AddComponent<GridTransformComponent>(e, t);
+	world.AddComponent<GridTransformComponent>(e, GridTransformComponent{ pos });
 	world.AddComponent<SpriteComponent>(e, m_ResourceID);
 	world.AddComponent<SpeciesComponent>(e, T::value);
 	world.AddComponent<HealthComponent>(e, { initialHealth, maxHealth });

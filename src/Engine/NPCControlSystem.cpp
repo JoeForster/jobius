@@ -47,19 +47,20 @@ void NPCControlSystem::Update(float deltaSecs)
 		if (npcBTree.m_Tree != nullptr)
 		{
 			npcBTree.m_Tree->Tick(npcBB);
+
+			// TODO_DEBUG_DRAW
+			//bt->DebugToStream(std::cout) << std::endl;
+			//std::cout << "LastActiveNode: ";
+			//const Behaviour* an = bt->GetState().LastActiveNode;
+			//if (an != nullptr)
+			//{
+			//	an->DebugToStream(std::cout) << std::endl;
+			//}
+			//else
+			//{
+			//	std::cout << "NULL" << std::endl;
+			//}
 		}
-		// TODO_DEBUG_DRAW
-		//bt->DebugToStream(std::cout) << std::endl;
-		//std::cout << "LastActiveNode: ";
-		//const Behaviour* an = bt->GetState().LastActiveNode;
-		//if (an != nullptr)
-		//{
-		//	an->DebugToStream(std::cout) << std::endl;
-		//}
-		//else
-		//{
-		//	std::cout << "NULL" << std::endl;
-		//}
 
 		// TODO_AI_STEERING the steering/locomotion controller would be responsible for the below
 

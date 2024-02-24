@@ -86,24 +86,24 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	auto createSprite = [](World& w, ResourceID resID, Vector3f pos)
 	{
 		EntityID e = w.CreateEntity();
-		const TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
-		w.AddComponent<TransformComponent>(e, t);
+		TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
+		w.AddComponent<TransformComponent>(e, std::move(t));
 		w.AddComponent<SpriteComponent>(e, resID);
 		return e;
 	};
 	auto createGridSprite = [](World& w, ResourceID resID, Vector2i pos)
 	{
 		EntityID e = w.CreateEntity();
-		const GridTransformComponent t(pos);
-		w.AddComponent<GridTransformComponent>(e, t);
+		GridTransformComponent t(pos);
+		w.AddComponent<GridTransformComponent>(e, std::move(t));
 		w.AddComponent<SpriteComponent>(e, resID);
 		return e;
 	};
 	auto createSpriteWithPhysics = [](World& w, ResourceID resID, Vector3f pos, Vector2f boxSize, Vector2f boxOffset)
 	{
 		EntityID e = w.CreateEntity();
-		const TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
-		w.AddComponent<TransformComponent>(e, t);
+		TransformComponent t(pos, { 0, 0, 0 }, { 1, 1, 1 });
+		w.AddComponent<TransformComponent>(e, std::move(t));
 		w.AddComponent<SpriteComponent>(e, resID);
 		w.AddComponent<RigidBodyComponent>(e);
 		w.AddComponent<AABBComponent>(e, { boxSize, boxOffset } );
@@ -127,6 +127,8 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	createPlayer({ 700, 0, 0 });
 
 	// Create AI test entity
+	auto ufoEntity = createSpriteWithPhysics(*world, resID_ufo, { 200, 200, 200 }, { 158, 48 }, { 79, 24 });
+	world->AddComponent<NPCBlackboardComponent>(ufoEntity);
 
 	BehaviourTree* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>() // Root
@@ -153,9 +155,10 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 		.EndNode() // End root active selector
 	.EndTree();
 
+	bt->Start();
 
-	auto ufoEntity = createSpriteWithPhysics(*world, resID_ufo, { 200, 200, 200 }, { 158, 48 }, { 79, 24 });
-	world->AddComponent<NPCBlackboardComponent>(ufoEntity);
+	world->AddComponent<BehaviourTreeComponent>(ufoEntity, BehaviourTreeComponent{ bt });
+
 
 	return world;
 }

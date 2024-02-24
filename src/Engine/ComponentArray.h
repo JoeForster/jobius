@@ -30,7 +30,7 @@ public:
 
 	//static ComponentType GetComponentType() const override final { return T::GetComponentType(); }
 
-	void InsertData(EntityID entity, T component)
+	void InsertData(EntityID entity, T&& component)
 	{
 		// TODO_VALIDATION
 		//assert(mEntityToIndexMap.find(entity) == mEntityToIndexMap.end() && "Component added to same entity more than once.");
@@ -39,7 +39,7 @@ public:
 		size_t newIndex = m_NumEntries++;
 		m_EntityToIndexMap[entity] = newIndex;
 		m_IndexToEntityMap[newIndex] = entity;
-		m_ComponentArray[newIndex] = component;
+		m_ComponentArray[newIndex] = std::move(component);
 	}
 
 	void RemoveData(EntityID entity)
@@ -49,10 +49,10 @@ public:
 		//assert(m_EntityToIndexMap.find(entity) != m_EntityToIndexMap.end() && "Removing non-existent component.");
 		assert(m_NumEntries > 0);
 
-		// Copy element at end into deleted element's place to maintain density
+		// Move element at end into deleted element's place to maintain density
 		size_t indexOfRemovedEntity = m_EntityToIndexMap[entity];
 		size_t indexOfLastElement = m_NumEntries - 1;
-		m_ComponentArray[indexOfRemovedEntity] = m_ComponentArray[indexOfLastElement];
+		m_ComponentArray[indexOfRemovedEntity] = std::move(m_ComponentArray[indexOfLastElement]);
 
 		// Update map to point to moved spot
 		EntityID entityOfLastElement = m_IndexToEntityMap[indexOfLastElement];
