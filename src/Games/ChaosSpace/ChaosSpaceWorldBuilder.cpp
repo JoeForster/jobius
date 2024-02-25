@@ -8,6 +8,7 @@
 
 #include "BoxCollisionSystem.h"
 #include "NPCControlSystem.h"
+#include "BehaviourSystem.h"
 #include "NPCSensorSystem.h"
 #include "PhysicsSystem.h"
 #include "PlaneCollisionSystem.h"
@@ -31,6 +32,8 @@
 #include "Camera2DComponent.h"
 #include "BehaviourTreeComponent.h"
 #include "BehaviourNodeComponent.h"
+
+constexpr bool s_UseNewBehaviourSystem = false;
 
 std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRenderManager> renderMan)
 {
@@ -68,7 +71,14 @@ std::shared_ptr<World> ChaosSpaceWorldBuilder::BuildWorld(std::shared_ptr<SDLRen
 	world->RegisterSystem<SDLInputSystem>()->Init();
 	world->RegisterSystem<Camera2DSystem>()->Init(renderInit);
 	world->RegisterSystem<PlayerControlSystem>()->Init(renderInit);
-	world->RegisterSystem<NPCControlSystem>()->Init();
+	if (s_UseNewBehaviourSystem)
+	{
+		world->RegisterSystem<BehaviourSystem>()->Init();
+	}
+	else
+	{
+		world->RegisterSystem<NPCControlSystem>()->Init();
+	}
 	world->RegisterSystem<NPCSensorSystem>()->Init();
 	world->RegisterSystem<PhysicsSystem>()->Init(renderInit);
 	world->RegisterSystem<BoxCollisionSystem>()->Init(renderInit);

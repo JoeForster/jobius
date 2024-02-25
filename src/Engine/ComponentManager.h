@@ -67,7 +67,10 @@ public:
 		// If it has a component for that entity, it will remove it
 		for (std::shared_ptr<IComponentArray> componentArr : m_ComponentArrays)
 		{
-			componentArr->OnEntityDestroyed(entity);
+			if (componentArr != nullptr)
+			{
+				componentArr->OnEntityDestroyed(entity);
+			}
 		}
 	}
 

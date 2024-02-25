@@ -49,15 +49,19 @@ public:
 		//assert(m_EntityToIndexMap.find(entity) != m_EntityToIndexMap.end() && "Removing non-existent component.");
 		assert(m_NumEntries > 0);
 
-		// Move element at end into deleted element's place to maintain density
+		// Unless this actually was the last element, move the last element into the deleted element's place to maintain density
 		size_t indexOfRemovedEntity = m_EntityToIndexMap[entity];
 		size_t indexOfLastElement = m_NumEntries - 1;
-		m_ComponentArray[indexOfRemovedEntity] = std::move(m_ComponentArray[indexOfLastElement]);
+		if (indexOfRemovedEntity != indexOfLastElement)
+		{
+			m_ComponentArray[indexOfRemovedEntity] = std::move(m_ComponentArray[indexOfLastElement]);
 
-		// Update map to point to moved spot
-		EntityID entityOfLastElement = m_IndexToEntityMap[indexOfLastElement];
-		m_EntityToIndexMap[entityOfLastElement] = indexOfRemovedEntity;
-		m_IndexToEntityMap[indexOfRemovedEntity] = entityOfLastElement;
+			// Update map to point to moved spot
+			EntityID entityOfLastElement = m_IndexToEntityMap[indexOfLastElement];
+			assert(entityOfLastElement != INVALID_ENTITY_ID);
+			m_EntityToIndexMap[entityOfLastElement] = indexOfRemovedEntity;
+			m_IndexToEntityMap[indexOfRemovedEntity] = entityOfLastElement;
+		}
 
 		m_EntityToIndexMap[entity] = INVALID_ENTITY_ID;
 		m_IndexToEntityMap[indexOfLastElement] = INVALID_ENTITY_ID;
@@ -87,13 +91,14 @@ public:
 	size_t GetNumEntries() const { return m_NumEntries; }
 
 private:
+	// The actual component data in an array, with its count.
 	T m_ComponentArray[MAX_ENTITIES];
+	size_t m_NumEntries = 0;
 
-	// Map from an entity ID to an array index.
+	// Map from an entity ID to the index of its component in this array.
 	size_t m_EntityToIndexMap[MAX_ENTITIES];
 
-	// Map from an array index to an entity ID.
+	// Map from the index of a component in this array to the owner entity ID.
 	EntityID m_IndexToEntityMap[MAX_ENTITIES];
 
-	size_t m_NumEntries = 0;
 };
