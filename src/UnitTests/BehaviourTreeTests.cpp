@@ -28,8 +28,8 @@ static_assert(std::size(MockActionString) == (size_t)MockActionRule::MARULE_COUN
 class MockAction : public Behaviour
 {
 public:
-	MockAction(Behaviour* parent, BehaviourTreeState& treeState, MockActionRule rule)
-	: Behaviour(parent, treeState), m_Rule(rule) {}
+	MockAction(Behaviour* parent, BehaviourTreeData& treeData, MockActionRule rule)
+	: Behaviour(parent, treeData), m_Rule(rule) {}
 
 protected:
 	void OnInitialise() override
@@ -38,7 +38,7 @@ protected:
 		m_Status = BehaviourStatus::RUNNING;
 	}
 
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override
 	{
 		// TODO improve by using strategy pattern if it gets complex enough, otherwise just take a lambda?
 		switch (m_Rule)
@@ -100,6 +100,7 @@ private:
 };
 
 using MockBlackboardComponent = NPCBlackboardComponent;
+using MockBehaviourTreeState = BehaviourTreeState;
 
 enum class MockConditionRule
 {
@@ -124,8 +125,8 @@ static_assert(std::size(MockConditionString) == (size_t)MockConditionRule::MCRUL
 class MockCondition : public Behaviour
 {
 public:
-	MockCondition(Behaviour* parent, BehaviourTreeState& treeState, MockConditionRule rule)
-		: Behaviour(parent, treeState), m_Rule(rule), m_TestCounter(1) {}
+	MockCondition(Behaviour* parent, BehaviourTreeData& treeData, MockConditionRule rule)
+		: Behaviour(parent, treeData), m_Rule(rule), m_TestCounter(1) {}
 
 protected:
 	void OnInitialise() override
@@ -134,7 +135,7 @@ protected:
 		// We must persist our counter and not reset it here.
 	}
 
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override
 	{
 		switch (m_Rule)
 		{
@@ -185,7 +186,6 @@ private:
 	MockConditionRule m_Rule;
 };
 
-
 // Unit Tests
 // TODO common init/cleanup block (just make the builder, bt pointer, delete at end?)
 // TODO more!
@@ -193,7 +193,7 @@ private:
 
 TEST_CASE("Build single-node tree", "[BehaviourTree]")
 {
-	BehaviourTree* bt = BehaviourTreeBuilder()
+	BehaviourTreeInstance* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>().EndNode()
 		.EndTree();
 	REQUIRE(bt != nullptr);
@@ -205,13 +205,13 @@ TEST_CASE("Illegal tree update", "[BehaviourTree]")
 {
 	MockBlackboardComponent bb {};
 
-	BehaviourTree* bt = BehaviourTreeBuilder()
+	BehaviourTreeInstance* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>()
 			.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL).EndNode()
 			.AddNode<MockAction>(MockActionRule::RUN_AND_SUCCEED).EndNode()
 		.EndNode()
 		.EndTree();
-		
+	
 	// Tick a tree before starting it
 	REQUIRE_THROWS_WITH(bt->Tick(bb), "Behaviour tree ticked but not yet started");
 
@@ -222,7 +222,7 @@ TEST_CASE("Illegal tree update", "[BehaviourTree]")
 TEST_CASE("Illegal modification of structure", "[BehaviourTree]")
 {
 	auto builder = BehaviourTreeBuilder();
-	BehaviourTree* bt = builder
+	BehaviourTreeInstance* bt = builder
 			.AddNode<Sequence>().EndNode()
 		.EndTree();
 	REQUIRE(bt != nullptr);
@@ -249,7 +249,7 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 {
 	MockBlackboardComponent bb {};
 
-	BehaviourTree* bt = BehaviourTreeBuilder()
+	BehaviourTreeInstance* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>()
 			.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL).EndNode()
 			.AddNode<MockAction>(MockActionRule::RUN_AND_SUCCEED).EndNode()

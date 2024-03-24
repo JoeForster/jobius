@@ -2,12 +2,12 @@
 
 #include "NPCBlackboardComponent.h"
 
-CheckPlayerVisible::CheckPlayerVisible(Behaviour* parent, BehaviourTreeState& treeState)
-: Condition(parent, treeState)
+CheckPlayerVisible::CheckPlayerVisible(Behaviour* parent, BehaviourTreeData& treeData)
+: Condition(parent, treeData)
 {
 }
 
-BehaviourStatus CheckPlayerVisible::Update(NPCBlackboardComponent& blackboard)
+BehaviourStatus CheckPlayerVisible::Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
 	if (blackboard.NPCPos.DistSq(blackboard.PlayerPos) < s_AIConfig.VisionRadiusSq)
 	{
@@ -23,12 +23,12 @@ BehaviourStatus CheckPlayerVisible::Update(NPCBlackboardComponent& blackboard)
 }
 
 
-IsPlayerInRange::IsPlayerInRange(Behaviour* parent, BehaviourTreeState& treeState)
-: Condition(parent, treeState)
+IsPlayerInRange::IsPlayerInRange(Behaviour* parent, BehaviourTreeData& treeData)
+: Condition(parent, treeData)
 {
 }
 
-BehaviourStatus IsPlayerInRange::Update(NPCBlackboardComponent& blackboard)
+BehaviourStatus IsPlayerInRange::Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
 	if (blackboard.NPCPos.DistSq(blackboard.PlayerPos) < s_AIConfig.AttackRadiusSq)
 	{
@@ -44,12 +44,12 @@ BehaviourStatus IsPlayerInRange::Update(NPCBlackboardComponent& blackboard)
 }
 
 
-FireAtPlayer::FireAtPlayer(Behaviour* parent, BehaviourTreeState& treeState)
-: Action(parent, treeState)
+FireAtPlayer::FireAtPlayer(Behaviour* parent, BehaviourTreeData& treeData)
+: Action(parent, treeData)
 {
 }
 
-BehaviourStatus FireAtPlayer::Update(NPCBlackboardComponent& blackboard)
+BehaviourStatus FireAtPlayer::Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
 	blackboard.NPCFired = true;
 	m_Status = BehaviourStatus::SUCCESS;
@@ -57,11 +57,11 @@ BehaviourStatus FireAtPlayer::Update(NPCBlackboardComponent& blackboard)
 }
 
 
-MoveToPlayersLKP::MoveToPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState)
-: Action(parent, treeState)
+MoveToPlayersLKP::MoveToPlayersLKP(Behaviour* parent, BehaviourTreeData& treeData)
+: Action(parent, treeData)
 {}
 
-BehaviourStatus MoveToPlayersLKP::Update(NPCBlackboardComponent& blackboard)
+BehaviourStatus MoveToPlayersLKP::Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
 	if (!blackboard.NPCTargetPosSet)
 	{
@@ -94,24 +94,24 @@ BehaviourStatus MoveToPlayersLKP::Update(NPCBlackboardComponent& blackboard)
 }
 
 
-LookAround::LookAround(Behaviour* parent, BehaviourTreeState& treeState)
-: Action(parent, treeState)
+LookAround::LookAround(Behaviour* parent, BehaviourTreeData& treeData)
+: Action(parent, treeData)
 {
 }
 
-BehaviourStatus LookAround::Update(NPCBlackboardComponent& blackboard)
+BehaviourStatus LookAround::Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
 	m_Status = BehaviourStatus::SUCCESS;
 	return m_Status;
 }
 
 
-CheckHasPlayersLKP::CheckHasPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState)
-: Condition(parent, treeState)
+CheckHasPlayersLKP::CheckHasPlayersLKP(Behaviour* parent, BehaviourTreeData& treeData)
+: Condition(parent, treeData)
 {
 }
 
-BehaviourStatus CheckHasPlayersLKP::Update(NPCBlackboardComponent& blackboard)
+BehaviourStatus CheckHasPlayersLKP::Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
 	if (blackboard.PlayerLastKnownPosSet)
 	{
@@ -125,11 +125,11 @@ BehaviourStatus CheckHasPlayersLKP::Update(NPCBlackboardComponent& blackboard)
 }
 
 
-MoveToRandomPosition::MoveToRandomPosition(Behaviour* parent, BehaviourTreeState& treeState)
-: Action(parent, treeState)
+MoveToRandomPosition::MoveToRandomPosition(Behaviour* parent, BehaviourTreeData& treeData)
+: Action(parent, treeData)
 {}
 
-BehaviourStatus MoveToRandomPosition::Update(NPCBlackboardComponent& blackboard)
+BehaviourStatus MoveToRandomPosition::Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
 	m_Status = BehaviourStatus::SUCCESS;
 	return m_Status;

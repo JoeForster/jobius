@@ -10,7 +10,7 @@ struct BehaviourTreeComponent
 	static constexpr ComponentType GetComponentType() { return ComponentType::CT_BEHAVIOURTREE; }
 
 	// TODO take unique ptr
-	BehaviourTreeComponent(BehaviourTree* tree): m_Tree(tree) {}
+	BehaviourTreeComponent(BehaviourTreeInstance* tree): m_Tree(tree) {}
 	BehaviourTreeComponent() {}
 	~BehaviourTreeComponent() { delete m_Tree; }
 
@@ -29,6 +29,8 @@ struct BehaviourTreeComponent
 		return *this;
 	}
 
-
-	BehaviourTree* m_Tree = nullptr;
+	// Currently we have a an instance per entity, but it could be a shared template now that the state is out of it)
+	BehaviourTreeInstance* m_Tree = nullptr;
+	// State of the tree for this entity
+	BehaviourTreeState m_State;
 };

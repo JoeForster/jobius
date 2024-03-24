@@ -19,7 +19,6 @@ enum class SystemType
 	ST_CAMERA_2D,
 	ST_NPCCONTROL,
 	ST_NPCSENSOR,
-	ST_BEHAVIOUR,
 	// TODO: Game-specific components below, requires a better system to keep them in game code
 	ST_BL_GAMEOFLIFE,
 	ST_BL_CREATURE,

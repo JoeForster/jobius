@@ -33,8 +33,6 @@ void NPCControlSystem::Update(float deltaSecs)
 		auto& npcTransform = m_ParentWorld->GetComponent<TransformComponent>(e);
 
 		// TODO_AI_BLACKBOARD validation if no player?
-		npcBB.PlayerPos.x = npcBB.PlayerPos.x;
-		npcBB.PlayerPos.y = npcBB.PlayerPos.y;
 		npcBB.NPCPos.x = npcTransform.m_Pos.x;
 		npcBB.NPCPos.y = npcTransform.m_Pos.y;
 

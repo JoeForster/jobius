@@ -8,8 +8,8 @@
 class Decorator : public Behaviour
 {
 public:
-	Decorator(Behaviour* parent, BehaviourTreeState& treeState)
-		: Behaviour(parent, treeState)
+	Decorator(Behaviour* parent, BehaviourTreeData& treeData)
+		: Behaviour(parent, treeData)
 		, m_Child(nullptr) {}
 
 	size_t GetChildCount() const final { return 1; }
@@ -26,13 +26,13 @@ protected:
 class Repeat : public Decorator
 {
 public:
-	Repeat(Behaviour* parent, BehaviourTreeState& treeState, unsigned numRepeats)
-		: Decorator(parent, treeState)
+	Repeat(Behaviour* parent, BehaviourTreeData& treeData, unsigned numRepeats)
+		: Decorator(parent, treeData)
 		, m_NumRepeats(numRepeats)
 	{}
 
 protected:
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 
 private:
 	unsigned m_RepeatCounter = 0;
@@ -43,7 +43,8 @@ private:
 class Composite : public Behaviour
 {
 public:
-	Composite(Behaviour* parent, BehaviourTreeState& treeState) : Behaviour(parent, treeState) {}
+	Composite(Behaviour* parent, BehaviourTreeData& treeData)
+	: Behaviour(parent, treeData) {}
 
 	virtual void AddChild(Behaviour*) override;
 	void RemoveChild(Behaviour*);
@@ -63,11 +64,12 @@ protected:
 class Sequence : public Composite
 {
 public:
-	Sequence(Behaviour* parent, BehaviourTreeState& treeState) : Composite(parent, treeState) {}
+	Sequence(Behaviour* parent, BehaviourTreeData& treeData)
+	: Composite(parent, treeData) {}
 
 protected:
 	virtual void OnInitialise() override;
-	virtual BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	virtual BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 
 private:
 	Behaviours::iterator m_CurrentChild;
@@ -76,7 +78,8 @@ private:
 class Filter : public Sequence
 {
 public:
-	Filter(Behaviour* parent, BehaviourTreeState& treeState) : Sequence(parent, treeState) {}
+	Filter(Behaviour* parent, BehaviourTreeData& treeData)
+	: Sequence(parent, treeData) {}
 
 	void AddCondition(Behaviour* condition);
 	void AddAction(Behaviour* action);
@@ -93,8 +96,8 @@ public:
 		RequireAll
 	};
 
-	Parallel(Behaviour* parent, BehaviourTreeState& treeState, Policy success, Policy failure)
-		: Composite(parent, treeState)
+	Parallel(Behaviour* parent, BehaviourTreeData& treeData, Policy success, Policy failure)
+		: Composite(parent, treeData)
 		, m_SuccessPolicy(success)
 		, m_FailurePolicy(failure)
 	{
@@ -104,7 +107,7 @@ protected:
 	Policy m_SuccessPolicy;
 	Policy m_FailurePolicy;
 
-	virtual BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	virtual BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 };
 
 // Monitor node: a parallel node which will always re-check a set of conditions befor eexecuting the actions.
@@ -112,8 +115,8 @@ protected:
 class Monitor : public Parallel
 {
 public:
-	Monitor(Behaviour* parent, BehaviourTreeState& treeState)
-		: Parallel(parent, treeState, Policy::RequireOne, Policy::RequireOne)
+	Monitor(Behaviour* parent, BehaviourTreeData& treeData)
+		: Parallel(parent, treeData, Policy::RequireOne, Policy::RequireOne)
 	{}
 
 	void AddCondition(Behaviour* condition);
@@ -126,11 +129,11 @@ public:
 class Selector : public Composite
 {
 public:
-	Selector(Behaviour* parent, BehaviourTreeState& treeState);
+	Selector(Behaviour* parent, BehaviourTreeData& treeData);
 
 protected:
 	virtual void OnInitialise() override;
-	virtual BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	virtual BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 
 protected:
 	Behaviours::iterator m_CurrentChild;
@@ -140,21 +143,21 @@ protected:
 class ActiveSelector : public Selector
 {
 public:
-	ActiveSelector(Behaviour* parent, BehaviourTreeState& treeState)
-		: Selector(parent, treeState)
+	ActiveSelector(Behaviour* parent, BehaviourTreeData& treeData)
+		: Selector(parent, treeData)
 	{}
 
 	virtual std::ostream& DebugToStream(std::ostream& stream) const override;
 
 protected:
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) final;
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) final;
 };
 
 class Action : public Behaviour
 {
 public:
-	Action(Behaviour* parent, BehaviourTreeState& treeState)
-	: Behaviour(parent, treeState) {}
+	Action(Behaviour* parent, BehaviourTreeData& treeData)
+	: Behaviour(parent, treeData) {}
 
 protected:
 	void OnInitialise() override
@@ -166,7 +169,7 @@ protected:
 class Condition : public Behaviour
 {
 public:
-	Condition(Behaviour* parent, BehaviourTreeState& treeState)
-		: Behaviour(parent, treeState) {}
+	Condition(Behaviour* parent, BehaviourTreeData& treeData)
+		: Behaviour(parent, treeData) {}
 
 };

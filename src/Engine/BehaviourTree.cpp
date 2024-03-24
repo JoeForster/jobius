@@ -4,22 +4,33 @@
 #include <algorithm>
 #include <list>
 
+// BehaviourTreeData
 
-Behaviour::Behaviour(Behaviour* parent, BehaviourTreeState& treeState)
+BehaviourTreeData::~BehaviourTreeData() 
+{
+	for (auto b : m_Behaviours)
+	{
+		delete b;
+	}
+}
+
+// Behaviour
+
+Behaviour::Behaviour(Behaviour* parent, BehaviourTreeData& treeData)
 : m_Status(BehaviourStatus::INVALID)
 , m_Parent(parent)
-, m_TreeState(treeState)
+, m_TreeData(treeData)
 {}
 
-BehaviourStatus Behaviour::Tick(NPCBlackboardComponent& blackboard)
+BehaviourStatus Behaviour::Tick(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
 	if (m_Status != BehaviourStatus::RUNNING)
 	{
 		OnInitialise();
 	}
 	
-	m_TreeState.LastActiveNode = this;
-	m_Status = Update(blackboard);
+	treeState.LastActiveNode = this;
+	m_Status = Update(treeState, blackboard);
 
 	if (m_Status != BehaviourStatus::RUNNING)
 	{
@@ -45,47 +56,41 @@ bool Behaviour::IsRunning() const
 	return m_Status == BehaviourStatus::RUNNING;
 }
 
-BehaviourTree::~BehaviourTree()
-{
-	for (auto b : m_Behaviours)
-	{
-		delete b;
-	}
-}
+// BehaviourTreeHelpers
 
-BehaviourStatus BehaviourTree::Tick(NPCBlackboardComponent& blackboard)
+BehaviourStatus BehaviourTreeHelpers::TickTree(NPCBlackboardComponent& blackboard, BehaviourTreeData& treeData, BehaviourTreeState& treeState)
 {
-	assert(m_State.IsStructureLocked && "Behaviour tree ticked but not yet locked");
-	if (!m_State.IsStarted)
+	assert(treeData.IsStructureLocked && "Behaviour tree ticked but not yet locked");
+	if (!treeState.IsStarted)
 	{
 		// TODO: This is just temporary to verify a unit test. We want our own assertion/error-handling types
 		// which are handled appropriately depending on whether we're running in engine, test mode, etc
 		throw std::exception("Behaviour tree ticked but not yet started");
 	}
-	return m_Root->Tick(blackboard);
+	return treeData.m_Root->Tick(treeState, blackboard);
 }
 
-void BehaviourTree::Step()
+void BehaviourTreeHelpers::StepTree()
 {
 	assert(false && "Not implemented");
 }
 
-void BehaviourTree::Start()
+void BehaviourTreeHelpers::StartTree(BehaviourTreeState& state)
 {
-	assert(!m_State.IsStarted);
-	m_State.IsStarted = true;
+	assert(!state.IsStarted);
+	state.IsStarted = true;
 }
 
 // Debug out
 
 using namespace std;
 
-ostream& BehaviourTree::DebugToStream(ostream& stream) const
+ostream& BehaviourTreeHelpers::DebugOutTree(const Behaviour* root, ostream& stream)
 {
-	stream << "BehaviourTree[status=" << StatusString[(int)m_Root->GetStatus()] << "]" << endl;
+	stream << "BehaviourTree[status=" << StatusString[(int)root->GetStatus()] << "]" << endl;
 	int indentLevel = 1;
 	const Behaviour* prevParent = nullptr;
-	std::list<const Behaviour*> writeQueue = { m_Root };
+	std::list<const Behaviour*> writeQueue = { root };
 	while (writeQueue.empty() == false)
 	{
 		const Behaviour* bh = writeQueue.front();

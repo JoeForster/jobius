@@ -16,48 +16,48 @@ static AIConfig s_AIConfig;
 class CheckPlayerVisible : public Condition
 {
 public:
-	CheckPlayerVisible(Behaviour* parent, BehaviourTreeState& treeState);
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	CheckPlayerVisible(Behaviour* parent, BehaviourTreeData& treeData);
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 };
 
 class IsPlayerInRange : public Condition
 {
 public:
-	IsPlayerInRange(Behaviour* parent, BehaviourTreeState& treeState);
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	IsPlayerInRange(Behaviour* parent, BehaviourTreeData& treeData);
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 };
 
 class FireAtPlayer : public Action
 {
 public:
-	FireAtPlayer(Behaviour* parent, BehaviourTreeState& treeState);
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	FireAtPlayer(Behaviour* parent, BehaviourTreeData& treeData);
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 };
 
 class MoveToPlayersLKP : public Action
 {
 public:
-	MoveToPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState);
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	MoveToPlayersLKP(Behaviour* parent, BehaviourTreeData& treeData);
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 };
 
 class LookAround : public Action
 {
 public:
-	LookAround(Behaviour* parent, BehaviourTreeState& treeState);
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	LookAround(Behaviour* parent, BehaviourTreeData& treeData);
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 };
 
 class CheckHasPlayersLKP : public Condition
 {
 public:
-	CheckHasPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState);
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	CheckHasPlayersLKP(Behaviour* parent, BehaviourTreeData& treeData);
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 };
 
 class MoveToRandomPosition : public Action
 {
 public:
-	MoveToRandomPosition(Behaviour* parent, BehaviourTreeState& treeState);
-	BehaviourStatus Update(NPCBlackboardComponent& blackboard) override;
+	MoveToRandomPosition(Behaviour* parent, BehaviourTreeData& treeData);
+	BehaviourStatus Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard) override;
 };
