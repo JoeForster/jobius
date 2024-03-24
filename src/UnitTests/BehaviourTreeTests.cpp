@@ -237,7 +237,7 @@ TEST_CASE("Illegal modification of structure", "[BehaviourTree]")
 	//REQUIRE_THROWS_WITH(builder.AddNode<MockAction>(MockActionRule::ALWAYS_FAIL), "ILLEGAL change of tree structure!");
 	// But does it make sense to mess with the builder interface just for this test?
 	// Instead for now:
-	Behaviour* bh = new MockAction(root, bt->GetState(), MockActionRule::ALWAYS_FAIL);
+	Behaviour* bh = new MockAction(root, bt->GetTreeData(), MockActionRule::ALWAYS_FAIL);
 	REQUIRE_THROWS_WITH(root->AddChild(bh), "ILLEGAL change of tree structure!");
 	delete bh; // Should have failed to add so tree didn't take ownership of this memory
 
@@ -300,56 +300,56 @@ TEST_CASE("Active selector test tree", "[BehaviourTree]")
 class MockIsPlayerVisible : public MockCondition
 {
 public:
-	MockIsPlayerVisible(Behaviour* parent, BehaviourTreeState& treeState)
-	: MockCondition(parent, treeState, MockConditionRule::FAIL_AND_THEN_SUCCEED)
+	MockIsPlayerVisible(Behaviour* parent, BehaviourTreeData& treeData)
+	: MockCondition(parent, treeData, MockConditionRule::FAIL_AND_THEN_SUCCEED)
 	{}
 };
 
 class MockIsPlayerInRange : public MockCondition
 {
 public:
-	MockIsPlayerInRange(Behaviour* parent, BehaviourTreeState& treeState)
-	: MockCondition(parent, treeState, MockConditionRule::FAIL_AND_THEN_SUCCEED)
+	MockIsPlayerInRange(Behaviour* parent, BehaviourTreeData& treeData)
+	: MockCondition(parent, treeData, MockConditionRule::FAIL_AND_THEN_SUCCEED)
 	{}
 };
 
 class MockFireAtPlayer : public MockAction
 {
 public:
-	MockFireAtPlayer(Behaviour* parent, BehaviourTreeState& treeState)
-	: MockAction(parent, treeState, MockActionRule::SUCCEED)
+	MockFireAtPlayer(Behaviour* parent, BehaviourTreeData& treeData)
+	: MockAction(parent, treeData, MockActionRule::SUCCEED)
 	{}
 };
 
 class MockMoveToPlayersLKP : public MockAction
 {
 public:
-	MockMoveToPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState)
-	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
+	MockMoveToPlayersLKP(Behaviour* parent, BehaviourTreeData& treeData)
+	: MockAction(parent, treeData, MockActionRule::RUN_AND_SUCCEED)
 	{}
 };
 
 class MockLookAround : public MockAction
 {
 public:
-	MockLookAround(Behaviour* parent, BehaviourTreeState& treeState)
-	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
+	MockLookAround(Behaviour* parent, BehaviourTreeData& treeData)
+	: MockAction(parent, treeData, MockActionRule::RUN_AND_SUCCEED)
 	{}
 };
 
 class MockCheckHasPlayersLKP : public MockCondition
 {
 public:
-	MockCheckHasPlayersLKP(Behaviour* parent, BehaviourTreeState& treeState)
-	: MockCondition(parent, treeState, MockConditionRule::ALWAYS_SUCCEED)
+	MockCheckHasPlayersLKP(Behaviour* parent, BehaviourTreeData& treeData)
+	: MockCondition(parent, treeData, MockConditionRule::ALWAYS_SUCCEED)
 	{}
 };
 
 class MockMoveToRandomPosition : public MockAction
 {
 public:
-	MockMoveToRandomPosition(Behaviour* parent, BehaviourTreeState& treeState)
-	: MockAction(parent, treeState, MockActionRule::RUN_AND_SUCCEED)
+	MockMoveToRandomPosition(Behaviour* parent, BehaviourTreeData& treeData)
+	: MockAction(parent, treeData, MockActionRule::RUN_AND_SUCCEED)
 	{}
 };
 
@@ -357,7 +357,7 @@ TEST_CASE("Simple NPC behaviour tree", "[BehaviourTree]")
 {
 	MockBlackboardComponent bb {};
 
-	BehaviourTree* bt = BehaviourTreeBuilder()
+	BehaviourTreeInstance* bt = BehaviourTreeBuilder()
 		.AddNode<ActiveSelector>() // Root
 			.AddNode<Sequence>() // Attack the player if seen
 				.AddNode<MockIsPlayerVisible>().EndNode()

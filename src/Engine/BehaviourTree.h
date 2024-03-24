@@ -98,6 +98,7 @@ public:
 	void Start() { BehaviourTreeHelpers::StartTree(m_State); }
 
 	inline Behaviour* GetRoot() { return m_Tree.m_Root; }
+	inline BehaviourTreeData& GetTreeData() { return m_Tree; }
 	inline BehaviourTreeState& GetState() { return m_State; }
 
 	bool IsStructureLocked() const { return m_Tree.IsStructureLocked; }
