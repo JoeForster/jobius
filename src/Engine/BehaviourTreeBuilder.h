@@ -55,7 +55,7 @@ public:
 	{
 		// We should have gone back to the root via EndNode
 		assert(m_CurrentBehaviour == nullptr);
-		assert(!m_Tree->IsStructureLocked);
+		assert(!m_Tree->IsStructureLocked());
 		m_Tree->m_Tree.IsStructureLocked = true;
 		return m_Tree;
 	}

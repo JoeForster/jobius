@@ -19,7 +19,7 @@ public:
 	{
 		SystemType type = T::GetSystemType();
 		assert(type < SystemType::ST_MAX);
-		assert(!m_Systems.contains[type] && "Registering system more than once.");
+		assert(!m_Systems.contains(type) && "Registering system more than once.");
 		auto system = std::make_shared<T>(parentWorld);
 		m_Systems[type] = system;
 		return system;
@@ -29,7 +29,7 @@ public:
 	void SetSignatures(EntitySignature signature, EntitySignature debugSignature)
 	{
 		SystemType type = T::GetSystemType();
-		assert(m_Systems.contains(typeIndex) != nullptr && "System used before registered.");
+		assert(m_Systems.contains(type) && "System used before registered.");
 		m_Systems[type]->SetSignature(signature, debugSignature);
 	}
 
