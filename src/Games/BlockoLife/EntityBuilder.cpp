@@ -1,5 +1,3 @@
-#pragma once
-
 #include "EntityBuilder.h"
 #include "SDLRenderManager.h"
 
@@ -19,7 +17,7 @@ EntityID EntityBuilder<T>::BuildCommon(World& world, const Vector2i& pos, const 
 	return e;
 }
 
-
+template<>
 EntityID EntityBuilder<SpeciesIdentity<Species::PLANT>>::BuildImpl(World& world, const Vector2i& pos)
 {
 	constexpr int initialHealth = 1;
@@ -28,6 +26,7 @@ EntityID EntityBuilder<SpeciesIdentity<Species::PLANT>>::BuildImpl(World& world,
 	return BuildCommon(world, pos, initialHealth, maxHealth);
 }
 
+template<>
 EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& world, const Vector2i& pos)
 {
 	constexpr int initialHealth = 10;
@@ -35,7 +34,8 @@ EntityID EntityBuilder<SpeciesIdentity<Species::HERBIVORE>>::BuildImpl(World& wo
 
 	return BuildCommon(world, pos, initialHealth, maxHealth);
 }
-	
+
+template<>
 EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& world, const Vector2i& pos)
 {
 	constexpr int initialHealth = 30;
@@ -44,7 +44,7 @@ EntityID EntityBuilder<SpeciesIdentity<Species::CARNIVORE>>::BuildImpl(World& wo
 	return BuildCommon(world, pos, initialHealth, maxHealth);
 }
 
-	
+template<>
 EntityID EntityBuilder<SpeciesIdentity<Species::NO_SPECIES>>::BuildImpl(World& world, const Vector2i& pos)
 {
 	return BuildCommon(world, pos, 0, 0);

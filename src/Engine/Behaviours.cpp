@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <iostream>
+#include <algorithm>
 
 void Decorator::OnInitialise()
 {
@@ -68,7 +69,7 @@ void Filter::AddCondition(Behaviour* condition)
 	if (!CanChangeStructure())
 	{
 		// TODO_ERRORHANDLING: temp just for unit tests
-		throw std::exception("ILLEGAL change of tree structure!");
+		throw std::runtime_error("ILLEGAL change of tree structure!");
 	}
 	m_Children.insert(m_Children.begin(), condition);
 }
@@ -77,7 +78,7 @@ void Filter::AddAction(Behaviour* action)
 	if (!CanChangeStructure())
 	{
 		// TODO_ERRORHANDLING: temp just for unit tests
-		throw std::exception("ILLEGAL change of tree structure!");
+		throw std::runtime_error("ILLEGAL change of tree structure!");
 	}
 	m_Children.push_back(action);
 }
@@ -128,7 +129,7 @@ void Monitor::AddCondition(Behaviour* condition)
 	if (!CanChangeStructure())
 	{
 		// TODO_ERRORHANDLING: temp just for unit tests
-		throw std::exception("ILLEGAL change of tree structure!");
+		throw std::runtime_error("ILLEGAL change of tree structure!");
 	}
 	m_Children.insert(m_Children.begin(), condition);
 }
@@ -138,7 +139,7 @@ void Monitor::AddAction(Behaviour* action)
 	if (!CanChangeStructure())
 	{
 		// TODO_ERRORHANDLING: temp just for unit tests
-		throw std::exception("ILLEGAL change of tree structure!");
+		throw std::runtime_error("ILLEGAL change of tree structure!");
 	}
 	m_Children.push_back(action);
 }
@@ -184,7 +185,7 @@ BehaviourStatus Selector::Update(BehaviourTreeState& treeState, NPCBlackboardCom
 
 BehaviourStatus ActiveSelector::Update(BehaviourTreeState& treeState, NPCBlackboardComponent& blackboard)
 {
-	Behaviours::iterator prev = m_CurrentChild;
+	auto prev = m_CurrentChild;
 	OnInitialise();
 	BehaviourStatus result = Selector::Update(treeState, blackboard);
 	if (prev != m_Children.end() && m_CurrentChild != prev)
@@ -199,7 +200,7 @@ void Composite::AddChild(Behaviour* behaviour)
 	if (!CanChangeStructure())
 	{
 		// TODO_ERRORHANDLING: temp just for unit tests
-		throw std::exception("ILLEGAL change of tree structure!");
+		throw std::runtime_error("ILLEGAL change of tree structure!");
 	}
 	auto existing = std::find(m_Children.begin(), m_Children.end(), behaviour);
 	assert(existing == m_Children.end());
@@ -211,7 +212,7 @@ void Composite::RemoveChild(Behaviour* behaviour)
 	if (!CanChangeStructure())
 	{
 		// TODO_ERRORHANDLING: temp just for unit tests
-		throw std::exception("ILLEGAL change of tree structure!");
+		throw std::runtime_error("ILLEGAL change of tree structure!");
 	}
 	auto existing = std::find(m_Children.begin(), m_Children.end(), behaviour);
 	assert(existing != m_Children.end());
@@ -223,7 +224,7 @@ void Composite::ClearChildren()
 	if (!CanChangeStructure())
 	{
 		// TODO_ERRORHANDLING: temp just for unit tests
-		throw std::exception("ILLEGAL change of tree structure!");
+		throw std::runtime_error("ILLEGAL change of tree structure!");
 	}
 	m_Children.clear();
 }

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <list>
+#include <stdexcept>
 
 // BehaviourTreeData
 
@@ -65,7 +66,7 @@ BehaviourStatus BehaviourTreeHelpers::TickTree(NPCBlackboardComponent& blackboar
 	{
 		// TODO: This is just temporary to verify a unit test. We want our own assertion/error-handling types
 		// which are handled appropriately depending on whether we're running in engine, test mode, etc
-		throw std::exception("Behaviour tree ticked but not yet started");
+		throw std::runtime_error("Behaviour tree ticked but not yet started");
 	}
 	return treeData.m_Root->Tick(treeState, blackboard);
 }
