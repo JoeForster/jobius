@@ -8,11 +8,6 @@
 
 #include <assert.h>
 
-static SDL_Color ToSDLColour(const Colour4i& c)
-{
-
-};
-
 std::shared_ptr<SDLRenderManager> SDLRenderManager::Create(SDL_Window* window, SDL_Renderer* renderer)
 {
 	auto drawer = std::make_shared<SDLRenderManager>(window, renderer);
