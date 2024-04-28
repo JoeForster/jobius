@@ -69,6 +69,11 @@ int main(int argc, char* argv[])
 	SDL_Event event;
 	while (SDL_PollEvent(&event) >= 0)
 	{
+		if (event.type == SDL_QUIT)
+		{
+			break;
+		}
+
 		float curFrameTimeSecs = (float)SDL_GetTicks() * 0.001f;
 		float deltaSecs = curFrameTimeSecs - lastFrameTimeSecs;
 		float waitSecs = (deltaSecs > s_TargetFrameTime ? 0.0f : s_TargetFrameTime - deltaSecs);
