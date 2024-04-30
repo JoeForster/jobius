@@ -86,11 +86,14 @@ set(ENGINE_HEADERS
 
 add_library(${ENGINE_PROJECT_NAME} ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
-# LINUX HACK
-#get_target_property(SDL2IMAGE_INCLUDE_DIRS SDL2_image::SDL2_image INTERFACE_INCLUDE_DIRECTORIES)
-#get_target_property(SDL2TTF_INCLUDE_DIRS SDL2_ttf::SDL2_ttf INTERFACE_INCLUDE_DIRECTORIES)
-set(SDL2IMAGE_INCLUDE_DIRS SDL2_IMAGE_INCLUDE_DIRS)
-set(SDL2TTF_INCLUDE_DIRS SDL2_TTF_INCLUDE_DIRS)
+# WINDOWS/LINUX HACK - would be nice to get one way working for both.
+if(WIN32)
+	get_target_property(SDL2IMAGE_INCLUDE_DIRS SDL2_image::SDL2_image INTERFACE_INCLUDE_DIRECTORIES)
+	get_target_property(SDL2TTF_INCLUDE_DIRS SDL2_ttf::SDL2_ttf INTERFACE_INCLUDE_DIRECTORIES)
+else()
+	set(SDL2IMAGE_INCLUDE_DIRS SDL2_IMAGE_INCLUDE_DIRS)
+	set(SDL2TTF_INCLUDE_DIRS SDL2_TTF_INCLUDE_DIRS)
+endif(WIN32)
 
 target_include_directories(${ENGINE_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS} ${SDL2TTF_INCLUDE_DIRS})
 
@@ -100,11 +103,17 @@ target_include_directories(${SHELL_PROJECT_NAME} PUBLIC ${SDL2_INCLUDE_DIR})
 
 target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2)
 target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2::SDL2main)
-target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2_image)
-target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2_ttf)
+
+# WINDOWS/LINUX HACK - would be nice to get one way working for both.
+if(WIN32)
+	target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2_image::SDL2_image)
+	target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2_ttf::SDL2_ttf)
+else()
+	target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2_image)
+	target_link_libraries(${SHELL_PROJECT_NAME} PRIVATE SDL2_ttf)
+endif(WIN32)
 
 # TODO: Tidy this so we build a game project using the engine as a library?
-
 target_link_libraries(${SHELL_PROJECT_NAME} PUBLIC BlockoLife)
 target_link_libraries(${SHELL_PROJECT_NAME} PUBLIC ChaosSpace)
 target_link_libraries(${SHELL_PROJECT_NAME} PUBLIC ${ENGINE_PROJECT_NAME})
