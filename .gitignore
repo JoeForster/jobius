@@ -4,3 +4,4 @@ build
 CMakeFiles
 *.bak
 /CMakeSettings.json
+cmake_install.cmake
